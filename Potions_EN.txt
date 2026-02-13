@@ -1,0 +1,66 @@
+Base Potions:
+Water Bottle + Nether Wart = Awkward Potion  
+Water Bottle + Redstone Dust = Mundane Potion  
+Water Bottle + Glowstone Dust = Thick Potion  
+Water Bottle + Fermented Spider Eye = Potion of Weakness (1:30)  
+
+Positive Effect Potions:
+Awkward Potion + Glistering Melon Slice = Potion of Healing (Instant Health I)  
+Potion of Healing (Instant Health I) + Glowstone Dust = Potion of Healing (Instant Health II)  
+Awkward Potion + Magma Cream = Potion of Fire Resistance (3:00)  
+Potion of Fire Resistance (3:00) + Redstone Dust = Potion of Fire Resistance (8:00)  
+Awkward Potion + Ghast Tear = Potion of Regeneration (0:45)  
+Potion of Regeneration (0:45) + Redstone Dust = Potion of Regeneration (1:30)  
+Potion of Regeneration (0:45) + Glowstone Dust = Potion of Regeneration II (0:22)  
+Awkward Potion + Blaze Powder = Potion of Strength (3:00)  
+Potion of Strength (3:00) + Redstone Dust = Potion of Strength (8:00)  
+Potion of Strength (3:00) + Glowstone Dust = Potion of Strength II (1:30)  
+Awkward Potion + Sugar = Potion of Swiftness (3:00)  
+Potion of Swiftness (3:00) + Redstone Dust = Potion of Swiftness (8:00)  
+Potion of Swiftness (3:00) + Glowstone Dust = Potion of Swiftness II (1:30)  
+Awkward Potion + Golden Carrot = Potion of Night Vision (3:00)  
+Potion of Night Vision (3:00) + Redstone Dust = Potion of Night Vision (8:00)  
+Potion of Night Vision (3:00) + Fermented Spider Eye = Potion of Invisibility (3:00)  
+Potion of Invisibility (3:00) + Redstone Dust = Potion of Invisibility (8:00)  
+Awkward Potion + Pufferfish = Potion of Water Breathing (3:00)  
+Potion of Water Breathing (3:00) + Redstone Dust = Potion of Water Breathing (8:00)  
+Awkward Potion + Rabbit's Foot = Potion of Leaping (3:00)  
+Potion of Leaping (3:00) + Redstone Dust = Potion of Leaping (8:00)  
+Potion of Leaping (3:00) + Glowstone Dust = Potion of Leaping II (1:30)  
+Awkward Potion + Phantom Membrane = Potion of Slow Falling (1:30)  
+Potion of Slow Falling (1:30) + Redstone Dust = Potion of Slow Falling (4:00)  
+Awkward Potion + Slime Block = Potion of Oozing (3:00)  
+Awkward Potion + Cobweb = Potion of Weaving (3:00)  
+Awkward Potion + Stone = Potion of Infestation (3:00)  
+Awkward Potion + Breeze Rod = Potion of Wind Charging (3:00)  
+
+Negative Effect Potions:
+Awkward Potion + Spider Eye = Potion of Poison (0:45)  
+Potion of Poison (0:45) + Redstone Dust = Potion of Poison (1:30)  
+Potion of Poison (0:45) + Glowstone Dust = Potion of Poison II (0:21) 
+Potion of Healing (Instant Health I) + Fermented Spider Eye = Potion of Harming (Instant Damage I)  
+Potion of Poison (0:45) + Fermented Spider Eye = Potion of Harming (Instant Damage I)  
+Potion of Harming (Instant Damage I) + Glowstone Dust = Potion of Harming (Instant Damage II)  
+Potion of Swiftness (3:00) + Fermented Spider Eye = Potion of Slowness (1:30)  
+Potion of Leaping (3:00) + Fermented Spider Eye = Potion of Slowness (1:30)  
+Potion of Slowness (1:30) + Redstone Dust = Potion of Slowness (4:00)  
+Potion of Slowness (1:30) + Glowstone Dust = Potion of Slowness IV (0:20)  
+Potion of Weakness (1:30) + Redstone Dust = Potion of Weakness (4:00)  
+
+Mixed Effect Potions:
+Awkward Potion + Turtle Shell = Potion of the Turtle Master (0:20) (Slowness IV + Resistance III)  
+Potion of the Turtle Master (0:20) + Redstone Dust = Potion of the Turtle Master (0:40) (Slowness IV + Resistance III)  
+Potion of the Turtle Master (0:20) + Glowstone Dust = Potion of the Turtle Master II (0:20) (Slowness VI + Resistance IV)  
+
+Splash Potions:
+Any Drinkable Potion + Gunpowder = Splash Potion of [Effect]  
+Water Bottle + Gunpowder = Splash Water Bottle  
+Awkward Potion + Gunpowder = Splash Potion (no effect)  
+Mundane Potion + Gunpowder = Splash Potion (no effect)  
+Thick Potion + Gunpowder = Splash Potion (no effect)  
+
+Lingering Potions:
+Any Splash Potion + Dragon's Breath = Lingering Potion of [Effect]  
+Splash Water Bottle + Dragon's Breath = Lingering Water Bottle  
+
+Note: Timings are for Java Edition unless noted (e.g., some differ in Bedrock Edition). New potions from 1.21 (Oozing, Weaving, Infestation, Wind Charging) do not have extended or enhanced versions.
