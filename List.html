@@ -7,127 +7,33 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
-            color: #e0e0ff;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        h1 {
-            font-size: 2.8rem;
-            margin: 0;
-            background: linear-gradient(90deg, #a78bfa, #60a5fa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .back {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .back:hover {
-            background: #a78bfa;
-            transform: translateY(-2px);
-        }
-        
-        .search {
-            width: 100%;
-            padding: 16px 20px;
-            border: none;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.08);
-            color: white;
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-            outline: none;
-        }
-        
-        .search::placeholder {
-            color: #8888aa;
-        }
-        
-        .file-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .file-item {
-            background: rgba(255,255,255,0.05);
-            margin-bottom: 8px;
-            border-radius: 12px;
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        
-        .file-item:hover {
-            background: rgba(167, 139, 250, 0.15);
-            transform: translateX(8px);
-        }
-        
-        .file-item a {
-            color: #c4c4ff;
-            text-decoration: none;
-            font-size: 1.1rem;
-            flex: 1;
-        }
-        
-        .file-item a:hover {
-            color: #a78bfa;
-        }
-        
-        .file-type {
-            font-size: 0.85rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.1);
-            margin-left: 12px;
-        }
-        
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8888aa;
-            font-size: 1.2rem;
-        }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f0f23, #1a1a2e); color: #e0e0ff; margin: 0; padding: 0; min-height: 100vh; }
+        .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.8rem; margin: 0; background: linear-gradient(90deg, #a78bfa, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .back { display: inline-block; margin-top: 20px; padding: 10px 20px; background: rgba(255,255,255,0.1); color: white; text-decoration: none; border-radius: 50px; font-weight: 500; transition: all 0.3s; }
+        .back:hover { background: #a78bfa; transform: translateY(-2px); }
+        .search { width: 100%; padding: 16px 20px; border: none; border-radius: 12px; background: rgba(255,255,255,0.08); color: white; font-size: 1.1rem; margin-bottom: 30px; outline: none; }
+        .search::placeholder { color: #8888aa; }
+        .file-list { list-style: none; padding: 0; margin: 0; }
+        .file-item { background: rgba(255,255,255,0.05); margin-bottom: 8px; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; transition: all 0.2s; }
+        .file-item:hover { background: rgba(167, 139, 250, 0.15); transform: translateX(8px); }
+        .file-item a { color: #c4c4ff; text-decoration: none; font-size: 1.1rem; flex: 1; }
+        .file-item a:hover { color: #a78bfa; }
+        .file-type { font-size: 0.85rem; padding: 4px 10px; border-radius: 20px; background: rgba(255,255,255,0.1); margin-left: 12px; }
+        .no-results { text-align: center; padding: 60px 20px; color: #8888aa; font-size: 1.2rem; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>📁 Все файлы сайта</h1>
-            <a href="/" class="back">← На главную</a>
+            <a href="/" class="back">Обновить список</a>
         </header>
 
         <input type="text" id="search" class="search" placeholder="Поиск по имени файла...">
 
-        <ul class="file-list" id="fileList">
-            <!-- Файлы автоматически подставляются через JS ниже -->
-        </ul>
+        <ul class="file-list" id="fileList"></ul>
 
         <div id="noResults" class="no-results" style="display: none;">
             Ничего не найдено 😕
@@ -151,7 +57,7 @@
             { name: "скаМ.py", type: "Python" },
             { name: "на конкурс.skbrushes", type: "Sketch" },
             { name: "на конкурс финальная версия.skbrushes", type: "Sketch" },
-            { name: "list.html", type: "HTML" }   // сама эта страница
+            { name: "List.html", type: "HTML" }
         ];
 
         const list = document.getElementById('fileList');
@@ -160,36 +66,28 @@
 
         function renderFiles(filteredFiles) {
             list.innerHTML = '';
-            
             if (filteredFiles.length === 0) {
                 noResults.style.display = 'block';
                 return;
             }
-            
             noResults.style.display = 'none';
             
             filteredFiles.forEach(file => {
                 const li = document.createElement('li');
                 li.className = 'file-item';
                 li.innerHTML = `
-                    <a href="\( {file.name}" target="_blank"> \){file.name}</a>
+                    <a href="/\( {file.name}" target="_blank"> \){file.name}</a>
                     <span class="file-type">${file.type}</span>
                 `;
                 list.appendChild(li);
             });
         }
 
-        // Изначально показываем все
         renderFiles(files);
 
-        // Поиск
         searchInput.addEventListener('input', () => {
             const term = searchInput.value.toLowerCase().trim();
-            
-            const filtered = files.filter(file => 
-                file.name.toLowerCase().includes(term)
-            );
-            
+            const filtered = files.filter(file => file.name.toLowerCase().includes(term));
             renderFiles(filtered);
         });
     </script>
