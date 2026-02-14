@@ -1,9 +1,9 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/error?code=404"
-    }
+    { "source": "/", "destination": "/List.html" },
+    { "source": "/list", "destination": "/List.html" },
+    { "source": "/List", "destination": "/List.html" },
+    { "source": "/(.*)", "destination": "/api/error?code=404" }
   ]
 }
