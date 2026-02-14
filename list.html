@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Автоматический список файлов</title>
+    <style>
+        body { font-family: sans-serif; background: #f9f9f9; padding: 40px; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: #333; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 10px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; }
+        li:hover { background: #fcfcfc; }
+        a { text-decoration: none; color: #007bff; font-weight: 500; }
+        .size { margin-left: auto; color: #999; font-size: 0.85em; }
+        .icon { margin-right: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Файлы на сайте</h1>
+    <ul>
+        <?php
+        // Указываем путь (текущая директория)
+        $dir = "./";
+        $files = scandir($dir);
+
+        // Список исключений (что не показывать)
+        $exclude = array('.', '..', 'sitemap.php', '.htaccess', '.git');
+
+        foreach ($files as $file) {
+            if (!in_array($file, $exclude)) {
+                // Получаем размер файла для красоты
+                $filesize = round(filesize($file) / 1024, 2); 
+                $icon = is_dir($file) ? "📁" : "📄";
+                
+                echo "<li>
+                        <span class='icon'>$icon</span>
+                        <a href='$file'>$file</a>
+                        <span class='size'>$filesize KB</span>
+                      </li>";
+            }
+        }
+        ?>
+    </ul>
+</div>
+
+</body>
+</html>
