@@ -254,3 +254,4 @@ const finalHtml = generateHTML(treeContent);
 fs.writeFileSync(OUTPUT_FILE, finalHtml);
 console.log(`✅ Listing generated successfully: ${OUTPUT_FILE}`);
 
+
