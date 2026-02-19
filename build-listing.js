@@ -123,7 +123,7 @@ const generateHTML = (content) => `
         :root {
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --text-main: #e2e8f0;
+            --text-main: #FFFFFF;
             --text-muted: #94a3b8;
             --accent: #8b5cf6;
             --hover-bg: rgba(255, 255, 255, 0.06);
@@ -253,3 +253,4 @@ const finalHtml = generateHTML(treeContent);
 
 fs.writeFileSync(OUTPUT_FILE, finalHtml);
 console.log(`✅ Listing generated successfully: ${OUTPUT_FILE}`);
+
