@@ -120,99 +120,211 @@ const generateHTML = (content) => `
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-main: #FFFFFF;
-            --text-muted: #94a3b8;
-            --accent: #8b5cf6;
-            --hover-bg: rgba(255, 255, 255, 0.06);
+    :root {
+        /* 🍋 Lemon & 💙 Cyan Palette */
+        --glass-bg: rgba(253, 224, 71, 0.05);        /* лёгкий лимонный оттенок */
+        --glass-border: rgba(56, 189, 248, 0.2);      /* голубая полупрозрачная рамка */
+        --text-main: #FFFFFF;
+        --text-muted: #BAE6FD;                        /* светло-голубой для вторичного текста */
+        --accent: #FDE047;                            /* лимонно-жёлтый акцент */
+        --accent-secondary: #38BDF8;                  /* голубой для ховеров и деталей */
+        --hover-bg: rgba(253, 224, 71, 0.12);         /* лимонный при наведении */
+        --hover-glow: rgba(56, 189, 248, 0.3);        /* голубое свечение */
+    }
+    
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Outfit', sans-serif;
+        background-color: #0B1220;                    /* глубокий тёмно-синий фон */
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex; flex-direction: column;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 50%);
+        background-attachment: fixed;
+    }
+
+    .container {
+        max-width: 900px;
+        width: 95%;
+        margin: 4rem auto;
+        flex: 1;
+    }
+
+    header { margin-bottom: 2.5rem; }
+    h1 { 
+        font-size: 2rem; 
+        margin: 0; 
+        font-weight: 600; 
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #FDE047, #38BDF8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .breadcrumb { 
+        color: var(--text-muted); 
+        font-size: 0.9rem; 
+        margin-top: 0.5rem;
+    }
+    /* Liquid Glass Card */
+    .glass-panel {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(253, 224, 71, 0.05) inset,
+            0 0 30px rgba(56, 189, 248, 0.08);
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .glass-panel:hover {
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.6),
+            0 0 0 1px rgba(253, 224, 71, 0.1) inset,
+            0 0 40px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Listing Styling */
+    .file-tree { list-style: none; padding: 0; margin: 0; }
+    .file-tree ul { 
+        list-style: none; 
+        padding-left: 1.25rem; 
+        display: none; 
+        border-left: 1px solid rgba(56, 189, 248, 0.15);
+        margin-left: 1.1rem;
+    }
+
+    .item-row {
+        display: flex; align-items: center;
+        padding: 0.75rem 1.25rem;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: var(--text-main);
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .item-row::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--accent), var(--accent-secondary));        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .item-row:hover {
+        background: var(--hover-bg);
+        padding-left: 1.5rem;
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .item-row:hover::before {
+        opacity: 1;
+    }
+
+    .icon { 
+        width: 24px; 
+        text-align: center; 
+        margin-right: 1rem; 
+        color: var(--accent); 
+        opacity: 0.95;
+        text-shadow: 0 0 10px rgba(253, 224, 71, 0.3);
+        transition: color 0.2s ease, text-shadow 0.2s ease;
+    }
+    
+    .item-row:hover .icon {
+        color: var(--accent-secondary);
+        text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+    
+    .name { 
+        flex: 1; 
+        font-size: 0.95rem; 
+        white-space: nowrap; 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+    }
+    
+    .arrow { 
+        font-size: 0.7rem; 
+        color: var(--text-muted); 
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+    
+    .action { 
+        font-size: 0.8rem; 
+        color: var(--accent-secondary); 
+        opacity: 0; 
+        transition: opacity 0.2s ease;
+    }    
+    .item-row:hover .action { 
+        opacity: 0.8; 
+    }
+
+    /* Logic for Folder Expansion */
+    .folder.open > .item-row .arrow { 
+        transform: rotate(90deg); 
+        color: var(--accent);
+    }
+    .folder.open > ul { 
+        display: block; 
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from { 
+            opacity: 0; 
+            transform: translateY(-8px); 
         }
-        
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Outfit', sans-serif;
-            background-color: #020617;
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex; flex-direction: column;
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
         }
+    }
 
-        .container {
-            max-width: 900px;
-            width: 95%;
-            margin: 4rem auto;
-            flex: 1;
-        }
+    /* Links */
+    .file-link:hover {
+        text-decoration: none;
+    }
+    
+    .file-link:hover .name {
+        color: var(--accent-secondary);
+    }
 
-        header { margin-bottom: 2.5rem; }
-        h1 { font-size: 2rem; margin: 0; font-weight: 600; letter-spacing: -0.5px; }
-        .breadcrumb { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; }
+    footer {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    footer a {
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    footer a:hover {        color: var(--accent-secondary);
+    }
 
-        /* Liquid Glass Card */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Listing Styling */
-        .file-tree { list-style: none; padding: 0; margin: 0; }
-        .file-tree ul { 
-            list-style: none; 
-            padding-left: 1.25rem; 
-            display: none; 
-            border-left: 1px solid rgba(255,255,255,0.05);
-            margin-left: 1.1rem;
-        }
-
-        .item-row {
-            display: flex; align-items: center;
-            padding: 0.75rem 1.25rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            color: var(--text-main);
-            border-bottom: 1px solid rgba(255,255,255,0.02);
-        }
-
-        .item-row:hover {
-            background: var(--hover-bg);
-            padding-left: 1.5rem;
-            color: #fff;
-        }
-
-        .icon { width: 24px; text-align: center; margin-right: 1rem; color: var(--accent); opacity: 0.8; }
-        .name { flex: 1; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .arrow { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.3s; }
-        .action { font-size: 0.8rem; color: var(--text-muted); opacity: 0; }
-        
-        .item-row:hover .action { opacity: 0.5; }
-
-        /* Logic for Folder Expansion */
-        .folder.open > .item-row .arrow { transform: rotate(90deg); }
-        .folder.open > ul { display: block; }
-
-        footer {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        @media (max-width: 600px) {
-            .container { margin: 2rem auto; }
-            h1 { font-size: 1.5rem; }
-        }
-    </style>
+    @media (max-width: 600px) {
+        .container { margin: 2rem auto; }
+        h1 { font-size: 1.5rem; }
+        .item-row { padding: 0.65rem 1rem; }
+        .icon { margin-right: 0.75rem; }
+    }
+</style>
 </head>
 <body>
     <div class="container">
@@ -253,5 +365,6 @@ const finalHtml = generateHTML(treeContent);
 
 fs.writeFileSync(OUTPUT_FILE, finalHtml);
 console.log(`✅ Listing generated successfully: ${OUTPUT_FILE}`);
+
 
 
