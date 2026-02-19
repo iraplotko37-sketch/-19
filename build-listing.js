@@ -135,7 +135,7 @@ const generateHTML = (content) => `
     body {
         margin: 0; padding: 0;
         font-family: 'Outfit', sans-serif;
-        background-color: #0B1220;                    /* глубокий тёмно-синий фон */
+        background-color: #749CF9;                    /* глубокий тёмно-синий фон */
         color: var(--text-main);
         min-height: 100vh;
         display: flex; flex-direction: column;
@@ -339,7 +339,7 @@ const generateHTML = (content) => `
     </div>
 
     <footer>
-        &lt;/&gt; Coded with love by BlankHtmlPage.
+        &lt;/&gt; Coded with love by Plotko Mark.
     </footer>
 
     <script>
@@ -365,6 +365,7 @@ const finalHtml = generateHTML(treeContent);
 
 fs.writeFileSync(OUTPUT_FILE, finalHtml);
 console.log(`✅ Listing generated successfully: ${OUTPUT_FILE}`);
+
 
 
 
