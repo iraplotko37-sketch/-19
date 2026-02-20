@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📤 Загрузить файл — 19-sandy</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --accent: #00d4aa;
+      --text: #fff;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .card h2 {
+      margin-top: 0;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .drop-zone {
+      border: 2px dashed var(--glass-border);
+      border-radius: 15px;
+      padding: 40px 20px;
+      text-align: center;
+      margin: 20px 0;
+      transition: all 0.3s;      cursor: pointer;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(0, 212, 170, 0.1);
+    }
+    .drop-zone i {
+      font-size: 3rem;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    input[type="file"] { display: none; }
+    .btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .progress {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      margin: 15px 0;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      display: none;
+    }
+    .message.success { background: rgba(0, 212, 170, 0.2); border: 1px solid var(--accent); }
+    .message.error { background: rgba(255, 82, 82, 0.2); border: 1px solid #ff5252; }
+    .file-info {
+      margin-top: 10px;
+      font-size: 0.9rem;      opacity: 0.9;
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2><i class="fas fa-cloud-upload-alt"></i> Загрузить файл</h2>
+    
+    <form id="uploadForm">
+      <label class="drop-zone" id="dropZone">
+        <i class="fas fa-file-upload"></i>
+        <p>Перетащите файл сюда<br><small>или нажмите для выбора</small></p>
+        <input type="file" id="fileInput" name="file" required />
+      </label>
+      
+      <div class="file-info" id="fileInfo"></div>
+      
+      <div class="progress" id="progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      
+      <button type="submit" class="btn" id="uploadBtn">📤 Загрузить</button>
+    </form>
+    
+    <div class="message" id="message"></div>
+    
+    <a href="index.html" class="back-link">← Назад к списку файлов</a>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const progress = document.getElementById('progress');
+    const progressBar = document.getElementById('progressBar');
+    const message = document.getElementById('message');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const form = document.getElementById('uploadForm');
+
+    // Клик по зоне → выбор файла
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag & Drop    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, e => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropZone.addEventListener(evt, () => dropZone.classList.add('dragover'));
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
+    });
+    dropZone.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        fileInput.files = files;
+        updateFileInfo(files[0]);
+      }
+    });
+
+    // Выбор файла через input
+    fileInput.addEventListener('change', e => {
+      if (e.target.files[0]) updateFileInfo(e.target.files[0]);
+    });
+
+    function updateFileInfo(file) {
+      const size = (file.size / 1024 / 1024).toFixed(2);
+      fileInfo.innerHTML = `<strong>${file.name}</strong><br>Размер: ${size} МБ<br>Тип: ${file.type}`;
+      fileInfo.style.display = 'block';
+    }
+
+    // Отправка формы
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      if (!file) return showMessage('Выберите файл', 'error');
+
+      // Сброс UI
+      message.style.display = 'none';
+      progress.style.display = 'block';
+      progressBar.style.width = '0%';
+      uploadBtn.disabled = true;
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/upload', true);
+                xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 100;
+            progressBar.style.width = percent.toFixed(1) + '%';
+          }
+        };
+
+        xhr.onload = () => {
+          progress.style.display = 'none';
+          uploadBtn.disabled = false;
+          
+          if (xhr.status === 200) {
+            const res = JSON.parse(xhr.responseText);
+            showMessage(`✅ Файл загружен!<br><a href="${res.file.url}" target="_blank" style="color:var(--accent)">Открыть файл</a>`, 'success');
+            form.reset();
+            fileInfo.style.display = 'none';
+          } else {
+            const err = JSON.parse(xhr.responseText);
+            showMessage(`❌ ${err.error || 'Ошибка загрузки'}`, 'error');
+          }
+        };
+
+        xhr.onerror = () => {
+          progress.style.display = 'none';
+          uploadBtn.disabled = false;
+          showMessage('❌ Ошибка сети', 'error');
+        };
+
+        xhr.send(formData);
+
+      } catch (err) {
+        progress.style.display = 'none';
+        uploadBtn.disabled = false;
+        showMessage('❌ ' + err.message, 'error');
+      }
+    });
+
+    function showMessage(text, type) {
+      message.innerHTML = text;
+      message.className = 'message ' + type;
+      message.style.display = 'block';
+    }
+  </script>
+</body>
+  </html>
