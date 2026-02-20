@@ -1,264 +1,274 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📁 19-sandy — Файловое хранилище</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
-  
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хранилище файлов</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
     :root {
-      --bg-gradient-1: #e3f2fd;
-      --bg-gradient-2: #bbdefb;
-      --bg-gradient-3: #90caf9;
-      --glass-bg: rgba(255, 255, 255, 0.85);
-      --glass-border: rgba(25, 118, 210, 0.2);
-      --accent: #1976d2;
-      --accent-hover: #1565c0;
-      --accent-light: #64b5f6;
-      --text: #1a237e;
-      --text-muted: #546e7a;
-      --shadow: rgba(25, 118, 210, 0.15);
+        /* 🍋 Lemon & 💙 Cyan Palette — точная копия стиля /files */
+        --glass-bg: rgba(253, 224, 71, 0.08);
+        --glass-border: rgba(56, 189, 248, 0.25);
+        --text-main: #FFFFFF;
+        --text-muted: #BAE6FD;
+        --accent: #FDE047;
+        --accent-secondary: #38BDF8;
+        --hover-bg: rgba(253, 224, 71, 0.15);
+        --hover-glow: rgba(56, 189, 248, 0.35);
+        --shadow-color: rgba(0, 0, 0, 0.4);
     }
-
+    
     * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3));
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      overflow-x: hidden;
+        font-family: 'Outfit', sans-serif;
+        background-color: #749CF9;
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 50%);
+        background-attachment: fixed;
     }
 
-    /* Анимированные пузыри на фоне */
-    .bg-animation {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;      z-index: -1;
-      overflow: hidden;
-    }
-
-    .bg-animation span {
-      position: absolute;
-      display: block;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      animation: float 20s infinite;
-      bottom: -100px;
-    }
-
-    .bg-animation span:nth-child(1) { left: 10%; width: 60px; height: 60px; animation-delay: 0s; }
-    .bg-animation span:nth-child(2) { left: 30%; width: 40px; height: 40px; animation-delay: 3s; }
-    .bg-animation span:nth-child(3) { left: 50%; width: 80px; height: 80px; animation-delay: 6s; }
-    .bg-animation span:nth-child(4) { left: 70%; width: 50px; height: 50px; animation-delay: 9s; }
-    .bg-animation span:nth-child(5) { left: 90%; width: 70px; height: 70px; animation-delay: 12s; }
-
-    @keyframes float {
-      0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-      100% { transform: translateY(-1200px) rotate(360deg); opacity: 0; }
-    }
-
-    /* Карточка */
+    /* Liquid Glass Card — как в list.html */
     .card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 50px 40px;
-      max-width: 500px;
-      width: 100%;
-      box-shadow: 0 20px 60px var(--shadow);
-      text-align: center;
-      animation: slideUp 0.8s ease-out;
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);        border-radius: 20px;
+        padding: 45px 35px;
+        max-width: 480px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 
+            0 25px 50px -12px var(--shadow-color),
+            0 0 0 1px rgba(253, 224, 71, 0.05) inset,
+            0 0 30px rgba(56, 189, 248, 0.08);
+        transition: box-shadow 0.3s ease;
+        animation: fadeIn 0.8s ease-out;
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to { opacity: 1; transform: translateY(0); }
+    .card:hover {
+        box-shadow: 
+            0 25px 50px -12px var(--shadow-color),
+            0 0 0 1px rgba(253, 224, 71, 0.1) inset,
+            0 0 40px rgba(56, 189, 248, 0.15);
     }
 
-    /* Иконка */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Иконка в стиле акцентов */
     .icon-wrapper {
-      width: 110px;
-      height: 110px;
-      margin: 0 auto 25px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 30px var(--shadow);
-      animation: gentlePulse 3s infinite;
-    }
-
-    @keyframes gentlePulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 10px 30px var(--shadow); }
-      50% { transform: scale(1.03); box-shadow: 0 15px 40px var(--shadow); }
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 20px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
     }
 
     .icon-wrapper i {
-      font-size: 3.2rem;
-      color: #ffffff;
+        font-size: 2.5rem;
+        color: #0f172a;
+        text-shadow: 0 2px 10px rgba(253, 224, 71, 0.3);
     }
 
-    /* Заголовки */
+    /* Заголовок с градиентом как в list.html */
     h1 {
-      font-size: 2.1rem;
-      margin-bottom: 12px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: 0.5px;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        font-weight: 600;
+        letter-spacing: -0.3px;        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .subtitle {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      margin-bottom: 40px;
-      line-height: 1.7;
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin-bottom: 35px;
+        line-height: 1.6;
+        font-weight: 300;
     }
 
-    /* Кнопка */
+    /* Кнопка в стиле list.html */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 18px 40px;
-      border-radius: 16px;
-      font-size: 1.15rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      border: none;
-      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-      color: #ffffff;      box-shadow: 0 8px 25px var(--shadow);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-size: 1.05rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--glass-border);
+        background: var(--hover-bg);
+        color: var(--text-main);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--accent), var(--accent-secondary));
+        opacity: 0;
+        transition: opacity 0.2s ease;
     }
 
     .btn:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 35px var(--shadow);
+        background: var(--hover-bg);
+        padding-left: 1.7rem;
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);        border-color: var(--accent-secondary);
+    }
+    
+    .btn:hover::before {
+        opacity: 1;
     }
 
     .btn i {
-      font-size: 1.3rem;
+        font-size: 1.1rem;
+        color: var(--accent);
+        transition: color 0.2s ease;
+        text-shadow: 0 0 10px rgba(253, 224, 71, 0.3);
+    }
+    
+    .btn:hover i {
+        color: var(--accent-secondary);
+        text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
     }
 
     /* Футер */
     .footer {
-      margin-top: 45px;
-      padding-top: 25px;
-      border-top: 1px solid var(--glass-border);
-      color: var(--text-muted);
-      font-size: 0.9rem;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid var(--glass-border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 300;
+        letter-spacing: 0.3px;
     }
-
+    
     .footer a {
-      color: var(--accent);
-      text-decoration: none;
-      transition: color 0.3s;
-      font-weight: 500;
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        font-weight: 400;
     }
-
+    
     .footer a:hover {
-      color: var(--accent-hover);
+        color: var(--accent-secondary);
     }
 
     .social-links {
-      display: flex;
-      justify-content: center;
-      gap: 18px;
-      margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
     }
 
     .social-links a {
-      width: 42px;
-      height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      background: rgba(25, 118, 210, 0.1);
-      border: 1px solid var(--glass-border);
-      color: var(--accent);
-      transition: all 0.3s;      font-size: 1.1rem;
+        width: 38px;        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(253, 224, 71, 0.1);
+        border: 1px solid var(--glass-border);
+        color: var(--accent);
+        transition: all 0.25s ease;
+        font-size: 1rem;
     }
 
     .social-links a:hover {
-      background: var(--accent);
-      color: #ffffff;
-      transform: translateY(-4px);
+        background: var(--hover-bg);
+        color: var(--accent-secondary);
+        border-color: var(--accent-secondary);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
     }
 
     /* Декоративная линия */
     .divider {
-      width: 60px;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-light));
-      margin: 20px auto;
-      border-radius: 2px;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        margin: 12px auto;
+        border-radius: 2px;
+        opacity: 0.8;
     }
 
     /* Адаптив */
     @media (max-width: 600px) {
-      .card { padding: 35px 25px; }
-      h1 { font-size: 1.7rem; }
-      .subtitle { font-size: 0.95rem; }
-      .icon-wrapper { width: 90px; height: 90px; }
-      .icon-wrapper i { font-size: 2.6rem; }
-      .btn { padding: 15px 30px; font-size: 1rem; }
+        .card { padding: 35px 25px; }
+        h1 { font-size: 1.5rem; }
+        .subtitle { font-size: 0.95rem; }
+        .icon-wrapper { width: 75px; height: 75px; }
+        .icon-wrapper i { font-size: 2rem; }
+        .btn { padding: 12px 26px; font-size: 0.95rem; }
     }
-  </style>
+    </style>
 </head>
 <body>
-  <!-- Анимированный фон -->
-  <div class="bg-animation">
-    <span></span><span></span><span></span><span></span><span></span>
-  </div>
+    <div class="card">
+        <!-- Иконка -->
+        <div class="icon-wrapper">
+            <i class="fas fa-cloud"></i>
+        </div>
 
-  <div class="card">
-    <!-- Иконка -->
-    <div class="icon-wrapper">
-      <i class="fas fa-cloud"></i>
+        <!-- Заголовок -->
+        <h1>Хранилище файлов</h1>        <div class="divider"></div>
+        <p class="subtitle">
+            Доступ к вашим файлам в одном месте.<br>
+            Быстро, удобно, безопасно.
+        </p>
+
+        <!-- Кнопка -->
+        <a href="https://19-sandy.vercel.app/files" class="btn">
+            <i class="fas fa-folder-open"></i>
+            Открыть файлы
+        </a>
+
+        <!-- Футер -->
+        <div class="footer">
+            <p></> Coded with love by <a href="https://github.com/iraplotko37-sketch">Mark</a></p>
+            <p style="margin-top: 8px; opacity: 0.7;">© 2026 19-sandy</p>
+            
+            <div class="social-links">
+                <a href="https://github.com/iraplotko37-sketch/-19" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="mailto:iraplotko37@gmail.com" title="Email">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+        </div>
     </div>
-
-    <!-- Заголовок -->
-    <h1>📁 19-sandy</h1>
-    <div class="divider"></div>
-    <p class="subtitle">
-      Добро пожаловать в ваше файловое хранилище.<br>
-      Быстрый доступ ко всем вашим файлам в одном месте.
-    </p>
-
-    <!-- Кнопка -->    <a href="list.html" class="btn">
-      <i class="fas fa-folder-open"></i>
-      Открыть файлы
-    </a>
-
-    <!-- Футер -->
-    <div class="footer">
-      <p>Coded with ❤️ by <a href="https://github.com/iraplotko37-sketch">Plotko Mark</a></p>
-      <p style="margin-top: 8px; opacity: 0.6;">© 2026 19-sandy</p>
-      
-      <div class="social-links">
-        <a href="https://github.com/iraplotko37-sketch/-19" title="GitHub"><i class="fab fa-github"></i></a>
-        <a href="mailto:admin@flurion.qzz.io" title="Email"><i class="fas fa-envelope"></i></a>
-        <a href="chat.html" title="Чат"><i class="fas fa-comments"></i></a>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
