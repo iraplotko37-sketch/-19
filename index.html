@@ -4,9 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Хранилище файлов</title>
+    
+    <!-- 🔖 Полный набор favicon -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/favicon-144x144.png">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- 📚 Стили и шрифты -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
     <style>
     :root {
         /* 🍋 Lemon & 💙 Cyan Palette — стиль /files */
@@ -19,13 +41,13 @@
         --hover-bg: rgba(253, 224, 71, 0.15);
         --hover-glow: rgba(56, 189, 248, 0.35);
         --shadow-color: rgba(0, 0, 0, 0.4);
+        --circle-bg: #000000; /* ⚫ Чёрный круг для favicon */
     }
     
     * {
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
-    }
+        box-sizing: border-box;    }
 
     body {
         font-family: 'Outfit', sans-serif;
@@ -47,7 +69,8 @@
     .card {
         background: var(--glass-bg);
         backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);        border: 1px solid var(--glass-border);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
         border-radius: 20px;
         padding: 45px 35px;
         max-width: 480px;
@@ -73,30 +96,31 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 🖼️ Favicon Wrapper — замена облака */
-    .icon-wrapper {
+    /* ⚫ Чёрный круг для favicon */    .icon-wrapper {
         width: 90px;
         height: 90px;
         margin: 0 auto 20px;
-        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        background: var(--circle-bg); /* Чёрный фон */
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
-        padding: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        padding: 14px;
+        border: 2px solid var(--glass-border);
     }
 
     .icon-wrapper img {
         width: 100%;
         height: 100%;
         object-fit: contain;
-        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
     }
 
     /* Заголовок с градиентом */
     h1 {
-        font-size: 1.8rem;        margin-bottom: 10px;
+        font-size: 1.8rem;
+        margin-bottom: 10px;
         font-weight: 600;
         letter-spacing: -0.3px;
         background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
@@ -121,8 +145,7 @@
         gap: 10px;
         padding: 14px 32px;
         border-radius: 12px;
-        font-size: 1.05rem;
-        font-weight: 500;
+        font-size: 1.05rem;        font-weight: 500;
         text-decoration: none;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         border: 1px solid var(--glass-border);
@@ -145,7 +168,8 @@
     }
 
     .btn:hover {
-        background: var(--hover-bg);        padding-left: 1.7rem;
+        background: var(--hover-bg);
+        padding-left: 1.7rem;
         color: #fff;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
         border-color: var(--accent-secondary);
@@ -170,8 +194,7 @@
     /* Футер */
     .footer {
         margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid var(--glass-border);
+        padding-top: 20px;        border-top: 1px solid var(--glass-border);
         color: var(--text-muted);
         font-size: 0.85rem;
         font-weight: 300;
@@ -195,6 +218,7 @@
         gap: 15px;
         margin-top: 15px;
     }
+
     .social-links a {
         width: 38px;
         height: 38px;
@@ -219,8 +243,7 @@
 
     /* Декоративная линия */
     .divider {
-        width: 60px;
-        height: 2px;
+        width: 60px;        height: 2px;
         background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
         margin: 12px auto;
         border-radius: 2px;
@@ -232,17 +255,18 @@
         .card { padding: 35px 25px; }
         h1 { font-size: 1.5rem; }
         .subtitle { font-size: 0.95rem; }
-        .icon-wrapper { width: 75px; height: 75px; }
+        .icon-wrapper { width: 75px; height: 75px; padding: 10px; }
         .btn { padding: 12px 26px; font-size: 0.95rem; }
     }
     </style>
 </head>
 <body>
     <div class="card">
-        <!-- 🖼️ Ваш favicon вместо облака -->
+        <!-- ⚫ Чёрный круг с вашим favicon -->
         <div class="icon-wrapper">
-            <img src="favicon.ico" alt="favicon">
+            <img src="/favicon.ico" alt="favicon">
         </div>
+
         <!-- Заголовок -->
         <h1>Хранилище файлов</h1>
         <div class="divider"></div>
@@ -268,9 +292,8 @@
                 </a>
                 <a href="mailto:iraplotko37@gmail.com" title="Email">
                     <i class="fas fa-envelope"></i>
-                </a>
-            </div>
+                </a>            </div>
         </div>
     </div>
 </body>
-</html>
+    </html>
