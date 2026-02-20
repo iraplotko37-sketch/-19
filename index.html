@@ -6,9 +6,10 @@
     <title>Хранилище файлов</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
     :root {
-        /* 🍋 Lemon & 💙 Cyan Palette — точная копия стиля /files */
+        /* 🍋 Lemon & 💙 Cyan Palette — стиль /files */
         --glass-bg: rgba(253, 224, 71, 0.08);
         --glass-border: rgba(56, 189, 248, 0.25);
         --text-main: #FFFFFF;
@@ -42,12 +43,12 @@
         background-attachment: fixed;
     }
 
-    /* Liquid Glass Card — как в list.html */
+    /* Liquid Glass Card */
     .card {
         background: var(--glass-bg);
         backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-        border: 1px solid var(--glass-border);        border-radius: 20px;
+        -webkit-backdrop-filter: blur(25px);        border: 1px solid var(--glass-border);
+        border-radius: 20px;
         padding: 45px 35px;
         max-width: 480px;
         width: 100%;
@@ -72,7 +73,7 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Иконка в стиле акцентов */
+    /* 🖼️ Favicon Wrapper — замена облака */
     .icon-wrapper {
         width: 90px;
         height: 90px;
@@ -83,20 +84,22 @@
         align-items: center;
         justify-content: center;
         box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+        padding: 12px;
     }
 
-    .icon-wrapper i {
-        font-size: 2.5rem;
-        color: #0f172a;
-        text-shadow: 0 2px 10px rgba(253, 224, 71, 0.3);
+    .icon-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
     }
 
-    /* Заголовок с градиентом как в list.html */
+    /* Заголовок с градиентом */
     h1 {
-        font-size: 1.8rem;
-        margin-bottom: 10px;
+        font-size: 1.8rem;        margin-bottom: 10px;
         font-weight: 600;
-        letter-spacing: -0.3px;        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        letter-spacing: -0.3px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -142,10 +145,10 @@
     }
 
     .btn:hover {
-        background: var(--hover-bg);
-        padding-left: 1.7rem;
+        background: var(--hover-bg);        padding-left: 1.7rem;
         color: #fff;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);        border-color: var(--accent-secondary);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        border-color: var(--accent-secondary);
     }
     
     .btn:hover::before {
@@ -192,9 +195,9 @@
         gap: 15px;
         margin-top: 15px;
     }
-
     .social-links a {
-        width: 38px;        height: 38px;
+        width: 38px;
+        height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -230,20 +233,19 @@
         h1 { font-size: 1.5rem; }
         .subtitle { font-size: 0.95rem; }
         .icon-wrapper { width: 75px; height: 75px; }
-        .icon-wrapper i { font-size: 2rem; }
         .btn { padding: 12px 26px; font-size: 0.95rem; }
     }
     </style>
 </head>
 <body>
     <div class="card">
-        <!-- Иконка -->
+        <!-- 🖼️ Ваш favicon вместо облака -->
         <div class="icon-wrapper">
-            <i class="fas fa-cloud"></i>
+            <img src="favicon.ico" alt="favicon">
         </div>
-
         <!-- Заголовок -->
-        <h1>Хранилище файлов</h1>        <div class="divider"></div>
+        <h1>Хранилище файлов</h1>
+        <div class="divider"></div>
         <p class="subtitle">
             Доступ к вашим файлам в одном месте.<br>
             Быстро, удобно, безопасно.
