@@ -1,219 +1,264 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приветствие от Флуриона</title>
-    <meta name="description" content="Официальная страница приветствия от Флуриона. Свяжитесь с нами.">
-    <link rel="canonical" href="https://flurion.qzz.io/">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📁 19-sandy — Файловое хранилище</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="icon" href="favicon.ico" type="image/x-icon"/>
+  
+  <style>
+    :root {
+      --bg-gradient-1: #e3f2fd;
+      --bg-gradient-2: #bbdefb;
+      --bg-gradient-3: #90caf9;
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(25, 118, 210, 0.2);
+      --accent: #1976d2;
+      --accent-hover: #1565c0;
+      --accent-light: #64b5f6;
+      --text: #1a237e;
+      --text-muted: #546e7a;
+      --shadow: rgba(25, 118, 210, 0.15);
+    }
 
-    <!-- 
-      SECURITY: Content Security Policy (CSP)
-      - connect-src: Added 'https://pagead2.googlesyndication.com' so we can test if uBlock blocks it.
-    -->
-    <meta http-equiv="Content-Security-Policy" 
-          content="default-src 'self'; 
-                   script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; 
-                   style-src 'self' 'unsafe-inline'; 
-                   img-src 'self' data: https://flurion.qzz.io; 
-                   connect-src 'self' https://cloudflareinsights.com https://pagead2.googlesyndication.com;">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <!-- Open Graph / Discord -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://flurion.qzz.io/">
-    <meta property="og:title" content="Приветствие от Флуриона">
-    <meta property="og:description" content="Просто приветствие от Флуриона.">
-    <meta property="og:image" content="https://flurion.qzz.io/images/main_page.png">
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-1), var(--bg-gradient-2), var(--bg-gradient-3));
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
 
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="https://flurion.qzz.io/">
-    <meta name="twitter:title" content="Приветствие от Флуриона">
-    <meta name="twitter:description" content="Просто приветствие от Флуриона.">
-    <meta name="twitter:image" content="https://flurion.qzz.io/images/main_page.png">
+    /* Анимированные пузыри на фоне */
+    .bg-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;      z-index: -1;
+      overflow: hidden;
+    }
 
-    <!-- Favicons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    .bg-animation span {
+      position: absolute;
+      display: block;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: float 20s infinite;
+      bottom: -100px;
+    }
 
-    <style>
-        :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-primary: #2c3e50;
-            --text-secondary: #555555;
-            --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --font-stack: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+    .bg-animation span:nth-child(1) { left: 10%; width: 60px; height: 60px; animation-delay: 0s; }
+    .bg-animation span:nth-child(2) { left: 30%; width: 40px; height: 40px; animation-delay: 3s; }
+    .bg-animation span:nth-child(3) { left: 50%; width: 80px; height: 80px; animation-delay: 6s; }
+    .bg-animation span:nth-child(4) { left: 70%; width: 50px; height: 50px; animation-delay: 9s; }
+    .bg-animation span:nth-child(5) { left: 90%; width: 70px; height: 70px; animation-delay: 12s; }
 
-        body {
-            font-family: var(--font-stack);
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+      100% { transform: translateY(-1200px) rotate(360deg); opacity: 0; }
+    }
 
-        main {
-            text-align: center;
-            width: 100%;
-            max-width: 600px;
-        }
+    /* Карточка */
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 50px 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px var(--shadow);
+      text-align: center;
+      animation: slideUp 0.8s ease-out;
+    }
 
-        .greeting {
-            font-size: 2.5rem;
-            font-weight: 700;
-            padding: 30px;
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: var(--shadow-soft);
-            margin-bottom: 24px;
-            word-wrap: break-word; 
-        }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        .contact-box {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-soft);
-            line-height: 1.6;
-        }
+    /* Иконка */
+    .icon-wrapper {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto 25px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px var(--shadow);
+      animation: gentlePulse 3s infinite;
+    }
 
-        address {
-            font-style: normal;
-        }
+    @keyframes gentlePulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 10px 30px var(--shadow); }
+      50% { transform: scale(1.03); box-shadow: 0 15px 40px var(--shadow); }
+    }
 
-        a {
-            color: var(--text-primary);
-            text-decoration: underline;
-        }
+    .icon-wrapper i {
+      font-size: 3.2rem;
+      color: #ffffff;
+    }
 
-        a:hover {
-            color: #000;
-        }
+    /* Заголовки */
+    h1 {
+      font-size: 2.1rem;
+      margin-bottom: 12px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.5px;
+    }
 
-        @media (max-width: 600px) {
-            .greeting {
-                font-size: 1.8rem;
-                padding: 20px;
-            }
-            .contact-box {
-                font-size: 0.9rem;
-            }
-        }
-    </style>
-    <meta name="yandex-verification" content="ab165053c594d870" />
-    <meta name="google-site-verification" content="vg-e62kGuu7KsQNtXRCf7C79_hynvgUjJ0TIBVrgLRQ" />
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+
+    /* Кнопка */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 18px 40px;
+      border-radius: 16px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: #ffffff;      box-shadow: 0 8px 25px var(--shadow);
+    }
+
+    .btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 35px var(--shadow);
+    }
+
+    .btn i {
+      font-size: 1.3rem;
+    }
+
+    /* Футер */
+    .footer {
+      margin-top: 45px;
+      padding-top: 25px;
+      border-top: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.3s;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      color: var(--accent-hover);
+    }
+
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .social-links a {
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: rgba(25, 118, 210, 0.1);
+      border: 1px solid var(--glass-border);
+      color: var(--accent);
+      transition: all 0.3s;      font-size: 1.1rem;
+    }
+
+    .social-links a:hover {
+      background: var(--accent);
+      color: #ffffff;
+      transform: translateY(-4px);
+    }
+
+    /* Декоративная линия */
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      margin: 20px auto;
+      border-radius: 2px;
+    }
+
+    /* Адаптив */
+    @media (max-width: 600px) {
+      .card { padding: 35px 25px; }
+      h1 { font-size: 1.7rem; }
+      .subtitle { font-size: 0.95rem; }
+      .icon-wrapper { width: 90px; height: 90px; }
+      .icon-wrapper i { font-size: 2.6rem; }
+      .btn { padding: 15px 30px; font-size: 1rem; }
+    }
+  </style>
 </head>
 <body>
-    <main>
-        <h1 class="greeting">Привет, Мир, от Флуриона!</h1>
-        
-        <footer class="contact-box">
-            <address>
-                Почта: <a href="mailto:admin@flurion.qzz.io">admin@flurion.qzz.io</a><br>
-                Все ответы будут приходить с <strong>flurion@tuta.io</strong>!
-            </address>
-        </footer>
-    </main>
+  <!-- Анимированный фон -->
+  <div class="bg-animation">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 
-    <!-- ========================================== -->
-    <!-- AdBlock Detection Module (uBlock Origin)   -->
-    <!-- ========================================== -->
-    <style>
-        .ab-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2147483647;display:none;justify-content:center;align-items:center;opacity:0;transition:opacity .3s ease}.ab-modal-content{background:#fff;color:#333;padding:30px;border-radius:16px;max-width:450px;width:90%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.5);transform:translateY(20px);transition:transform .3s ease;font-family:'Segoe UI',system-ui,sans-serif}.ab-modal-icon{font-size:3rem;margin-bottom:15px;display:block}.ab-modal-title{font-size:1.5rem;font-weight:700;margin-bottom:10px;color:#e74c3c}.ab-modal-text{font-size:1rem;line-height:1.5;margin-bottom:25px;color:#555}.ab-btn{background:#e74c3c;color:#fff;border:none;padding:12px 25px;font-size:1rem;border-radius:8px;cursor:pointer;transition:background .2s;font-weight:600}.ab-btn:hover{background:#c0392b}.ab-btn-secondary{background:0 0;color:#777;margin-top:10px;font-size:.9rem;text-decoration:underline;border:none;cursor:pointer}.ab-modal-overlay.active{display:flex;opacity:1}.ab-modal-overlay.active .ab-modal-content{transform:translateY(0)}
-    </style>
-    <div id="ab-modal" class="ab-modal-overlay">
-        <div class="ab-modal-content">
-            <span class="ab-modal-icon">❤️</span>
-            <div class="ab-modal-title">Пожалуйста, отключите AdBlock</div>
-            <div class="ab-modal-text">Мы заметили, что вы используете блокировщик рекламы. Пожалуйста, добавьте наш сайт в белый список для корректной работы.</div>
-            <button class="ab-btn" onclick="location.reload()">Я отключил, обновить</button><br>
-            <button class="ab-btn ab-btn-secondary" id="ab-close">Продолжить с AdBlock :(</button>
-        </div>
+  <div class="card">
+    <!-- Иконка -->
+    <div class="icon-wrapper">
+      <i class="fas fa-cloud"></i>
     </div>
-    <script>
-        (function(){
-            const KEY = "ab_warning_dismissed";
-            const HOURS = 24;
 
-            function isSnoozed() {
-                const record = localStorage.getItem(KEY);
-                if (!record) return false;
-                const { timestamp } = JSON.parse(record);
-                return (new Date().getTime() - timestamp) < (HOURS * 60 * 60 * 1000);
-            }
+    <!-- Заголовок -->
+    <h1>📁 19-sandy</h1>
+    <div class="divider"></div>
+    <p class="subtitle">
+      Добро пожаловать в ваше файловое хранилище.<br>
+      Быстрый доступ ко всем вашим файлам в одном месте.
+    </p>
 
-            function snooze() {
-                localStorage.setItem(KEY, JSON.stringify({ timestamp: new Date().getTime() }));
-                document.getElementById("ab-modal").classList.remove("active");
-            }
+    <!-- Кнопка -->    <a href="list.html" class="btn">
+      <i class="fas fa-folder-open"></i>
+      Открыть файлы
+    </a>
 
-            function showModal() {
-                if (isSnoozed()) return;
-                const modal = document.getElementById("ab-modal");
-                modal.classList.add("active");
-                document.getElementById("ab-close").addEventListener("click", snooze);
-                modal.addEventListener("click", (e) => { if(e.target === modal) snooze(); });
-            }
-
-            async function detect() {
-                let blocked = false;
-
-                // TRAP 1: The "EasyList" CSS Trap
-                // uBlock Origin applies "display: none !important" to the class ".adsbygoogle"
-                const bait = document.createElement("div");
-                bait.setAttribute("class", "adsbygoogle"); 
-                bait.style.cssText = "width: 300px; height: 250px; position: absolute; left: -9999px; top: -9999px;";
-                document.body.appendChild(bait);
-
-                // We need a small delay because uBlock injects styles asynchronously
-                await new Promise(r => setTimeout(r, 100));
-
-                const baitStyle = window.getComputedStyle(bait);
-                if (baitStyle.display === "none" || baitStyle.visibility === "hidden" || bait.offsetHeight === 0) {
-                    blocked = true;
-                }
-                document.body.removeChild(bait);
-
-                // TRAP 2: The "Network" Trap
-                // We try to ping Google's AdSense server. uBlock will kill this request.
-                // Note: We used mode: 'no-cors' to avoid CORS errors, we just want to see if it fails.
-                if (!blocked) {
-                    try {
-                        await fetch('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', { 
-                            method: 'HEAD', 
-                            mode: 'no-cors',
-                            cache: 'no-store'
-                        });
-                    } catch (e) {
-                        // If fetch throws an error, it was blocked by the client (uBlock)
-                        blocked = true;
-                    }
-                }
-
-                if (blocked) showModal();
-            }
-
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", detect);
-            } else {
-                detect();
-            }
-        })();
-    </script>
-
-    <!-- Cloudflare Web Analytics -->
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "c1b91c652b52406e8d7877ab3ee24a14"}'></script>
+    <!-- Футер -->
+    <div class="footer">
+      <p>Coded with ❤️ by <a href="https://github.com/iraplotko37-sketch">Plotko Mark</a></p>
+      <p style="margin-top: 8px; opacity: 0.6;">© 2026 19-sandy</p>
+      
+      <div class="social-links">
+        <a href="https://github.com/iraplotko37-sketch/-19" title="GitHub"><i class="fab fa-github"></i></a>
+        <a href="mailto:admin@flurion.qzz.io" title="Email"><i class="fas fa-envelope"></i></a>
+        <a href="chat.html" title="Чат"><i class="fas fa-comments"></i></a>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
