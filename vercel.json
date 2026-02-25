@@ -1,9 +1,25 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/List.html" },
-    { "source": "/list", "destination": "/List.html" },
-    { "source": "/List", "destination": "/List.html" },
-    { "source": "/(.*)", "destination": "/api/error?code=404" }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/list", "destination": "/list.html" },
+    { "source": "/List", "destination": "/list.html" },
+    { "source": "/files", "destination": "/list.html" },
+    { "source": "/converter", "destination": "/converter.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Embedder-Policy",
+          "value": "require-corp"
+        }
+      ]
+    }
   ]
 }
