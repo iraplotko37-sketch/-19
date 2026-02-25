@@ -19,6 +19,7 @@
         --shadow-color: rgba(0, 0, 0, 0.4);
         --success: #4ade80;
         --error: #f87171;
+        --warning: #fbbf24;
     }
     
     * {
@@ -42,7 +43,6 @@
         background-attachment: fixed;
     }
 
-    /* Карточка в стиле /files */
     .card {
         background: var(--glass-bg);
         backdrop-filter: blur(25px);
@@ -64,7 +64,6 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Иконка */
     .icon-wrapper {
         width: 90px;
         height: 90px;
@@ -82,7 +81,6 @@
         color: #0f172a;
     }
 
-    /* Заголовок */
     h1 {
         font-size: 1.8rem;
         margin-bottom: 10px;
@@ -96,10 +94,9 @@
     .subtitle {
         color: var(--text-muted);
         font-size: 1rem;
-        margin-bottom: 30px;        line-height: 1.6;
+        margin-bottom: 30px;
+        line-height: 1.6;
     }
-
-    /* Зона загрузки */
     .drop-zone {
         border: 2px dashed var(--glass-border);
         border-radius: 16px;
@@ -130,7 +127,6 @@
         display: none;
     }
 
-    /* Прогресс бар */
     .progress-container {
         display: none;
         margin: 20px 0;
@@ -145,18 +141,17 @@
     }
 
     .progress-fill {
-        height: 100%;        background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
         width: 0%;
         transition: width 0.3s ease;
-        border-radius: 4px;
-    }
+        border-radius: 4px;    }
 
     .progress-text {
         color: var(--text-muted);
         font-size: 0.9rem;
     }
 
-    /* Кнопки */
     .btn {
         display: inline-flex;
         align-items: center;
@@ -194,13 +189,12 @@
         border: none;
     }
 
-    .btn-primary:hover {        box-shadow: 0 6px 25px rgba(253, 224, 71, 0.4);
+    .btn-primary:hover {
+        box-shadow: 0 6px 25px rgba(253, 224, 71, 0.4);
     }
 
-    /* Сообщение о статусе */
     .status-message {
-        display: none;
-        padding: 15px;
+        display: none;        padding: 15px;
         border-radius: 12px;
         margin: 20px 0;
         font-size: 0.95rem;
@@ -218,7 +212,12 @@
         color: var(--error);
     }
 
-    /* Информация о файле */
+    .status-message.warning {
+        background: rgba(251, 191, 36, 0.15);
+        border: 1px solid var(--warning);
+        color: var(--warning);
+    }
+
     .file-info {
         display: none;
         background: rgba(255, 255, 255, 0.05);
@@ -243,12 +242,11 @@
     .file-info-label {
         color: var(--text-muted);
     }
-    .file-info-value {
-        color: var(--text-main);
+
+    .file-info-value {        color: var(--text-main);
         font-weight: 500;
     }
 
-    /* Футер */
     .footer {
         margin-top: 30px;
         padding-top: 20px;
@@ -292,7 +290,20 @@
         transform: translateY(-2px);
     }
 
-    /* Адаптив */    @media (max-width: 600px) {
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;        height: 20px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: var(--accent);
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
         .card { padding: 30px 20px; }
         h1 { font-size: 1.5rem; }
         .drop-zone { padding: 30px 15px; }
@@ -302,34 +313,35 @@
 </head>
 <body>
     <div class="card">
-        <!-- Иконка -->
         <div class="icon-wrapper">
             <i class="fas fa-music"></i>
         </div>
 
-        <!-- Заголовок -->
         <h1>Конвертер видео в MP3</h1>
         <p class="subtitle">
-            Быстро и бесплатно конвертируйте видео в аудиоформат MP3.<br>
+            Конвертируйте видео в аудио прямо в браузере.<br>
             Поддерживаются: MP4, AVI, MKV, MOV, WEBM
         </p>
 
-        <!-- Зона загрузки -->
+        <!-- Предупреждение о загрузке FFmpeg -->
+        <div class="status-message warning" id="loadWarning">
+            <i class="fas fa-info-circle"></i>
+            Первая загрузка может занять 30-60 секунд (загружается FFmpeg ~25MB)
+        </div>
+
         <label class="drop-zone" id="dropZone">
             <i class="fas fa-cloud-upload-alt"></i>
             <p><strong>Перетащите видео сюда</strong><br>или нажмите для выбора файла</p>
             <input type="file" id="fileInput" accept="video/*,.mp4,.avi,.mkv,.mov,.webm">
         </label>
 
-        <!-- Информация о файле -->
         <div class="file-info" id="fileInfo">
             <div class="file-info-row">
                 <span class="file-info-label">📁 Имя файла:</span>
                 <span class="file-info-value" id="fileName">-</span>
             </div>
             <div class="file-info-row">
-                <span class="file-info-label">📏 Размер:</span>
-                <span class="file-info-value" id="fileSize">-</span>
+                <span class="file-info-label">📏 Размер:</span>                <span class="file-info-value" id="fileSize">-</span>
             </div>
             <div class="file-info-row">
                 <span class="file-info-label">🎬 Формат:</span>
@@ -337,17 +349,17 @@
             </div>
         </div>
 
-        <!-- Прогресс -->
         <div class="progress-container" id="progressContainer">
-            <div class="progress-text" id="progressText">Конвертация...</div>
+            <div class="progress-text" id="progressText">
+                <span class="loading-spinner"></span> Инициализация FFmpeg...
+            </div>
             <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>            </div>
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
         </div>
 
-        <!-- Сообщение о статусе -->
         <div class="status-message" id="statusMessage"></div>
 
-        <!-- Кнопки -->
         <div style="margin-top: 20px;">
             <button class="btn btn-primary" id="convertBtn" disabled>
                 <i class="fas fa-sync-alt"></i>
@@ -362,7 +374,6 @@
             </a>
         </div>
 
-        <!-- Футер -->
         <div class="footer">
             <p></> Coded with love by <a href="https://github.com/iraplotko37-sketch">Mark</a></p>
             <p style="margin-top: 8px; opacity: 0.7;">© 2026 19-sandy</p>
@@ -375,144 +386,219 @@
         </div>
     </div>
 
-    <!-- Скрипт конвертации (используем API) -->
-    <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const fileSize = document.getElementById('fileSize');
-        const fileFormat = document.getElementById('fileFormat');
-        const convertBtn = document.getElementById('convertBtn');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const statusMessage = document.getElementById('statusMessage');
+    <!-- FFmpeg.wasm -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    
+    <script>    const { FFmpeg } = FFmpegWASM;
+    const { fetchFile } = FFmpegUtil;
 
-        let selectedFile = null;
-        // Клик по зоне → выбор файла
-        dropZone.addEventListener('click', () => fileInput.click());
+    let ffmpeg = null;
+    let isLoaded = false;
 
-        // Drag & Drop
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, e => {
-                e.preventDefault();
-                e.stopPropagation();
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileFormat = document.getElementById('fileFormat');
+    const convertBtn = document.getElementById('convertBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const statusMessage = document.getElementById('statusMessage');
+    const loadWarning = document.getElementById('loadWarning');
+
+    let selectedFile = null;
+
+    // Инициализация FFmpeg
+    async function loadFFmpeg() {
+        if (isLoaded) return true;
+
+        try {
+            progressContainer.style.display = 'block';
+            progressText.innerHTML = '<span class="loading-spinner"></span> Загрузка FFmpeg...';
+            progressFill.style.width = '30%';
+
+            ffmpeg = new FFmpeg();
+
+            ffmpeg.on('log', ({ message }) => {
+                console.log(message);
             });
-        });
-        ['dragenter', 'dragover'].forEach(evt => {
-            dropZone.addEventListener(evt, () => dropZone.classList.add('dragover'));
-        });
-        ['dragleave', 'drop'].forEach(evt => {
-            dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
-        });
-        dropZone.addEventListener('drop', e => {
-            const files = e.dataTransfer.files;
-            if (files.length) handleFile(files[0]);
-        });
 
-        fileInput.addEventListener('change', e => {
-            if (e.target.files[0]) handleFile(e.target.files[0]);
+            ffmpeg.on('progress', ({ progress }) => {
+                const percent = Math.round(progress * 100);
+                progressFill.style.width = percent + '%';
+                progressText.textContent = `Конвертация... ${percent}%`;
+            });
+
+            await ffmpeg.load({
+                coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+            });
+
+            isLoaded = true;
+            loadWarning.style.display = 'none';
+            progressContainer.style.display = 'none';
+                        showStatus('✅ FFmpeg загружен! Теперь можно конвертировать.', 'success');
+            return true;
+
+        } catch (error) {
+            console.error('FFmpeg load error:', error);
+            showStatus('❌ Ошибка загрузки FFmpeg: ' + error.message, 'error');
+            progressContainer.style.display = 'none';
+            return false;
+        }
+    }
+
+    // Загрузка FFmpeg при открытии страницы
+    window.addEventListener('load', () => {
+        loadFFmpeg();
+    });
+
+    // Клик по зоне → выбор файла
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Drag & Drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, e => {
+            e.preventDefault();
+            e.stopPropagation();
         });
+    });
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropZone.addEventListener(evt, () => dropZone.classList.add('dragover'));
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
+    });
+    dropZone.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
+        if (files.length) handleFile(files[0]);
+    });
 
-        function handleFile(file) {
-            // Проверка типа файла
-            const validTypes = ['video/mp4', 'video/x-msvideo', 'video/x-matroska', 'video/quicktime', 'video/webm'];
-            const validExtensions = ['.mp4', '.avi', '.mkv', '.mov', '.webm'];
-            
-            const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
-            const hasValidType = validTypes.includes(file.type) || file.type.startsWith('video/');
+    fileInput.addEventListener('change', e => {
+        if (e.target.files[0]) handleFile(e.target.files[0]);
+    });
 
-            if (!hasValidType && !hasValidExtension) {
-                showStatus('❌ Unsupported file format. Please upload MP4, AVI, MKV, MOV, or WEBM.', 'error');
-                return;
-            }
+    function handleFile(file) {
+        const validTypes = ['video/mp4', 'video/x-msvideo', 'video/x-matroska', 'video/quicktime', 'video/webm'];
+        const validExtensions = ['.mp4', '.avi', '.mkv', '.mov', '.webm'];
+        
+        const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        const hasValidType = validTypes.includes(file.type) || file.type.startsWith('video/');
 
-            // Проверка размера (макс. 100 MB)
-            const maxSize = 100 * 1024 * 1024;
-            if (file.size > maxSize) {
-                showStatus('❌ File too large. Maximum size is 100 MB.', 'error');
-                return;
-            }
-
-            selectedFile = file;
-            
-            // Отображение информации
-            fileName.textContent = file.name;
-            fileSize.textContent = formatSize(file.size);            fileFormat.textContent = file.name.split('.').pop().toUpperCase();
-            fileInfo.style.display = 'block';
-            
-            // Активация кнопки
-            convertBtn.disabled = false;
-            hideStatus();
+        if (!hasValidType && !hasValidExtension) {
+            showStatus('❌ Неподдерживаемый формат. Загрузите MP4, AVI, MKV, MOV или WEBM.', 'error');            return;
         }
 
-        // Конвертация
-        convertBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
+        // Макс. 500 MB для браузерной конвертации
+        const maxSize = 500 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showStatus('❌ Файл слишком большой. Максимум 500 MB.', 'error');
+            return;
+        }
 
-            // UI обновления
-            convertBtn.disabled = true;
-            progressContainer.style.display = 'block';
-            hideStatus();
+        selectedFile = file;
+        
+        fileName.textContent = file.name;
+        fileSize.textContent = formatSize(file.size);
+        fileFormat.textContent = file.name.split('.').pop().toUpperCase();
+        fileInfo.style.display = 'block';
+        
+        convertBtn.disabled = false;
+        hideStatus();
+    }
 
-            try {
-                // Имитация прогресса (так как реальная конвертация требует сервера)
-                await simulateConversion();
-                
-                // Для реальной конвертации используйте один из вариантов ниже:
-                // Вариант 1: Online-Convert API
-                // Вариант 2: FFmpeg.wasm (клиентская конвертация)
-                // Вариант 3: Свой сервер с FFmpeg
+    // Конвертация
+    convertBtn.addEventListener('click', async () => {
+        if (!selectedFile || !isLoaded) return;
 
-                showStatus('✅ Конвертация завершена! (Демо-режим)', 'success');
-                
-            } catch (error) {
-                showStatus('❌ Ошибка конвертации: ' + error.message, 'error');
-            } finally {
-                convertBtn.disabled = false;
+        convertBtn.disabled = true;
+        progressContainer.style.display = 'block';
+        progressFill.style.width = '0%';
+        hideStatus();
+
+        try {
+            progressText.innerHTML = '<span class="loading-spinner"></span> Подготовка...';
+            progressFill.style.width = '10%';
+
+            // Запись файла в виртуальную файловую систему FFmpeg
+            const inputName = 'input.' + selectedFile.name.split('.').pop();
+            const outputName = 'output.mp3';
+
+            progressText.textContent = 'Запись файла...';
+            progressFill.style.width = '20%';
+
+            await ffmpeg.writeFile(inputName, await fetchFile(selectedFile));
+
+            progressText.textContent = 'Конвертация в MP3...';
+            progressFill.style.width = '30%';
+
+            // Запуск конвертации
+            await ffmpeg.exec([
+                '-i', inputName,
+                '-vn',                '-acodec', 'libmp3lame',
+                '-ab', '192k',
+                '-ar', '44100',
+                outputName
+            ]);
+
+            progressText.textContent = 'Чтение результата...';
+            progressFill.style.width = '90%';
+
+            // Чтение результата
+            const data = await ffmpeg.readFile(outputName);
+
+            progressFill.style.width = '100%';
+            progressText.textContent = 'Готово!';
+
+            // Создание ссылки для скачивания
+            const blob = new Blob([data.buffer], { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            
+            const downloadName = selectedFile.name.split('.').slice(0, -1).join('.') + '.mp3';
+
+            // Автоматическое скачивание
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = downloadName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            showStatus(`✅ Конвертация завершена! Файл <strong>${downloadName}</strong> скачан.`, 'success');
+
+            // Очистка
+            await ffmpeg.deleteFile(inputName);
+            await ffmpeg.deleteFile(outputName);
+
+        } catch (error) {
+            console.error('Conversion error:', error);
+            showStatus('❌ Ошибка конвертации: ' + error.message, 'error');
+        } finally {
+            convertBtn.disabled = false;
+            setTimeout(() => {
                 progressContainer.style.display = 'none';
                 progressFill.style.width = '0%';
-            }
-        });
-
-        // Имитация конвертации (замените на реальный API)
-        function simulateConversion() {
-            return new Promise((resolve) => {
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += Math.random() * 15;
-                    if (progress >= 100) {
-                        progress = 100;
-                        clearInterval(interval);
-                        progressText.textContent = 'Готово!';
-                        setTimeout(resolve, 500);
-                    } else {
-                        progressFill.style.width = progress + '%';                        progressText.textContent = `Конвертация... ${Math.round(progress)}%`;
-                    }
-                }, 300);
-            });
+            }, 2000);
         }
+    });
 
-        // Показать сообщение
-        function showStatus(text, type) {
-            statusMessage.textContent = text;
-            statusMessage.className = 'status-message ' + type;
-            statusMessage.style.display = 'block';
-        }
+    function showStatus(text, type) {
+        statusMessage.innerHTML = text;
+        statusMessage.className = 'status-message ' + type;        statusMessage.style.display = 'block';
+    }
 
-        // Скрыть сообщение
-        function hideStatus() {
-            statusMessage.style.display = 'none';
-        }
+    function hideStatus() {
+        statusMessage.style.display = 'none';
+    }
 
-        // Форматирование размера
-        function formatSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
-            return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB';
-        }
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+        return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+    }
     </script>
 </body>
-              </html>
+    </html>
