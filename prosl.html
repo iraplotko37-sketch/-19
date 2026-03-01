@@ -2,114 +2,131 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Secure Connect</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: #111; padding: 25px; border-radius: 15px; border: 1px solid #333; width: 350px; box-shadow: 0 0 20px rgba(0,255,65,0.1); }
-        button { background: #0070f3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        input { background: #000; border: 1px solid #444; color: #0f0; padding: 10px; width: calc(100% - 22px); margin-top: 10px; text-align: center; }
-        #display-id { font-size: 28px; color: #0f0; margin: 15px 0; font-family: monospace; display: none; border: 1px dashed #0f0; padding: 10px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .box { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; width: 90%; max-width: 380px; box-sizing: border-box; text-align: center; }
         
-        /* Стили чата */
-        #chat-window { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 15px; }
-        #messages { height: 150px; overflow-y: auto; background: #000; border: 1px solid #333; padding: 10px; font-size: 14px; margin-bottom: 10px; text-align: left; }
-        .msg { margin-bottom: 5px; color: #aaa; }
-        .msg.me { color: #0070f3; }
-        .msg.him { color: #0f0; }
+        h3 { margin-top: 0; color: #0070f3; user-select: none; }
+        
+        .btn { background: #0070f3; color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; margin: 10px 0; -webkit-tap-highlight-color: transparent; }
+        .btn:active { background: #0051ad; transform: scale(0.98); }
+        
+        input { background: #1a1a1a; border: 1px solid #444; color: #0f0; padding: 15px; width: 100%; border-radius: 10px; box-sizing: border-box; font-size: 18px; margin-bottom: 10px; text-align: center; }
+        
+        #display-id { font-size: 40px; color: #0f0; margin: 15px 0; font-family: monospace; font-weight: bold; letter-spacing: 5px; }
+        
+        #chat-window { display: none; flex-direction: column; height: 400px; }
+        #messages { flex-grow: 1; overflow-y: auto; background: #050505; border-radius: 10px; padding: 10px; margin-bottom: 10px; text-align: left; border: 1px solid #222; }
+        .msg { margin-bottom: 8px; padding: 8px; border-radius: 8px; font-size: 14px; word-wrap: break-word; }
+        .me { background: #0070f3; color: white; align-self: flex-end; margin-left: 20%; }
+        .him { background: #222; color: #0f0; align-self: flex-start; margin-right: 20%; }
 
-        .admin { display: none; margin-top: 20px; border-top: 1px solid #444; padding-top: 15px; }
+        #admin-panel { display: none; background: #1a1a1a; padding: 15px; border-radius: 15px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="box">
+    <h3 id="secret-title" onclick="secretClick()">Private System</h3>
+
     <div id="setup-side">
-        <h3>Private System</h3>
-        <button id="start-btn" onclick="startSession()">АКТИВИРОВАТЬ СВЯЗЬ</button>
+        <p id="hint">Нажмите для активации устройства</p>
+        <button class="btn" id="start-btn" onclick="startSession()">ВКЛЮЧИТЬ СВЯЗЬ</button>
         <div id="display-id"></div>
     </div>
 
-    <input type="password" placeholder="..." oninput="if(this.value=='2013')showAdmin()" style="opacity:0.05; width:20px; border:none; outline:none; position:absolute; bottom:10px;">
+    <div id="pass-gate" style="display:none;">
+        <input type="password" id="pass-input" placeholder="Код доступа" oninput="checkPass(this.value)">
+    </div>
 
-    <div id="admin-panel" class="admin">
-        <h4 style="color:#0f0; margin:0 0 10px 0;">ADMIN PANEL</h4>
-        <input type="number" id="tid" placeholder="Введите 5 цифр цели">
-        <button onclick="connectToPeer()" style="background:#222; border:1px solid #0f0; color:#0f0; margin-top:10px;">ПОДКЛЮЧИТЬСЯ</button>
+    <div id="admin-panel">
+        <input type="number" id="tid" pattern="\[0-9]*" inputmode="numeric" placeholder="5 цифр цели">
+        <button class="btn" onclick="connectToPeer()" style="background:#0f0; color:#000;">ПОДКЛЮЧИТЬСЯ</button>
     </div>
 
     <div id="chat-window">
         <div id="messages"></div>
-        <input type="text" id="msg-input" placeholder="Сообщение..." onkeypress="if(event.key=='Enter')send()">
-        <button onclick="send()" style="margin-top:5px; background:#333;">ОТПРАВИТЬ</button>
+        <div style="display:flex; gap:5px;">
+            <input type="text" id="msg-input" placeholder="Текст..." style="margin:0;">
+            <button class="btn" onclick="send()" style="width:80px; margin:0; padding:10px;">-></button>
+        </div>
     </div>
 </div>
 
-<audio id="audio" autoplay></audio>
+<audio id="audio" autoplay playsinline></audio>
 
 <script>
     let peer, conn, currentStream;
+    let clickCount = 0;
     const shortId = Math.floor(Math.random() * 90000) + 10000;
+
+    // Секретный вход: 5 кликов по заголовку
+    function secretClick() {
+        clickCount++;
+        if(clickCount >= 5) {
+            document.getElementById('pass-gate').style.display = 'block';
+            clickCount = 0;
+        }
+    }
+
+    function checkPass(v) {
+        if(v === '2013') {
+            document.getElementById('pass-gate').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+        }
+    }
 
     function startSession() {
         peer = new Peer(shortId);
         
         peer.on('open', (id) => {
-            document.getElementById('display-id').innerText = "ID: " + id;
+            document.getElementById('display-id').innerText = id;
             document.getElementById('display-id').style.display = 'block';
             document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('hint').innerText = "Передайте этот код собеседнику";
         });
 
-        // Захват микрофона
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
             currentStream = stream;
-            
-            // Ждем звонка
             peer.on('call', call => {
                 call.answer(stream);
-                call.on('stream', remoteStream => playAudio(remoteStream));
+                call.on('stream', s => playAudio(s));
             });
-
-            // Ждем текстового подключения
             peer.on('connection', c => {
                 conn = c;
                 setupChat();
             });
-        });
-    }
-
-    function showAdmin() {
-        document.getElementById('admin-panel').style.display = 'block';
+        }).catch(() => alert("Разрешите микрофон в настройках браузера!"));
     }
 
     function connectToPeer() {
         const target = document.getElementById('tid').value;
+        if(!target) return;
         
-        // 1. Голосовая связь
         const call = peer.call(target, currentStream);
-        call.on('stream', remoteStream => playAudio(remoteStream));
+        call.on('stream', s => playAudio(s));
 
-        // 2. Текстовый чат
         conn = peer.connect(target);
         setupChat();
     }
 
     function setupChat() {
-        document.getElementById('chat-window').style.display = 'block';
+        document.getElementById('chat-window').style.display = 'flex';
         document.getElementById('setup-side').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'none';
+        document.getElementById('secret-title').innerText = "Secure Chat";
 
-        conn.on('data', data => {
-            addMessage(data, 'him');
-        });
+        conn.on('data', data => addMessage(data, 'him'));
     }
 
     function send() {
         const input = document.getElementById('msg-input');
-        const text = input.value;
-        if(text && conn) {
-            conn.send(text);
-            addMessage(text, 'me');
+        if(input.value && conn) {
+            conn.send(input.value);
+            addMessage(input.value, 'me');
             input.value = '';
         }
     }
@@ -117,16 +134,17 @@
     function addMessage(text, side) {
         const div = document.createElement('div');
         div.className = 'msg ' + side;
-        div.innerText = (side === 'me' ? 'Вы: ' : 'Собеседник: ') + text;
+        div.innerText = text;
         const box = document.getElementById('messages');
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;
     }
 
     function playAudio(stream) {
-        document.getElementById('audio').srcObject = stream;
+        const audio = document.getElementById('audio');
+        audio.srcObject = stream;
+        audio.play(); // Для мобилок важно вызвать play() после действия
     }
 </script>
-
 </body>
 </html>
