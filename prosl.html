@@ -3,126 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secure Connect</title>
+    <title>Connect Pro</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; background: #000; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .box { background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; width: 90%; max-width: 380px; box-sizing: border-box; text-align: center; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: sans-serif; background: #000; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        h3 { margin-top: 0; color: #0070f3; user-select: none; }
-        
-        .btn { background: #0070f3; color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; margin: 10px 0; -webkit-tap-highlight-color: transparent; }
-        .btn:active { background: #0051ad; transform: scale(0.98); }
-        
-        input { background: #1a1a1a; border: 1px solid #444; color: #0f0; padding: 15px; width: 100%; border-radius: 10px; box-sizing: border-box; font-size: 18px; margin-bottom: 10px; text-align: center; }
-        
-        #display-id { font-size: 40px; color: #0f0; margin: 15px 0; font-family: monospace; font-weight: bold; letter-spacing: 5px; }
-        
-        #chat-window { display: none; flex-direction: column; height: 400px; }
-        #messages { flex-grow: 1; overflow-y: auto; background: #050505; border-radius: 10px; padding: 10px; margin-bottom: 10px; text-align: left; border: 1px solid #222; }
-        .msg { margin-bottom: 8px; padding: 8px; border-radius: 8px; font-size: 14px; word-wrap: break-word; }
-        .me { background: #0070f3; color: white; align-self: flex-end; margin-left: 20%; }
-        .him { background: #222; color: #0f0; align-self: flex-start; margin-right: 20%; }
+        .screen { width: 100%; max-width: 400px; padding: 20px; text-align: center; }
+        .hidden { display: none !important; }
 
-        #admin-panel { display: none; background: #1a1a1a; padding: 15px; border-radius: 15px; margin-top: 10px; }
+        /* Кнопки */
+        .btn { background: #0070f3; color: #fff; border: none; padding: 20px; border-radius: 15px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,112,243,0.3); }
+        .btn-admin { background: #222; border: 1px solid #444; }
+        .btn-connect { background: #00ff41; color: #000; }
+
+        /* Поля ввода */
+        input { background: #111; border: 2px solid #333; color: #00ff41; padding: 15px; width: 100%; border-radius: 10px; font-size: 20px; text-align: center; margin-bottom: 15px; outline: none; }
+        input:focus { border-color: #0070f3; }
+
+        /* Чат */
+        #chat-area { background: #050505; height: 250px; overflow-y: auto; border: 1px solid #222; border-radius: 10px; padding: 10px; margin-bottom: 10px; text-align: left; }
+        .m { margin-bottom: 10px; padding: 8px; border-radius: 8px; font-size: 14px; max-width: 80%; }
+        .me { background: #0070f3; margin-left: auto; }
+        .him { background: #333; color: #00ff41; }
+
+        #my-id-val { font-size: 45px; color: #00ff41; font-family: monospace; margin: 20px 0; display: block; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h3 id="secret-title" onclick="secretClick()">Private System</h3>
-
-    <div id="setup-side">
-        <p id="hint">Нажмите для активации устройства</p>
-        <button class="btn" id="start-btn" onclick="startSession()">ВКЛЮЧИТЬ СВЯЗЬ</button>
-        <div id="display-id"></div>
+    <div id="screen-start" class="screen">
+        <h3>Выберите режим</h3>
+        <button class="btn" onclick="initClient()">Я КЛИЕНТ (Дать доступ)</button>
+        <button class="btn btn-admin" onclick="showPassScreen()">Я АДМИН (Подключиться)</button>
     </div>
 
-    <div id="pass-gate" style="display:none;">
-        <input type="password" id="pass-input" placeholder="Код доступа" oninput="checkPass(this.value)">
+    <div id="screen-pass" class="screen hidden">
+        <h3>Доступ админа</h3>
+        <input type="password" id="admin-pass" placeholder="Пароль">
+        <button class="btn" onclick="verifyPass()">ВОЙТИ</button>
+        <button class="btn btn-admin" onclick="location.reload()">НАЗАД</button>
     </div>
 
-    <div id="admin-panel">
-        <input type="number" id="tid" pattern="\[0-9]*" inputmode="numeric" placeholder="5 цифр цели">
-        <button class="btn" onclick="connectToPeer()" style="background:#0f0; color:#000;">ПОДКЛЮЧИТЬСЯ</button>
+    <div id="screen-wait" class="screen hidden">
+        <p>Ваш код для подключения:</p>
+        <b id="my-id-val">...</b>
+        <p style="color: #888;">Ожидайте подключения админа...</p>
     </div>
 
-    <div id="chat-window">
-        <div id="messages"></div>
+    <div id="screen-connect" class="screen hidden">
+        <h3>Подключение</h3>
+        <input type="number" id="target-id" inputmode="numeric" placeholder="Введите 5 цифр">
+        <button class="btn btn-connect" onclick="connectToPeer()">ПОДКЛЮЧИТЬСЯ</button>
+    </div>
+
+    <div id="screen-chat" class="screen hidden">
+        <div id="chat-area"></div>
         <div style="display:flex; gap:5px;">
-            <input type="text" id="msg-input" placeholder="Текст..." style="margin:0;">
-            <button class="btn" onclick="send()" style="width:80px; margin:0; padding:10px;">-></button>
+            <input type="text" id="msg-input" placeholder="Сообщение..." style="margin:0;">
+            <button onclick="sendMsg()" style="padding:15px; border-radius:10px; border:none; background:#0070f3; color:#white;">-></button>
         </div>
     </div>
-</div>
 
-<audio id="audio" autoplay playsinline></audio>
+    <audio id="remote-audio" autoplay playsinline></audio>
 
 <script>
-    let peer, conn, currentStream;
-    let clickCount = 0;
+    let peer, conn, localStream;
     const shortId = Math.floor(Math.random() * 90000) + 10000;
 
-    // Секретный вход: 5 кликов по заголовку
-    function secretClick() {
-        clickCount++;
-        if(clickCount >= 5) {
-            document.getElementById('pass-gate').style.display = 'block';
-            clickCount = 0;
-        }
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
     }
 
-    function checkPass(v) {
-        if(v === '2013') {
-            document.getElementById('pass-gate').style.display = 'none';
-            document.getElementById('admin-panel').style.display = 'block';
-        }
-    }
-
-    function startSession() {
-        peer = new Peer(shortId);
-        
-        peer.on('open', (id) => {
-            document.getElementById('display-id').innerText = id;
-            document.getElementById('display-id').style.display = 'block';
-            document.getElementById('start-btn').style.display = 'none';
-            document.getElementById('hint').innerText = "Передайте этот код собеседнику";
-        });
-
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            currentStream = stream;
-            peer.on('call', call => {
-                call.answer(stream);
-                call.on('stream', s => playAudio(s));
+    // --- ЛОГИКА КЛИЕНТА ---
+    async function initClient() {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            peer = new Peer(shortId);
+            
+            peer.on('open', (id) => {
+                document.getElementById('my-id-val').innerText = id;
+                showScreen('screen-wait');
             });
+
+            peer.on('call', call => {
+                call.answer(localStream);
+                call.on('stream', s => { document.getElementById('remote-audio').srcObject = s; });
+                setupChatLogic();
+            });
+
             peer.on('connection', c => {
                 conn = c;
-                setupChat();
+                setupChatLogic();
             });
-        }).catch(() => alert("Разрешите микрофон в настройках браузера!"));
+
+        } catch (e) {
+            alert("Ошибка: Разрешите доступ к микрофону!");
+        }
     }
 
-    function connectToPeer() {
-        const target = document.getElementById('tid').value;
-        if(!target) return;
-        
-        const call = peer.call(target, currentStream);
-        call.on('stream', s => playAudio(s));
+    // --- ЛОГИКА АДМИНА ---
+    function showPassScreen() { showScreen('screen-pass'); }
 
-        conn = peer.connect(target);
-        setupChat();
+    function verifyPass() {
+        if(document.getElementById('admin-pass').value === '2013') {
+            peer = new Peer(); // Админу ID не важен
+            showScreen('screen-connect');
+        } else {
+            alert("Неверно!");
+        }
     }
 
-    function setupChat() {
-        document.getElementById('chat-window').style.display = 'flex';
-        document.getElementById('setup-side').style.display = 'none';
-        document.getElementById('admin-panel').style.display = 'none';
-        document.getElementById('secret-title').innerText = "Secure Chat";
+    async function connectToPeer() {
+        const tid = document.getElementById('target-id').value;
+        if(!tid) return;
 
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // Голос
+            const call = peer.call(tid, localStream);
+            call.on('stream', s => { document.getElementById('remote-audio').srcObject = s; });
+
+            // Чат
+            conn = peer.connect(tid);
+            setupChatLogic();
+        } catch (e) {
+            alert("Ошибка подключения или микрофона");
+        }
+    }
+
+    // --- ОБЩАЯ ЛОГИКА ЧАТА ---
+    function setupChatLogic() {
+        showScreen('screen-chat');
         conn.on('data', data => addMessage(data, 'him'));
     }
 
-    function send() {
+    function sendMsg() {
         const input = document.getElementById('msg-input');
         if(input.value && conn) {
             conn.send(input.value);
@@ -133,18 +151,20 @@
 
     function addMessage(text, side) {
         const div = document.createElement('div');
-        div.className = 'msg ' + side;
+        div.className = 'm ' + side;
         div.innerText = text;
-        const box = document.getElementById('messages');
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
+        const area = document.getElementById('chat-area');
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
     }
 
-    function playAudio(stream) {
-        const audio = document.getElementById('audio');
-        audio.srcObject = stream;
-        audio.play(); // Для мобилок важно вызвать play() после действия
-    }
+    // Фикс для мобильного звука
+    document.addEventListener('touchstart', () => {
+        const audio = document.getElementById('remote-audio');
+        if (audio.paused) audio.play();
+    }, { once: false });
+
 </script>
 </body>
 </html>
+
