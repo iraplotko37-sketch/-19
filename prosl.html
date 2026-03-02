@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fast Connect</title>
-    <!-- ✅ Исправлен URL (убраны пробелы) -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif; }
@@ -160,7 +159,8 @@
     <!-- Экран: Админ (ввод ID) -->
     <div id="scr-admin" class="screen hidden">
         <h3>📞 Подключиться к клиенту</h3>
-        <input type="number" id="tid" inputmode="numeric" pattern="[0-9]*" placeholder="Код клиента">
+        <!-- ✅ Исправлено: type="text" и pattern для букв+цифр -->
+        <input type="text" id="tid" inputmode="text" pattern="[a-zA-Z0-9_]*" placeholder="Код клиента" autocomplete="off">
         <button class="btn" id="btn-connect" onclick="actAdmin(this)">🔗 СОЕДИНИТЬ</button>
         <button class="btn btn-gray" onclick="showScr('scr-1')">ОТМЕНА</button>
         <p class="status" id="admin-status"></p>
