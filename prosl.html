@@ -3,129 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Instant Connect</title>
+    <title>Fast Connect</title>
+    <!-- ✅ PeerJS без пробелов -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, sans-serif; }
-        body { background: #000; color: #fff; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .screen { width: 100%; max-width: 400px; padding: 20px; text-align: center; }
+        * { box-sizing: border-box; font-family: -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif; }
+        body { 
+            background: #000; color: #fff; margin: 0; display: flex; align-items: center; 
+            justify-content: center; height: 100vh; overflow: hidden; touch-action: manipulation;
+        }
+        .screen { width: 100%; max-width: 400px; padding: 25px; text-align: center; }
         .hidden { display: none !important; }
-        .btn { background: #0070f3; color: #fff; border: none; padding: 20px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-gray { background: #222; color: #888; }
-        input { background: #111; border: 2px solid #333; color: #0f0; padding: 15px; width: 100%; border-radius: 10px; font-size: 20px; text-align: center; margin-bottom: 10px; outline: none; }
-        #id-box { font-size: 48px; color: #0f0; font-family: monospace; margin: 15px 0; font-weight: bold; }
-        #chat-area { background: #050505; height: 45vh; overflow-y: auto; border: 1px solid #222; border-radius: 10px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; }
-        .m { margin-bottom: 8px; padding: 10px; border-radius: 10px; font-size: 14px; max-width: 85%; word-wrap: break-word; }
-        .me { background: #0070f3; align-self: flex-end; }
-        .him { background: #333; color: #0f0; align-self: flex-start; }
+
+        .btn { 
+            background: #0070f3; color: #fff; border: none; padding: 22px; border-radius: 16px; 
+            width: 100%; font-size: 20px; font-weight: 800; cursor: pointer; margin-bottom: 15px; 
+            -webkit-appearance: none; transition: opacity 0.1s;
+        }
+        .btn:active { opacity: 0.7; }
+        .btn:disabled { opacity: 0.4; cursor: wait; }
+        .btn-gray { background: #222; color: #888; border: 1px solid #444; }
+        .btn-danger { background: #c00; }
+
+        input { 
+            background: #111; border: 2px solid #333; color: #00ff41; padding: 18px; 
+            width: 100%; border-radius: 12px; font-size: 24px; text-align: center; 
+            margin-bottom: 15px; outline: none; 
+        }
+        
+        #id-box { 
+            font-size: 42px; color: #00ff41; font-family: monospace; margin: 20px 0; 
+            font-weight: bold; word-break: break-all;
+        }
+        
+        #chat-area { 
+            background: #050505; height: 40vh; overflow-y: auto; border: 1px solid #222; 
+            border-radius: 12px; padding: 15px; margin-bottom: 15px; text-align: left; 
+        }
+        .m { margin: 8px 0; padding: 12px 16px; border-radius: 16px; font-size: 15px; max-width: 85%; }
+        .me { background: #0070f3; margin-left: auto; color: white; }
+        .him { background: #333; color: #00ff41; }
+        .sys { background: #1a1a1a; color: #888; font-size: 13px; text-align: center; margin: 8px auto; }
+
+        /* ⚡ Индикатор подключения */
+        .progress { 
+            display: flex; gap: 4px; justify-content: center; margin: 15px 0; 
+        }
+        .dot { 
+            width: 10px; height: 10px; border-radius: 50%; background: #333; 
+            animation: none;
+        }
+        .dot.active { background: #00ff41; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.4; } }
+
+        .status { font-size: 14px; color: #666; margin: 10px 0; min-height: 20px; }
+        .status.ok { color: #00ff41; }
+        .status.err { color: #f44; }
+        .status.warn { color: #fa0; }
+
+        /* ⏱ Таймер ожидания */
+        .timer { 
+            font-family: monospace; font-size: 18px; color: #00ff41; 
+            margin: 10px 0; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <div id="scr-1" class="screen">
-        <h2>Fast Connect</h2>
-        <button class="btn" onclick="start('client')">КЛИЕНТ (ПОЛУЧИТЬ КОД)</button>
-        <button class="btn btn-gray" onclick="show('scr-pass')">АДМИН (ВВЕСТИ КОД)</button>
+        <h2 style="margin-bottom:30px">🔗 Fast Connect</h2>
+        <button class="btn" id="btn-client" onclick="actClient(this)">👤 СТАТЬ КЛИЕНТОМ</button>
+        <button class="btn btn-gray" onclick="showScr('scr-pass')">🔐 ВХОД АДМИНА</button>
+        <p class="status" id="main-status"></p>
     </div>
 
     <div id="scr-pass" class="screen hidden">
-        <input type="password" id="pass" placeholder="ПАРОЛЬ">
-        <button class="btn" onclick="if(document.getElementById('pass').value=='2013')show('scr-admin');else alert('!')">ВХОД</button>
+        <h3>🔐 Пароль админа</h3>
+        <input type="password" id="pass" placeholder="****" autocomplete="off">
+        <button class="btn" onclick="checkPass()">ВОЙТИ</button>
+        <button class="btn btn-gray" onclick="showScr('scr-1')">ОТМЕНА</button>
     </div>
 
     <div id="scr-wait" class="screen hidden">
         <p>Ваш код:</p>
         <div id="id-box">...</div>
-        <p style="color:#666">Ждем админа...</p>
+        <div class="progress">
+            <div class="dot" id="p1"></div>
+            <div class="dot" id="p2"></div>
+            <div class="dot" id="p3"></div>
+        </div>
+        <p class="status" id="wait-status">Инициализация...</p>
+        <div class="timer" id="timer">00:00</div>
+        <button class="btn btn-gray" onclick="copyId()">📋 Скопировать</button>
+        <button class="btn btn-danger" onclick="disconnect()">✕ Отмена</button>
     </div>
 
     <div id="scr-admin" class="screen hidden">
-        <input type="number" id="tid" inputmode="numeric" placeholder="КОД КЛИЕНТА">
-        <button class="btn" onclick="start('admin')">СОЕДИНИТЬ</button>
+        <h3>📞 Подключиться к:</h3>
+        <input type="text" id="tid" inputmode="text" placeholder="Код клиента">
+        <button class="btn" id="btn-connect" onclick="actAdmin(this)">🔗 СОЕДИНИТЬ</button>
+        <button class="btn btn-gray" onclick="showScr('scr-1')">ОТМЕНА</button>
+        <p class="status" id="admin-status"></p>
     </div>
 
     <div id="scr-chat" class="screen hidden">
         <div id="chat-area"></div>
-        <div style="display:flex; gap:5px;">
-            <input type="text" id="msg" placeholder="..." style="margin:0;">
-            <button class="btn" onclick="send()" style="width:60px; margin:0;">➤</button>
+        <div style="display:flex; gap:8px;">
+            <input type="text" id="msg" placeholder="..." style="margin:0; font-size:16px;" onkeypress="if(event.key==='Enter')send()">
+            <button class="btn" onclick="send()" style="width:70px; margin:0; padding:0;">➤</button>
         </div>
-        <button class="btn btn-gray" onclick="location.reload()" style="margin-top:10px; padding:10px;">ВЫЙТИ</button>
+        <p class="status ok">🔊 Связь активна</p>
+        <button class="btn btn-danger" onclick="disconnect()">🔴 Завершить</button>
     </div>
 
     <audio id="player" autoplay playsinline></audio>
 
 <script>
-    let peer, conn, stream;
-    // Конфигурация для мгновенного проброса через NAT
-    const cfg = { config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] } };
+    // === Глобалы ===
+    let peer, conn, call, localStream, myId, isConnected = false;
+    let connectTimer, startTime, timeoutHandle;
+    const CONNECT_TIMEOUT = 25000; // ⚡ 25 секунд вместо бесконечности
 
-    function show(id) {
+    // === Оптимизированные ICE-серверы (быстрые и резервные) ===
+    const iceConfig = {
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            // Резервные (если основные заблокированы)
+            { urls: 'stun:stun.cloudflare.com:3478' },
+            { urls: 'stun:openrelay.metered.ca:80' }
+        ],
+        iceTransportPolicy: 'all',
+        sdpSemantics: 'unified-plan'
+    };
+
+    // === PeerJS конфиг с оптимизациями ===
+    const peerConfig = {
+        debug: 1,
+        config: iceConfig,
+        pingInterval: 5000,    // Чаще проверка соединения
+        pingTimeout: 3000,     // Быстрее обнаружение разрыва
+        reliable: true
+    };
+
+    function showScr(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
+        stopTimer();
     }
 
-    async function start(role) {
-        try {
-            // Сначала микрофон - без него мобилки не пустят дальше
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            if (role === 'client') {
-                const numId = Math.floor(Math.random() * 90000) + 10000;
-                peer = new Peer(numId, cfg);
-                peer.on('open', id => {
-                    document.getElementById('id-box').innerText = id;
-                    show('scr-wait');
-                });
-            } else {
-                const tid = document.getElementById('tid').value;
-                peer = new Peer(cfg);
-                peer.on('open', () => {
-                    // Параллельный запуск голоса и текста
-                    peer.call(tid, stream).on('stream', s => { document.getElementById('player').srcObject = s; });
-                    const c = peer.connect(tid);
-                    setupConn(c);
-                });
+    function setStatus(el, text, cls = '') {
+        const e = document.getElementById(el);
+        if(e) { e.textContent = text; e.className = `status ${cls}`; }
+    }
+
+    function updateProgress(step) {
+        [1,2,3].forEach(i => document.getElementById(`p${i}`).classList.toggle('active', i <= step));
+    }
+
+    // === Таймер подключения ===
+    function startTimer() {
+        startTime = Date.now();
+        updateTimerDisplay();
+        connectTimer = setInterval(updateTimerDisplay, 1000);
+        
+        // ⏱ Авто-таймаут
+        timeoutHandle = setTimeout(() => {
+            if(!isConnected) {
+                onConnectError('⏱ Превышено время ожидания');
             }
-
-            peer.on('call', call => {
-                call.answer(stream);
-                call.on('stream', s => { document.getElementById('player').srcObject = s; });
-            });
-
-            peer.on('connection', setupConn);
-
-        } catch (e) { alert("Ошибка микрофона"); }
+        }, CONNECT_TIMEOUT);
     }
 
-    function setupConn(c) {
-        conn = c;
-        conn.on('open', () => {
-            show('scr-chat');
-            conn.on('data', d => addMsg(d, 'him'));
-        });
-    }
-
-    function send() {
-        const i = document.getElementById('msg');
-        if(i.value && conn) {
-            conn.send(i.value);
-            addMsg(i.value, 'me');
-            i.value = '';
+    function updateTimerDisplay() {
+        const sec = Math.floor((Date.now() - startTime) / 1000);
+        const m = String(Math.floor(sec/60)).padStart(2,'0');
+        const s = String(sec%60).padStart(2,'0');
+        const el = document.getElementById('timer');
+        if(el) el.textContent = `${m}:${s}`;
+        
+        // Предупреждение после 15 сек
+        if(sec >= 15 && !isConnected) {
+            setStatus('wait-status', '🔄 Поиск пути... Это может занять время', 'warn');
         }
     }
 
-    function addMsg(t, s) {
-        const d = document.createElement('div');
-        d.className = 'm ' + s;
-        d.innerText = t;
-        const a = document.getElementById('chat-area');
-        a.appendChild(d);
-        a.scrollTop = a.scrollHeight;
+    function stopTimer() {
+        if(connectTimer) clearInterval(connectTimer);
+        if(timeoutHandle) clearTimeout(timeoutHandle);
+        connectTimer = timeoutHandle = null;
     }
 
-    // Разблокировка звука на мобилках
-    document.addEventListener('click', () => { document.getElementById('player').play(); }, { once: true });
+    // === КЛИЕНТ (оптимизировано) ===
+    async function actClient(btn) {
+        if(isConnected) return;
+        btn.disabled = true;
+        const orig = btn.innerText;
+        btn.innerText = "🎤 Доступ...";
+
+        try {
+            // 1. Запрос микрофона
+            localStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
+            });
+
+            // 2. Короткий уникальный ID
+            myId = 'f' + Math.random().toString(36).slice(2, 7);
+            
+            // 3. Создаём Peer СРАЗУ с конфигом
+            peer = new Peer(myId, peerConfig);
+            
+            setupPeerHandlers('client');
+            updateProgress(1);
+            setStatus('wait-status', 'Создание канала...', 'warn');
+            startTimer();
+
+        } catch(e) {
+            console.error(e);
+            setStatus('main-status', '❌ Нет доступа к микрофону', 'err');
+            btn.innerText = orig;
+            btn.disabled = false;
+            alert('Разрешите доступ к микрофону!');
+        }
+    }
+
+    // === АДМИН (оптимизировано) ===
+    function checkPass() {
+        if(document.getElementById('pass').value === '2013') {
+            document.getElementById('pass').value = '';
+            showScr('scr-admin');
+        } else {
+            alert('Неверно!');
+            if(navigator.vibrate) navigator.vibrate(150);
+        }
+    }
+
+    async function actAdmin(btn) {
+        if(isConnected) return;
+        const target = document.getElementById('tid').value.trim().toLowerCase();
+        
+        if(!/^[a-z0-9]{4,10}$/.test(target)) {
+            setStatus('admin-status', '❌ Введите 4-10 символов (a-z, 0-9)', 'err');
+            return;
+        }
+        
+        btn.disabled = true;
+        const orig = btn.innerText;
+        btn.innerText = "🔗 Подключение...";
+
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { echoCancellation: true, noiseSuppression: true } 
+            });
+
+            // Админ: автоматический ID (быстрее)
+            peer = new Peer(null, peerConfig);
+            
+            setupPeerHandlers('admin', target);
+            updateProgress(1);
+            setStatus('admin-status', 'Инициализация...', 'warn');
+            startTimer();
+
+        } catch(e) {
+            console.error(e);
+            setStatus('admin-status', '❌ Ошибка микрофона', 'err');
+            btn.innerText = orig;
+            btn.disabled = false;
+        }
+    }
+
+    // === Обработчики Peer (с ускорением) ===
+    function setupPeerHandlers(role, targetId = null) {
+        peer.on('open', (id) => {
+            console.log('Peer ready:', id);
+            updateProgress(2);
+            
+            if(role === 'client') {
+                myId = id;
+                document.getElementById('id-box').textContent = id;
+                setStatus('wait-status', '✅ Ждём админа...', 'ok');
+            }
+            
+            // ⚡ Админ: запускаем ОБА соединения ПАРАЛЛЕЛЬНО
+            if(role === 'admin' && targetId) {
+                setStatus('admin-status', '🚀 Установление связи...', 'warn');
+                // Начинаем и звонок, и чат одновременно
+                startCall(targetId);
+                startDataConnection(targetId);
+            }
+        });
+
+        // ⚡ Входящий звонок: отвечаем мгновенно
+        peer.on('call', (incomingCall) => {
+            console.log('📞 Call from', incomingCall.peer);
+            incomingCall.answer(localStream);
+            handleCall(incomingCall);
+            updateProgress(3);
+        });
+
+        // ⚡ Входящее data-соединение
+        peer.on('connection', (c) => {
+            console.log('💬 Connection from', c.peer);
+            handleConnection(c);
+        });
+
+        // ⚡ Быстрая обратная связь при ошибках
+        peer.on('error', (err) => {
+            console.error('Peer error:', err.type, err.message);
+            const msg = {
+                'unavailable-id': '❌ Код занят. Попробуйте другой.',
+                'invalid-id': '❌ Неверный формат ID.',
+                'network': '❌ Проблема с сетью.',
+                'peer-unavailable': '❌ Клиент не в сети.',
+                'webrtc': '❌ Ошибка WebRTC.'
+            }[err.type] || `❌ ${err.message}`;
+            
+            if(role === 'client') setStatus('wait-status', msg, 'err');
+            else setStatus('admin-status', msg, 'err');
+            
+            if(err.type === 'unavailable-id' && role === 'client') {
+                // Авто-повтор с новым ID
+                setTimeout(() => {
+                    peer?.destroy();
+                    actClient(document.getElementById('btn-client'));
+                }, 800);
+            } else {
+                onConnectError(msg);
+            }
+        });
+
+        // Восстановление при кратковременных разрывах
+        peer.on('disconnected', () => {
+            if(!isConnected && peer) peer.reconnect();
+        });
+    }
+
+    // === Запуск голосового вызова (оптимизировано) ===
+    function startCall(targetId) {
+        try {
+            call = peer.call(targetId, localStream, {
+                metadata: { type: 'audio', ts: Date.now() }
+            });
+            handleCall(call);
+        } catch(e) {
+            console.error('Call start error:', e);
+        }
+    }
+
+    // === Запуск data-соединения (оптимизировано) ===
+    function startDataConnection(targetId) {
+        try {
+            conn = peer.connect(targetId, {
+                reliable: true,
+                serialization: 'none', // ⚡ Быстрее, чем 'json'
+                metadata: { type: 'chat', ts: Date.now() }
+            });
+            handleConnection(conn);
+        } catch(e) {
+            console.error('Connect start error:', e);
+        }
+    }
+
+    // === Обработка вызова ===
+    function handleCall(c) {
+        call = c;
+        
+        // ⚡ Мгновенная обратная связь при получении stream
+        c.on('stream', (stream) => {
+            console.log('🔊 Stream received');
+            const player = document.getElementById('player');
+            player.srcObject = stream;
+            player.play().catch(() => {});
+            unlockAudio();
+            checkConnected();
+        });
+
+        c.on('close', () => onDisconnect('📞 Звонок завершён'));
+        c.on('error', (e) => console.error('Call error:', e));
+        
+        // Мониторинг ICE-состояния для отладки
+        if(c.peerConnection) {
+            c.peerConnection.oniceconnectionstatechange = () => {
+                const state = c.peerConnection.iceConnectionState;
+                console.log('ICE state:', state);
+                if(state === 'connected' || state === 'completed') {
+                    updateProgress(3);
+                }
+            };
+        }
+    }
+
+    // === Обработка data-соединения ===
+    function handleConnection(c) {
+        conn = c;
+        
+        c.on('open', () => {
+            console.log('💬 Data channel open');
+            checkConnected();
+        });
+
+        c.on('data', (data) => {
+            addMsg(typeof data === 'string' ? data : data.text, 'him');
+        });
+
+        c.on('close', () => onDisconnect('💬 Чат закрыт'));
+        c.on('error', (e) => console.error('Data error:', e));
+    }
+
+    // === Проверка: готовы ли оба канала? ===
+    function checkConnected() {
+        const callOk = call && call.peerConnection && 
+            ['connected','completed'].includes(call.peerConnection.iceConnectionState);
+        const connOk = conn && conn.open;
+        
+        // ⚡ Показываем чат, если готов ХОТЯ БЫ один канал
+        if((callOk || connOk) && !isConnected) {
+            isConnected = true;
+            stopTimer();
+            showScr('scr-chat');
+            addSystemMsg('✅ Соединение установлено');
+            
+            // Сброс кнопок
+            document.querySelectorAll('.btn').forEach(b => {
+                b.disabled = false;
+                if(b.id === 'btn-client') b.innerText = '👤 СТАТЬ КЛИЕНТОМ';
+                if(b.id === 'btn-connect') b.innerText = '🔗 СОЕДИНИТЬ';
+            });
+        }
+    }
+
+    // === Ошибка подключения ===
+    function onConnectError(msg) {
+        stopTimer();
+        isConnected = false;
+        console.warn('Connect error:', msg);
+        
+        const isClient = !document.getElementById('scr-admin').classList.contains('hidden') === false;
+        if(isClient) {
+            setStatus('wait-status', msg, 'err');
+        } else {
+            setStatus('admin-status', msg, 'err');
+        }
+        
+        // Возврат кнопок
+        document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+    }
+
+    // === Отправка сообщения ===
+    function send() {
+        const input = document.getElementById('msg');
+        const text = input.value.trim();
+        if(text && conn?.open) {
+            conn.send(text); // ⚡ Отправляем строку напрямую (быстрее объекта)
+            addMsg(text, 'me');
+            input.value = '';
+        }
+    }
+
+    // === Добавление сообщения ===
+    function addMsg(text, cls) {
+        const chat = document.getElementById('chat-area');
+        const div = document.createElement('div');
+        div.className = `m ${cls}`;
+        div.textContent = text;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addSystemMsg(text) {
+        const chat = document.getElementById('chat-area');
+        const div = document.createElement('div');
+        div.className = 'm sys';
+        div.textContent = text;
+        chat.appendChild(div);
+    }
+
+    // === Завершение ===
+    function disconnect() {
+        console.log('🔌 Disconnecting');
+        stopTimer();
+        
+        [call, conn].forEach(x => x?.close?.());
+        peer?.destroy();
+        localStream?.getTracks?.().forEach(t => t.stop());
+        
+        // Сброс
+        peer = conn = call = localStream = null;
+        isConnected = false;
+        myId = null;
+        
+        document.getElementById('chat-area').innerHTML = '';
+        document.getElementById('player').srcObject = null;
+        
+        showScr('scr-1');
+    }
+
+    function onDisconnect(reason) {
+        addSystemMsg(reason);
+        setTimeout(disconnect, 1500);
+    }
+
+    // === iOS audio unlock ===
+    function unlockAudio() {
+        const p = document.getElementById('player');
+        p.play().then(() => { p.pause(); p.muted = true; }).catch(() => {});
+    }
+    document.addEventListener('touchstart', unlockAudio, {once: true, passive: true});
+    document.addEventListener('click', unlockAudio, {once: true});
+
+    // === Копирование ID ===
+    function copyId() {
+        const id = document.getElementById('id-box').textContent;
+        if(id && id !== '...') {
+            navigator.clipboard.writeText(id).then(() => {
+                const btn = event.target;
+                const orig = btn.textContent;
+                btn.textContent = '✅ Скопировано!';
+                setTimeout(() => btn.textContent = orig, 1200);
+            });
+        }
+    }
+
+    // === Предотвращение закрытия ===
+    window.addEventListener('beforeunload', (e) => {
+        if(isConnected) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    console.log('⚡ Fast Connect v2 loaded');
 </script>
 </body>
 </html>
