@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>скjМ (Доверие)</title>
+    <style>
+        /* --- CSS STYLES --- */
+        body {
+            background-color: #333; /* Dark background for the desktop view */
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Mobile Phone Container */
+        #app-container {
+            width: 360px;
+            height: 640px;
+            background-color: #F9EB74; /* bg_color */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: #749CF9; /* accent_color */
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .subtitle {            font-size: 10px;
+            font-style: italic;
+            color: yellow;
+            margin-top: 2px;
+        }
+
+        /* Chat Area */
+        #chat-area {
+            flex-grow: 1;
+            background-color: #F9BA74; /* chat_bg */
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message-sender {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .message-bot {
+            align-self: flex-start;
+            background-color: #F9EB74; /* bot_bubble */
+            border-bottom-left-radius: 0;
+        }
+
+        .message-user {
+            align-self: flex-end;
+            background-color: #9BD27F; /* user_bubble */
+            border-bottom-right-radius: 0;
+        }
+
+        .message-system {
+            align-self: center;
+            background-color: transparent;            color: red;
+            font-style: italic;
+            font-size: 12px;
+            text-align: center;
+            border: 1px dashed red;
+            padding: 4px;
+        }
+
+        /* Input Area */
+        #input-area {
+            background-color: #F9EB74;
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #749CF9;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9BA74; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #F9EB74; 
+            border-radius: 4px;
+        }    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Header -->
+        <header>
+            <h1>Доверие</h1>
+            <span class="subtitle">Ловит даже на компе Виктории !</span>
+        </header>
+
+        <!-- Chat Area -->
+        <div id="chat-area">
+            <!-- Messages will appear here -->
+        </div>
+
+        <!-- Input Area -->
+        <div id="input-area">
+            <input type="text" id="msg-input" placeholder="Введите сообщение...">
+            <button id="send-btn">отдать!</button>
+        </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT LOGIC ---
+
+        // Configuration (Colors from Python code)
+        const CONFIG = {
+            bg_color: "#F9EB74",
+            chat_bg: "#F9BA74",
+            user_bubble: "#9BD27F",
+            bot_bubble: "#F9EB74",
+            accent_color: "#749CF9"
+        };
+
+        // Elements
+        const chatArea = document.getElementById('chat-area');
+        const msgInput = document.getElementById('msg-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Bot Responses
+        const responses = [
+            "Интересно... А не хотите ли купить снюс?",
+            "Ваше мнение очень важно (нет), продолжайте.",
+            "Товарищ майор поставил любо-диво этому сообщению.",
+            "Слушай, а ты не хочешь инвестировать в МММ-2026?",
+            "Доверие работает стабильно, как курс доллара в 98-м.",
+            "Погоди, записываю... Диктуй медленнее.",
+            "У нас тут акция: приведи друга и получи судимость... подписку бесплатно!",
+            "Да-да, мы всё шифруем (честное пионерское).",            "С вашего счета списано 500 рублей за отправку сообщения.",
+            "Я переслал это сообщение твоей маме. Жди звонка от товарища майора."
+        ];
+
+        const webcamJokes = [
+            "СИСТЕМА: Отлепите изоленту от веб-камеры! Нам темно.",
+            "АДМИН: Поправь прическу, мы делаем фото на кредит.",
+            "УВЕДОМЛЕНИЕ: Ваша камера слишком чистая, мы видим ваше отражение.",
+            "СЛУЖБА: Хватит дрочить , мы всё видим через фронталку."
+        ];
+
+        // --- Functions ---
+
+        function showStartupWarning() {
+            // Using a custom overlay for the warning instead of a blocking alert for better UX
+            const warningText = (
+                "ВНИМАНИЕ!\n\n" +
+                "Вы запускаете шуточный мессенджер 'Доверие'.\n" +
+                "Любое ваше сообщение мгновенно отправляется на столик товарищу майору.\n" +
+                "Администрация, Майор и ваши соседи читают переписки в реальном времени кажды 10 сек.\n\n" +
+                "Шифрования нет. Совести тоже нет. Денег нет.\n" +
+                "Продолжая, вы соглашаетесь переписать квартиру на мужа разработчика."
+            );
+            alert("ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ 1.0\n\n" + warningText);
+        }
+
+        function createMessage(sender, text, type) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message');
+            
+            if (type === 'user') {
+                msgDiv.classList.add('message-user');
+            } else if (type === 'bot') {
+                msgDiv.classList.add('message-bot');
+            } else if (type === 'system') {
+                msgDiv.classList.add('message-system');
+            }
+
+            // Sender Name
+            const senderSpan = document.createElement('span');
+            senderSpan.classList.add('message-sender');
+            senderSpan.textContent = sender;
+            msgDiv.appendChild(senderSpan);
+
+            // Text Content
+            const textNode = document.createTextNode(text);
+            msgDiv.appendChild(textNode);
+
+            chatArea.appendChild(msgDiv);
+                        // Auto scroll to bottom
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function botResponse() {
+            const randomText = responses[Math.floor(Math.random() * responses.length)];
+            createMessage("Служба заботы", randomText, 'bot');
+
+            // Random System Notification (30% chance)
+            if (Math.random() < 0.3) {
+                setTimeout(() => {
+                    createMessage("", "--- Админ сделал скриншот вашего лица ---", 'system');
+                }, 500);
+            }
+        }
+
+        function sendMessage() {
+            const text = msgInput.value.trim();
+            if (!text) return;
+
+            // Display User Message
+            createMessage("Вы", text, 'user');
+            
+            // Console Log (Simulation)
+            console.log(`[SERVER_LOG] > ПЕРЕХВАЧЕНО СООБЩЕНИЕ: '${text}'`);
+            console.log(`[ADMIN_PANEL] > Данные сохранены в папку 'Компромат'.`);
+
+            // Clear Input
+            msgInput.value = '';
+
+            // Bot Response Delay (1 second)
+            setTimeout(botResponse, 1000);
+        }
+
+        function checkWebcamTape() {
+            // 5% chance every 3 seconds
+            if (Math.random() < 0.05) {
+                const randomJoke = webcamJokes[Math.floor(Math.random() * webcamJokes.length)];
+                alert("ПРОВЕРКА ОБОРУДОВАНИЯ\n\n" + randomJoke);
+            }
+            // Recursive call
+            setTimeout(checkWebcamTape, 3000);
+        }
+
+        // --- Initialization ---
+
+        window.onload = function() {
+            showStartupWarning();
+            
+            // Initial Bot Message            createMessage("Бот 'скамщик'", "Привет! Скинь номер карты, погадаю на историю беларуси.", 'bot');
+
+            // Start Surveillance Loop
+            checkWebcamTape();
+        };
+
+        // --- Event Listeners ---
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        msgInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+    </script>
+</body>
+</html>
