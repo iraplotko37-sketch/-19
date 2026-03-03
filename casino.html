@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19-sandy Slots</title>
+    <style>
+        /* --- 19-sandy PALETTE & VARIABLES --- */
+        :root {
+            /* 🍋💙 Основные цвета */
+            --accent: #FDE047;       /* Lemon Yellow */
+            --accent-secondary: #38BDF8; /* Cyan Blue */
+            --bg-base: #749CF9;      /* Deep Blue Base */
+            --bg-dark: #1a1a2e;      /* Dark Base */
+            /* 🔤 Текст */
+            --text-main: #FFFFFF;
+            --text-muted: #BAE6FD;
+            /* 🪟 Glassmorphism */
+            --glass-bg: rgba(253, 224, 71, 0.08);
+            --glass-border: rgba(56, 189, 248, 0.25);
+            --hover-bg: rgba(253, 224, 71, 0.15);
+            --hover-glow: rgba(56, 189, 248, 0.35);
+            /* 🌑 Тени */
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            /* Фон страницы из палитры + градиент */
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+        h1 {            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            font-size: 2rem;
+            text-shadow: 0 4px 10px var(--shadow-color);
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* --- МАШИНА (GLASSMORPHISM) --- */
+        .machine-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 40px 50px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px var(--shadow-color);
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            position: relative;
+        }
+        /* Окно с барабанами */
+        .reels-container {
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.2); /* Затемнение внутри */
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .reel {
+            width: 100px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 70px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);            transition: transform 0.2s;
+        }
+        /* Эффект вращения */
+        .reel.spinning span {
+            display: block;
+            animation: blurScroll 0.1s infinite linear;
+            filter: blur(2px);
+            opacity: 0.8;
+        }
+        @keyframes blurScroll {
+            0% { transform: translateY(-20px); }
+            50% { transform: translateY(20px); }
+            100% { transform: translateY(-20px); }
+        }
+        /* --- РУЧКА (СТИЛЬ 19-SANDY) --- */
+        .handle-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            height: 180px;
+            justify-content: flex-start;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .handle-area:active {
+            transform: scale(0.98);
+        }
+        .handle-base {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent), #fbbf24);
+            border-radius: 50%;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            z-index: 2;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Декор на базе ручки */
+        .handle-base::after {
+            content: '';
+            width: 40px;            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+        }
+        /* Рычаг */
+        .handle-lever {
+            width: 14px;
+            height: 140px;
+            background: linear-gradient(to right, #cbd5e1, #ffffff, #cbd5e1);
+            position: absolute;
+            top: 30px;
+            left: 23px;
+            transform-origin: top center;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border-radius: 10px;
+            z-index: 1;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        /* Шарик на ручке (Cyan Blue) */
+        .handle-knob {
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle at 30% 30%, var(--accent-secondary), #0284c7);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -25px;
+            left: -18px;
+            box-shadow: 0 5px 10px var(--shadow-color);
+            border: 2px solid #fff;
+        }
+        /* Анимация нажатия */
+        .handle-area.pulled .handle-lever {
+            transform: rotate(45deg);
+        }
+        /* Статус */
+        #status {
+            margin-top: 30px;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-main);
+            min-height: 40px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-shadow: 0 2px 4px var(--shadow-color);        }
+        #status.visible {
+            opacity: 1;
+        }
+        .win-text { 
+            color: var(--accent) !important; 
+            text-shadow: 0 0 15px var(--accent); 
+        }
+        .lose-text { 
+            color: var(--text-muted) !important; 
+        }
+        /* Адаптив */
+        @media (max-width: 600px) {
+            .machine-wrapper {
+                flex-direction: column;
+                padding: 30px;
+                gap: 20px;
+            }
+            .handle-area {
+                transform: rotate(-90deg);
+                margin-top: -20px;
+            }
+            .reel {
+                width: 70px;
+                height: 100px;
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Happy Casino</h1>
+    <div class="machine-wrapper">
+        <!-- Барабаны -->
+        <div class="reels-container">
+            <div class="reel" id="reel1"><span>🍒</span></div>
+            <div class="reel" id="reel2"><span>🍋</span></div>
+            <div class="reel" id="reel3"><span>🍇</span></div>
+        </div>
+        <!-- Ручка -->
+        <div class="handle-area" id="handle" onclick="pullHandle()">
+            <div class="handle-base"></div>
+            <div class="handle-lever">
+                <div class="handle-knob"></div>            </div>
+        </div>
+    </div>
+    <div id="status">Потяните ручку</div>
+    <script>
+        // Набор символов
+        const symbols = ['🍒', '🍋', '🍇', '🍉', '🔔', '💎', '7️⃣'];
+        // --- НАСТРОЙКИ ВЕРОЯТНОСТЕЙ ---
+        const CHANCE_JACKPOT = 1;   // 1% (3 одинаковых)
+        const CHANCE_SMALL = 10;    // 10% (2 одинаковых) - ИЗМЕНЕНО ПО ЗАПРОСУ
+        // Остальные 89% - проигрыш
+        const reels = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+        const statusDiv = document.getElementById('status');
+        const handleDiv = document.getElementById('handle');
+        let isSpinning = false;
+        function getRandomSymbol() {
+            return symbols[Math.floor(Math.random() * symbols.length)];
+        }
+        function generateResult() {
+            const roll = Math.random() * 100;
+            let s1, s2, s3;
+            if (roll < CHANCE_JACKPOT) {
+                // ДЖЕКПОТ (1%)
+                const sym = getRandomSymbol();
+                return { s1: sym, s2: sym, s3: sym, type: 'jackpot' };
+            } 
+            else if (roll < CHANCE_JACKPOT + CHANCE_SMALL) {
+                // 2 ОДИНАКОВЫХ (10%)
+                const sym = getRandomSymbol();
+                let other = getRandomSymbol();
+                while (other === sym) other = getRandomSymbol();
+                // Случайная позиция пары
+                const pattern = Math.floor(Math.random() * 3);
+                if (pattern === 0) return { s1: sym, s2: sym, s3: other, type: 'small' };
+                if (pattern === 1) return { s1: sym, s2: other, s3: sym, type: 'small' };
+                return { s1: other, s2: sym, s3: sym, type: 'small' };
+            }             else {
+                // ВСЕ РАЗНЫЕ (89%)
+                s1 = getRandomSymbol();
+                s2 = getRandomSymbol();
+                s3 = getRandomSymbol();
+                while (s1 === s2 || s2 === s3 || s1 === s3) {
+                    s1 = getRandomSymbol();
+                    s2 = getRandomSymbol();
+                    s3 = getRandomSymbol();
+                }
+                return { s1, s2, s3, type: 'lose' };
+            }
+        }
+        function pullHandle() {
+            if (isSpinning) return;
+            isSpinning = true;
+            statusDiv.className = "visible";
+            statusDiv.textContent = "Вращение...";
+            statusDiv.className = "visible lose-text";
+            // Анимация ручки
+            handleDiv.classList.add('pulled');
+            setTimeout(() => handleDiv.classList.remove('pulled'), 600);
+            // Запуск вращения
+            reels.forEach(reel => {
+                reel.classList.add('spinning');
+                reel.interval = setInterval(() => {
+                    reel.innerHTML = `<span>${getRandomSymbol()}</span>`;
+                }, 100);
+            });
+            const result = generateResult();
+            // Остановка по очереди
+            setTimeout(() => stopReel(0, result.s1), 800);
+            setTimeout(() => stopReel(1, result.s2), 1400);
+            setTimeout(() => stopReel(2, result.s3, result.type), 2000);
+        }
+        function stopReel(index, symbol, type = null) {
+            const reel = reels[index];
+            clearInterval(reel.interval);
+            reel.classList.remove('spinning');
+            reel.innerHTML = `<span>${symbol}</span>`;
+            if (index === 2) {
+                isSpinning = false;                showResult(type);
+            }
+        }
+        function showResult(type) {
+            if (type === 'jackpot') {
+                statusDiv.textContent = "🎉 ДЖЕКПОТ! 3 ОДИНАКОВЫХ! 🎉";
+                statusDiv.className = "visible win-text";
+                reels.forEach(r => r.style.transform = "scale(1.1)");
+                setTimeout(() => reels.forEach(r => r.style.transform = "scale(1)"), 300);
+            } else if (type === 'small') {
+                statusDiv.textContent = "✨ Хорошо! 2 совпадения!";
+                statusDiv.className = "visible win-text";
+            } else {
+                statusDiv.textContent = "Попробуйте еще раз";
+                statusDiv.className = "visible lose-text";
+            }
+        }
+    </script>
+</body>
+</html>
