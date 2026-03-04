@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19-sandy Wheel</title>
+    <style>
+        /* --- 19-sandy PALETTE --- */
+        :root {
+            --accent: #FDE047;
+            --accent-secondary: #38BDF8;
+            --bg-base: #749CF9;
+            --bg-dark: #1a1a2e;
+            --text-main: #FFFFFF;
+            --text-muted: #BAE6FD;
+            --glass-bg: rgba(253, 224, 71, 0.08);
+            --glass-border: rgba(56, 189, 248, 0.25);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(253, 224, 71, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.2) 0%, transparent 40%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 30px;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px var(--shadow-color);
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 400px;        }
+
+        /* Кнопка настроек */
+        .settings-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            z-index: 100;
+        }
+
+        .settings-toggle:hover {
+            background: var(--accent-secondary);
+            transform: rotate(90deg);
+        }
+
+        .wheel-section {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            /* Плавное вращение */
+            transition: transform 2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            width: 300px;
+            height: 300px;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid var(--accent);
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+
+        .spin-btn {
+            margin-top: 25px;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--bg-dark);
+            background: linear-gradient(135deg, var(--accent), #fbbf24);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(253, 224, 71, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+        }
+
+        .spin-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(253, 224, 71, 0.6);
+        }
+
+        .spin-btn:active {
+            transform: scale(0.95);
+        }
+
+        .spin-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Скрытая панель настроек (по умолчанию скрыта) */
+        .settings-panel {
+            width: 100%;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.5s ease;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .settings-panel.open {
+            max-height: 400px;            opacity: 1;
+            margin-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 20px;
+        }
+
+        h3 {
+            margin: 0 0 15px 0;
+            font-weight: 300;
+            color: var(--accent);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        input[type="text"]:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent);
+        }
+
+        .add-btn {
+            padding: 10px 15px;
+            background: var(--accent-secondary);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;        }
+
+        .add-btn:hover {
+            background: #0ea5e9;
+        }
+
+        .items-list {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 200px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .items-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .items-list::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 5px;
+            border-radius: 6px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 5px;
+        }
+        
+        .delete-btn:hover {            color: #ff0000;
+        }
+
+        #result-display {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent);
+            text-align: center;
+            min-height: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Кнопка скрытия/открытия настроек -->
+        <button class="settings-toggle" onclick="toggleSettings()" title="Настройки">⚙️</button>
+
+        <div class="wheel-section">
+            <div class="pointer"></div>
+            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+            <div id="result-display"></div>
+            <button class="spin-btn" id="spinBtn" onclick="spinWheel()">Крутить!</button>
+        </div>
+
+        <!-- Скрытый редактор -->
+        <div class="settings-panel" id="settingsPanel">
+            <h3>Редактор призов</h3>
+            
+            <div class="input-group">
+                <input type="text" id="itemInput" placeholder="Название..." onkeypress="handleEnter(event)">
+                <button class="add-btn" onclick="addItem()">+</button>
+            </div>
+
+            <div class="items-list" id="itemsList"></div>
+            
+            <div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;">
+                Минимум 2 элемента
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultDisplay = document.getElementById('result-display');
+        const itemsList = document.getElementById('itemsList');        const itemInput = document.getElementById('itemInput');
+        const settingsPanel = document.getElementById('settingsPanel');
+
+        let segments = ['100$', 'Пусто', 'Бонус', '500$', 'Скидка', 'ДЖЕКПОТ'];
+        
+        const colors = [
+            '#FDE047', '#38BDF8', '#749CF9',
+            '#FDE047', '#38BDF8', '#749CF9'
+        ];
+
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        const SPIN_DURATION = 2000; 
+        const MIN_ROTATIONS = 5;    
+
+        renderList();
+        drawWheel();
+
+        // Открыть/закрыть настройки
+        function toggleSettings() {
+            settingsPanel.classList.toggle('open');
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') addItem();
+        }
+
+        function addItem() {
+            const val = itemInput.value.trim();
+            if (val) {
+                segments.push(val);
+                itemInput.value = '';
+                renderList();
+                drawWheel();
+            }
+        }
+
+        function removeItem(index) {
+            if (segments.length <= 2) {
+                alert("Нужно оставить минимум 2 элемента!");
+                return;
+            }
+            segments.splice(index, 1);
+            renderList();
+            drawWheel();
+        }
+
+        function renderList() {
+            itemsList.innerHTML = '';            segments.forEach((seg, index) => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `
+                    <span>${index + 1}. ${seg}</span>
+                    <button class="delete-btn" onclick="removeItem(${index})">×</button>
+                `;
+                itemsList.appendChild(div);
+            });
+            
+            spinBtn.disabled = segments.length < 2;
+            spinBtn.style.opacity = segments.length < 2 ? 0.5 : 1;
+        }
+
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 5;
+            const step = (2 * Math.PI) / segments.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(currentRotation);
+            ctx.translate(-centerX, -centerY);
+
+            for (let i = 0; i < segments.length; i++) {
+                const angle = i * step;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + step);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + step / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#1a1a2e";
+                ctx.font = "bold 14px Arial";
+                ctx.fillText(segments[i], radius - 10, 5);
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+        function spinWheel() {
+            if (isSpinning || segments.length < 2) return;
+            
+            isSpinning = true;
+            resultDisplay.textContent = "";
+            spinBtn.disabled = true;
+
+            // Случайный угол остановки
+            const randomDegree = Math.floor(Math.random() * 360);
+            
+            // ИСПРАВЛЕНО: Всегда положительное значение для вращения ПО ЧАСОВОЙ
+            const totalDegrees = (MIN_ROTATIONS * 360) + randomDegree;
+            const totalRotation = currentRotation + (totalDegrees * Math.PI / 180);
+            
+            // Убрал минус перед totalRotation, чтобы крутилось по часовой
+            canvas.style.transition = `transform ${SPIN_DURATION}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+            canvas.style.transform = `rotate(${totalRotation}rad)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                spinBtn.disabled = false;
+                currentRotation = totalRotation % (2 * Math.PI);
+                
+                // Вычисляем победителя
+                const degrees = (totalRotation * 180 / Math.PI) % 360;
+                const segmentAngle = 360 / segments.length;
+                // Формула корректирована под вращение по часовой
+                let winningIndex = Math.floor(((360 - degrees + 270) % 360) / segmentAngle);
+                winningIndex = winningIndex % segments.length;
+
+                resultDisplay.textContent = `🎉 ${segments[winningIndex]}!`;
+                resultDisplay.style.animation = "none";
+                resultDisplay.offsetHeight;
+                resultDisplay.style.animation = "slideIn 0.5s ease";
+
+            }, SPIN_DURATION);
+        }
+    </script>
+</body>
+</html>
