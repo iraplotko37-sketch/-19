@@ -63,7 +63,7 @@
         }
         input:focus { border-color: #0070f3; }
         input::placeholder { color: #555; }
-        
+
         /* ID бокс */
         #id-box { 
             font-size: 42px; 
@@ -74,7 +74,7 @@
             text-shadow: 0 0 10px rgba(0,255,65,0.5);
             word-break: break-all;
         }
-        
+
         /* Чат */
         #chat-area { 
             background: #050505; 
@@ -107,7 +107,7 @@
             max-width: 100%; 
             border-radius: 8px;
         }
-        
+
         /* Статус */
         .status { 
             font-size: 14px; 
@@ -159,7 +159,6 @@
     <!-- Экран: Админ (ввод ID) -->
     <div id="scr-admin" class="screen hidden">
         <h3>📞 Подключиться к клиенту</h3>
-        <!-- ✅ Исправлено: type="text" и pattern для букв+цифр -->
         <input type="text" id="tid" inputmode="text" pattern="[a-zA-Z0-9_]*" placeholder="Код клиента" autocomplete="off">
         <button class="btn" id="btn-connect" onclick="actAdmin(this)">🔗 СОЕДИНИТЬ</button>
         <button class="btn btn-gray" onclick="showScr('scr-1')">ОТМЕНА</button>
@@ -173,19 +172,14 @@
             <input type="text" id="msg" placeholder="Сообщение..." style="margin:0; font-size:16px;" onkeypress="if(event.key==='Enter')send()">
             <button class="btn" onclick="send()" style="width:70px; margin:0; padding:0; font-size:20px;">➤</button>
         </div>
-        <p class="status" id="chat-status">🔊 Голосовая связь активна</p>
+        <p class="status" id="chat-status">💬 Чат активен</p>
         <button class="btn btn-danger" onclick="disconnect()" style="margin-top:10px">🔴 Завершить</button>
     </div>
-
-    <!-- Аудио элемент -->
-    <audio id="player" autoplay playsinline muted></audio>
 
 <script>
     // === Глобальные переменные ===
     let peer = null;
     let conn = null;
-    let call = null;
-    let localStream = null;
     let myPeerId = null;
     let isConnected = false;
 
@@ -208,27 +202,18 @@
     }
 
     // === КЛИЕНТ ===
-    async function actClient(btn) {
+    function actClient(btn) {
         if(isConnected) return;
-        
+
         const originalText = btn.innerText;
         btn.disabled = true;
-        btn.innerText = "🎤 Запрос доступа...";
+        btn.innerText = "⏳ Генерация кода...";
 
         try {
-            // 1. Запрашиваем микрофон
-            localStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: { 
-                    echoCancellation: true, 
-                    noiseSuppression: true,
-                    autoGainControl: true
-                } 
-            });
-
-            // 2. Генерируем более уникальный ID
+            // Генерируем уникальный ID
             myPeerId = 'c_' + Date.now().toString(36).slice(-4) + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-            
-            // 3. Инициализируем Peer (с публичным сервером PeerJS)
+
+            // Инициализируем Peer (только data connection)
             peer = new Peer(myPeerId, {
                 debug: 2,
                 config: {
@@ -240,16 +225,15 @@
             });
 
             setupPeerEvents('client');
-            
+
             setStatus('main-status', 'Инициализация...', 'warn');
-            btn.innerText = "⏳ Подключение...";
+            btn.innerText = "⏳ Ожидание...";
 
         } catch (err) {
             console.error('Client error:', err);
-            setStatus('main-status', '❌ Нет доступа к микрофону', 'err');
+            setStatus('main-status', '❌ Ошибка инициализации', 'err');
             btn.innerText = originalText;
             btn.disabled = false;
-            alert('Для работы нужен доступ к микрофону!\n\nРазрешите доступ в настройках браузера.');
         }
     }
 
@@ -262,38 +246,28 @@
             showScr('scr-admin');
         } else {
             setStatus('pass-status', '❌ Неверный пароль', 'err');
-            // Вибрация на мобильных при ошибке
             if(navigator.vibrate) navigator.vibrate(200);
         }
     }
 
-    async function actAdmin(btn) {
+    function actAdmin(btn) {
         if(isConnected) return;
-        
+
         const target = document.getElementById('tid').value.trim();
-        
+
         // Валидация
         if(!/^[a-z0-9_]{4,20}$/i.test(target)) {
             setStatus('admin-status', '❌ Введите корректный ID', 'err');
             return;
         }
-        
+
         const originalText = btn.innerText;
         btn.disabled = true;
         btn.innerText = "🔗 Подключение...";
         setStatus('admin-status', '', '');
 
         try {
-            // 1. Запрашиваем микрофон
-            localStream = await navigator.mediaDevices.getUserMedia({ 
-                audio: { 
-                    echoCancellation: true, 
-                    noiseSuppression: true,
-                    autoGainControl: true
-                } 
-            });
-
-            // 2. Создаём Peer для админа (автоматический ID)
+            // Создаём Peer для админа (автоматический ID)
             peer = new Peer(null, {
                 debug: 2,
                 config: {
@@ -309,46 +283,26 @@
 
         } catch (err) {
             console.error('Admin error:', err);
-            setStatus('admin-status', '❌ Ошибка микрофона', 'err');
+            setStatus('admin-status', '❌ Ошибка инициализации', 'err');
             btn.innerText = originalText;
             btn.disabled = false;
-            alert('Нужен доступ к микрофону для голосовой связи.');
         }
     }
 
-    // === Настройка событий Peer (общая логика) ===
+    // === Настройка событий Peer ===
     function setupPeerEvents(role, targetId = null) {
         peer.on('open', (id) => {
             console.log('Peer ID:', id);
-            
+
             if(role === 'client') {
-                // Клиент: показываем свой ID и ждём
                 document.getElementById('id-box').textContent = id;
                 myPeerId = id;
                 showScr('scr-wait');
                 setStatus('wait-status', '✅ Готов к подключению', 'ok');
             }
-            // Админ: ID генерируется автоматически, сразу начинаем подключение
+
             if(role === 'admin' && targetId) {
                 initiateConnection(targetId);
-            }
-        });
-
-        peer.on('call', (incomingCall) => {
-            console.log('📞 Incoming call from:', incomingCall.peer);
-            
-            // Автоматически отвечаем на звонок
-            incomingCall.answer(localStream);
-            handleCall(incomingCall);
-            
-            // Если это клиент и чат ещё не открыт
-            if(role === 'client' && !isConnected) {
-                // Ждём data-connection или показываем чат сразу
-                setTimeout(() => {
-                    if(!conn) {
-                        addSystemMsg('🔊 Голос подключён. Ожидание чата...');
-                    }
-                }, 1000);
             }
         });
 
@@ -362,15 +316,14 @@
             const msg = err.type === 'unavailable-id' ? '❌ ID занят, попробуйте снова' :
                        err.type === 'network' ? '❌ Проблема с сетью' :
                        `❌ Ошибка: ${err.message}`;
-            
+
             if(role === 'client') {
                 setStatus('wait-status', msg, 'err');
             } else {
                 setStatus('admin-status', msg, 'err');
             }
-            
+
             if(err.type === 'unavailable-id' && role === 'client') {
-                // Пробуем новый ID
                 setTimeout(() => {
                     if(peer) peer.destroy();
                     actClient(document.getElementById('btn-client'));
@@ -390,24 +343,8 @@
         });
     }
 
-    // === Инициирование соединения (админ) ===
+    // === Инициирование соединения (только чат) ===
     function initiateConnection(targetId) {
-        if(!localStream) {
-            setStatus('admin-status', '❌ Ошибка: нет аудиопотока', 'err');
-            return;
-        }
-
-        // 1. Голосовой вызов
-        try {
-            call = peer.call(targetId, localStream);
-            handleCall(call);
-        } catch(e) {
-            console.error('Call error:', e);
-            setStatus('admin-status', '❌ Ошибка вызова', 'err');
-            return;
-        }
-
-        // 2. Data connection для чата (с небольшой задержкой для стабильности)
         setTimeout(() => {
             try {
                 conn = peer.connect(targetId, {
@@ -417,51 +354,25 @@
                 handleConnection(conn);
             } catch(e) {
                 console.error('Connect error:', e);
+                setStatus('admin-status', '❌ Не удалось подключиться', 'err');
             }
-        }, 500);
-    }
-
-    // === Обработка голосового вызова ===
-    function handleCall(incomingCall) {
-        call = incomingCall;
-        
-        call.on('stream', (remoteStream) => {
-            console.log('🔊 Remote stream received');
-            const player = document.getElementById('player');
-            player.srcObject = remoteStream;
-            player.play().catch(e => console.log('Play error:', e));
-            
-            // Разблокировка аудио на iOS
-            unlockAudio();
-        });
-
-        call.on('close', () => {
-            console.log('Call closed');
-            if(conn) conn.close();
-            onDisconnect('📞 Голосовая связь завершена');
-        });
-
-        call.on('error', (err) => {
-            console.error('Call error:', err);
-            addSystemMsg('❌ Ошибка голосовой связи');
-        });
+        }, 300);
     }
 
     // === Обработка data-connection (чат) ===
     function handleConnection(dataConn) {
         conn = dataConn;
-        
+
         conn.on('open', () => {
             console.log('💬 Data connection open');
             isConnected = true;
-            
-            // Показываем чат, если ещё не показан
+
             if(document.getElementById('scr-chat').classList.contains('hidden')) {
                 showScr('scr-chat');
             }
-            
+
             addSystemMsg('✅ Подключение установлено');
-            
+
             // Сброс кнопок
             const btns = document.querySelectorAll('.btn');
             btns.forEach(b => {
@@ -473,7 +384,6 @@
 
         conn.on('data', (data) => {
             console.log('📨 Received:', data);
-            // Поддержка и строки, и объектов
             const text = typeof data === 'object' ? data.text : data;
             const type = typeof data === 'object' ? data.type : 'him';
             addMsg(text, type);
@@ -494,9 +404,8 @@
     function send() {
         const input = document.getElementById('msg');
         const text = input.value.trim();
-        
+
         if(text && conn && conn.open) {
-            // Отправляем объект с мета-данными для гибкости
             conn.send({ text: text, type: 'me', ts: Date.now() });
             addMsg(text, 'me');
             input.value = '';
@@ -510,10 +419,8 @@
     function addMsg(text, sender) {
         const chat = document.getElementById('chat-area');
         const div = document.createElement('div');
-        
         div.className = `m ${sender}`;
         div.textContent = text;
-        
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
     }
@@ -521,10 +428,8 @@
     function addSystemMsg(text) {
         const chat = document.getElementById('chat-area');
         const div = document.createElement('div');
-        
         div.className = 'm sys';
         div.textContent = text;
-        
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
     }
@@ -532,35 +437,24 @@
     // === Завершение соединения ===
     function disconnect() {
         console.log('Disconnecting...');
-        
-        if(call) {
-            call.close();
-            call = null;
-        }
-        
+
         if(conn) {
             conn.close();
             conn = null;
         }
-        
+
         if(peer) {
             peer.destroy();
             peer = null;
         }
-        
-        if(localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-            localStream = null;
-        }
-        
+
         isConnected = false;
         myPeerId = null;
-        
+
         // Очистка UI
         document.getElementById('chat-area').innerHTML = '';
         document.getElementById('msg').value = '';
-        document.getElementById('player').srcObject = null;
-        
+
         showScr('scr-1');
         addSystemMsg('🔌 Соединение завершено');
     }
@@ -569,33 +463,15 @@
     function onDisconnect(reason) {
         console.log('Disconnected:', reason);
         isConnected = false;
-        
+
         addSystemMsg(reason);
-        
-        // Возврат на главный экран через небольшую задержку
+
         setTimeout(() => {
-            if(document.getElementById('scr-chat').classList.contains('hidden') === false) {
+            if(!document.getElementById('scr-chat').classList.contains('hidden')) {
                 disconnect();
             }
         }, 2000);
     }
-
-    // === Разблокировка аудио (iOS fix) ===
-    function unlockAudio() {
-        const player = document.getElementById('player');
-        // Пытаемся воспроизвести тишину для разблокировки AudioContext
-        player.muted = false;
-        player.play().then(() => {
-            player.pause();
-            player.muted = true; // Возвращаем mute для автоплея
-        }).catch(() => {
-            // Игнорируем ошибки, попробуем при первом взаимодействии
-        });
-    }
-
-    // Обработчик первого касания для iOS
-    document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
-    document.addEventListener('click', unlockAudio, { once: true });
 
     // === Копирование ID ===
     function copyId() {
@@ -628,10 +504,10 @@
     });
 
     // === Инициализация ===
-    console.log('🚀 Fast Connect loaded');
-    
-    // Проверка поддержки WebRTC
-    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    console.log('🚀 Fast Connect (только чат) загружен');
+
+    // Проверка поддержки WebRTC (data channels)
+    if(!window.RTCPeerConnection) {
         alert('⚠️ Ваш браузер не поддерживает WebRTC. Попробуйте Chrome, Firefox или Safari.');
     }
 </script>
