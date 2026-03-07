@@ -36,21 +36,18 @@
 
         .heart-text {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            /* === УВЕЛИЧЕНО В 1.4 РАЗА === */
+            /* Позиция будет устанавливаться через JavaScript */
             font-size: clamp(2.8rem, 10vw, 5.6rem);
-            /* ============================ */
             font-weight: bold;
             color: #ff9ec1;
             text-shadow: 0 2px 15px rgba(0,0,0,0.15);
             animation: pulse 2s ease-in-out infinite;            
             z-index: 10;
-            text-align: center;            white-space: nowrap;
+            text-align: center;
+            white-space: nowrap;
             pointer-events: none;
+            transform: translate(-50%, -50%);
         }
-
         @keyframes pulse {
             0%, 100% {
                 transform: translate(-50%, -50%) scale(1);
@@ -66,12 +63,18 @@
 <body>
     <div class="container">
         <canvas id="fireworks"></canvas>
-        <div class="heart-text">С 8 МАРТА!</div>
+        <div class="heart-text" id="heartText">С 8 МАРТА!</div>
     </div>
 
     <script>
         const canvas = document.getElementById('fireworks');
         const ctx = canvas.getContext('2d');
+        const heartText = document.getElementById('heartText');
+
+        // === ЦЕНТР СЕРДЦА (используется для текста и частиц) ===
+        let heartCenterX = 0;
+        let heartCenterY = 0;
+        // =======================================================
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -82,6 +85,7 @@
             resizeCanvas();
             heartParticles.length = 0;
             createHeart();
+            updateTextPosition(); // Обновляем позицию текста при ресайзе
         });
 
         const flowerColors = [
@@ -92,11 +96,11 @@
 
         class Particle {
             constructor(x, y, color, type) {
-                this.x = x;
-                this.y = y;
+                this.x = x;                this.y = y;
                 this.color = color;
                 this.type = type;
-                this.size = Math.random() * 5 + 3;                this.speedX = Math.random() * 6 - 3;
+                this.size = Math.random() * 5 + 3;
+                this.speedX = Math.random() * 6 - 3;
                 this.speedY = Math.random() * 6 - 3;
                 this.gravity = 0.05;
                 this.alpha = 1;
@@ -141,11 +145,11 @@
                     ctx.arc(x, y, this.size / 2, 0, Math.PI * 2);
                     ctx.fill();
                 }
-                ctx.beginPath();
-                ctx.arc(0, 0, this.size / 3, 0, Math.PI * 2);
+                ctx.beginPath();                ctx.arc(0, 0, this.size / 3, 0, Math.PI * 2);
                 ctx.fillStyle = '#ffd700';
                 ctx.fill();
             }
+
             drawHeart() {
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
@@ -190,11 +194,11 @@
                 this.exploded = false;
                 this.color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
             }
-
             update() {
                 if (!this.exploded) {
                     this.x += this.velocity.x;
-                    this.y += this.velocity.y;                    this.velocity.y += 0.1;
+                    this.y += this.velocity.y;
+                    this.velocity.y += 0.1;
                     if (this.velocity.y >= 0 || this.y <= this.targetY) {
                         this.explode();
                     }
@@ -239,11 +243,11 @@
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.targetX = targetX;
-                this.targetY = targetY;
-                this.size = Math.random() * 2.5 + 1.5;
+                this.targetY = targetY;                this.size = Math.random() * 2.5 + 1.5;
                 this.color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
                 this.speed = 0.04 + Math.random() * 0.02;
-                this.alpha = 0;                this.maxAlpha = Math.random() * 0.4 + 0.4;
+                this.alpha = 0;
+                this.maxAlpha = Math.random() * 0.4 + 0.4;
             }
 
             update() {
@@ -273,12 +277,22 @@
             return { x, y };
         }
 
+        // === ВЫЧИСЛЕНИЕ ВИЗУАЛЬНОГО ЦЕНТРА СЕРДЦА ===
+        function getHeartVisualCenter() {
+            // Формула сердца асимметрична по Y
+            // Верхняя часть (лопасти): y от 0 до ~13
+            // Нижняя часть (остриё): y от 0 до ~-23
+            // Визуальный центр смещён вверх примерно на 15% от высоты
+            const yOffset = -2; // Корректировка для визуального центра
+            
+            return { x: 0, y: yOffset };
+        }
+        // ============================================
+
         function createHeart() {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            
-            // Доступное пространство с отступами 15%
-            const availableWidth = canvas.width * 0.7;
+                        const availableWidth = canvas.width * 0.7;
             const availableHeight = canvas.height * 0.7;
             
             const heartMaxX = 16;
@@ -286,20 +300,32 @@
             
             const scaleX = availableWidth / (2 * heartMaxX);
             const scaleY = availableHeight / (2 * heartMaxY);
-            
-            // === УВЕЛИЧЕНО В 1.4 РАЗА ===
             const scale = Math.min(scaleX, scaleY) * 0.95 * 1.4;
-            // ============================
+            
+            // === СОХРАНЯЕМ ЦЕНТР СЕРДЦА С УЧЁТОМ ВИЗУАЛЬНОЙ КОРРЕКТИРОВКИ ===
+            const visualCenter = getHeartVisualCenter();
+            heartCenterX = centerX + visualCenter.x * scale;
+            heartCenterY = centerY + visualCenter.y * scale;
+            // ================================================================
             
             for (let i = 0; i < 500; i++) {
-                const t = (Math.PI * 2 * i) / 500;                const point = getHeartPoint(t);
-                const targetX = centerX + point.x * scale;
-                const targetY = centerY + point.y * scale;
+                const t = (Math.PI * 2 * i) / 500;
+                const point = getHeartPoint(t);
+                const targetX = heartCenterX + point.x * scale;
+                const targetY = heartCenterY + point.y * scale;
                 heartParticles.push(new HeartParticle(targetX, targetY));
             }
         }
 
+        // === ФУНКЦИЯ ОБНОВЛЕНИЯ ПОЗИЦИИ ТЕКСТА ===
+        function updateTextPosition() {
+            heartText.style.left = heartCenterX + 'px';
+            heartText.style.top = heartCenterY + 'px';
+        }
+        // ==========================================
+
         createHeart();
+        updateTextPosition(); // Устанавливаем позицию текста сразу после создания сердца
 
         function launchFirework() {
             const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
@@ -315,8 +341,7 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             heartParticles.forEach(particle => {
-                particle.update();
-                particle.draw();
+                particle.update();                particle.draw();
             });
 
             for (let i = fireworks.length - 1; i >= 0; i--) {
