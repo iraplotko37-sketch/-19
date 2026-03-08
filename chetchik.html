@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Таймер События</title>
-    
+
     <!-- PWA Meta -->
     <meta name="theme-color" content="#7DA1ED">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Таймер">
-    
+
     <!-- Manifest -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"Таймер События","short_name":"Таймер","start_url":".","display":"standalone","background_color":"#7DA1ED","theme_color":"#7DA1ED","icons":[{"src":"data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27><rect width=%27192%27 height=%27192%27 fill=%27%237DA1ED%27/><text x=%2796%27 y=%27120%27 font-size=%27100%27 text-anchor=%27middle%27 fill=%27%23FDE047%27 font-weight=%27bold%27>⏱</text></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
-    
+
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         html,body{height:100%;overflow:hidden}
@@ -21,109 +21,100 @@
             font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
             background:#7DA1ED;color:#0f172a;display:flex;align-items:center;justify-content:center;
             padding:12px;position:relative;
+            transition:all .4s cubic-bezier(0.23,1,0.32,1);
         }
         body::after{
             content:'';position:absolute;inset:0;
-            background:radial-gradient(800px at 10% 20%,rgba(253,224,71,0.25),transparent 60%),
-                       radial-gradient(600px at 90% 80%,rgba(253,224,71,0.2),transparent 60%);
-            pointer-events:none;opacity:0.6;
+            background:radial-gradient(900px at 20% 30%,rgba(253,224,71,0.3),transparent 70%),
+                       radial-gradient(700px at 80% 70%,rgba(253,224,71,0.25),transparent 70%);
+            pointer-events:none;opacity:0.65;
         }
+
         .glass{
-            background:rgba(15,23,42,0.95);
-            border:3px solid #FDE047;border-radius:24px;
-            box-shadow:0 0 0 5px rgba(253,224,71,0.2),0 30px 60px rgba(0,0,0,0.4);
+            background:rgba(15,23,42,0.92);
+            border:3px solid #FDE047;
+            border-radius:28px;
+            box-shadow:0 0 0 6px rgba(253,224,71,0.25),0 25px 70px rgba(0,0,0,0.45);
+            backdrop-filter:blur(28px);
+            -webkit-backdrop-filter:blur(28px);
+            transition:all .4s cubic-bezier(0.23,1,0.32,1);
         }
+        .glass:hover{transform:scale(1.015);box-shadow:0 0 0 8px rgba(253,224,71,0.35),0 35px 90px rgba(0,0,0,0.5)}
+
         .btn{
-            background:#7DA1ED;color:#0f172a;font-weight:900;padding:18px 24px;
-            border-radius:16px;border:3px solid #FDE047;cursor:pointer;
-            transition:all 0.12s;font-size:17px;width:100%;
-            display:flex;align-items:center;justify-content:center;gap:10px;
-            text-transform:uppercase;letter-spacing:0.5px;
+            background:#7DA1ED !important;color:#0f172a;font-weight:900;padding:18px 24px;
+            border-radius:18px;border:3px solid #FDE047;cursor:pointer;
+            transition:all .3s cubic-bezier(0.23,1,0.32,1);
+            font-size:17px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+            text-transform:uppercase;letter-spacing:0.6px;
         }
-        .btn:hover{background:#6a8fd9;transform:translateY(-2px);box-shadow:0 12px 35px rgba(0,0,0,0.3)}
-        .btn:active{transform:scale(0.98)}
-        .btn-yellow{background:#FDE047;border-color:#7DA1ED;color:#0f172a}
-        .btn-yellow:hover{background:#fcd34d}
-        .btn-success{background:#7DA1ED;border-color:#86efac;color:#86efac;pointer-events:none}
+        .btn:hover{background:#6a8fd9 !important;transform:translateY(-3px);box-shadow:0 15px 40px rgba(0,0,0,0.35)}
+        .btn:active{transform:scale(0.96)}
+        .btn-success{background:#7DA1ED !important;border-color:#FDE047;color:#FDE047;pointer-events:none}
+
         .input{
-            width:100%;background:rgba(30,41,59,0.9);border:3px solid #7DA1ED;
-            border-radius:16px;padding:18px 20px;color:#fff;font-size:17px;font-weight:600;            outline:none;transition:border-color 0.2s;
+            width:100%;background:rgba(30,41,59,0.92);border:3px solid #7DA1ED;
+            border-radius:18px;padding:18px 20px;color:#fff;font-size:17px;font-weight:600;
+            outline:none;transition:all .3s cubic-bezier(0.23,1,0.32,1);
         }
-        .input:focus{border-color:#FDE047;box-shadow:0 0 0 4px rgba(253,224,71,0.35)}
-        .input::placeholder{color:rgba(255,255,255,0.6)}
-        
+        .input:focus{border-color:#FDE047;box-shadow:0 0 0 5px rgba(253,224,71,0.4)}
+
+        /* СТРОГО ЧИСТЫЙ #7DA1ED — БЕЗ ЛЮБОГО BLUR И ПРОЗРАЧНОСТИ */
         .timer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:28px 0}
         .timer-box{
-            background:#7DA1ED;border:3px solid #FDE047;border-radius:20px;
-            padding:22px 12px;text-align:center;position:relative;
+            background:#7DA1ED; /* ТОЧНО ТВОЙ ЦВЕТ ИЗ НАЧАЛА — НИКАКОЙ ГРЯЗИ */
+            border:3px solid #FDE047;
+            border-radius:20px;
+            padding:18px 8px;text-align:center;position:relative;
+            box-shadow:0 0 0 4px rgba(253,224,71,0.3);
+            transition:all .3s cubic-bezier(0.23,1,0.32,1);
         }
-        .timer-box::after{
-            content:'';position:absolute;inset:0;border-radius:17px;
-            box-shadow:inset 0 0 25px rgba(253,224,71,0.35);pointer-events:none;
-        }
-        .timer-num{font-size:44px;font-weight:900;line-height:1;color:#0f172a}
-        .timer-label{font-size:12px;color:#0f172a;font-weight:800;text-transform:uppercase;margin-top:9px;letter-spacing:0.8px}
-        
-        .fade-in{animation:fadeIn 0.2s ease-out}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-        
-        .modal{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;opacity:0;pointer-events:none;transition:opacity 0.2s}
-        .modal.active{opacity:1;pointer-events:all}
-        .modal-content{transform:scale(0.96);transition:transform 0.2s}
-        .modal.active .modal-content{transform:scale(1)}
-        
-        .step{display:flex;gap:14px;align-items:flex-start;margin:16px 0;padding:14px;background:rgba(125,161,237,0.2);border:2px solid #7DA1ED;border-radius:14px}
-        .step-num{min-width:28px;height:28px;border-radius:50%;background:#FDE047;color:#0f172a;font-weight:900;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid #7DA1ED}
-        
+        .timer-box:hover{transform:scale(1.04)}
+        .timer-num{font-size:40px;font-weight:900;line-height:1;color:#0f172a}
+        .timer-label{font-size:11px;color:#0f172a;font-weight:900;text-transform:uppercase;margin-top:6px;letter-spacing:1px}
+
+        .fade-in{animation:fadeIn 0.4s cubic-bezier(0.23,1,0.32,1)}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
         .hidden{display:none!important}
-        .pulse{animation:pulse 1.6s infinite}
-        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(253,224,71,0.6)}50%{box-shadow:0 0 0 18px rgba(253,224,71,0)}}
-        
-        .status-bar{display:flex;align-items:center;justify-content:center;gap:9px;padding:13px;background:#7DA1ED;border:3px solid #FDE047;border-radius:16px;margin-bottom:18px}
-        .status-dot{width:13px;height:13px;border-radius:50%;background:#FDE047;box-shadow:0 0 0 4px rgba(253,224,71,0.45);animation:blink 1.4s infinite}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
-        .status-text{font-weight:800;color:#0f172a;font-size:14px;text-transform:uppercase;letter-spacing:0.5px}
-        
-        .header-title{font-weight:900;color:#FDE047;text-shadow:0 2px 0 rgba(0,0,0,0.15)}
-        .header-sub{color:rgba(255,255,255,0.9)}
-        
+
+        .header-title{font-weight:900;color:#FDE047;text-shadow:0 3px 0 rgba(0,0,0,0.2);font-size:24px}
+        .header-sub{color:rgba(255,255,255,0.95);font-size:13px}
+
         @media(max-width:480px){
-            .timer-num{font-size:38px}
-            .timer-box{padding:18px 8px}
+            .timer-num{font-size:36px}
+            .timer-box{padding:16px 6px}
             .timer-grid{gap:10px}
-            .btn{padding:16px 20px;font-size:15px}
         }
     </style>
 </head>
 <body>
-    <main class="relative z-10 w-full max-w-lg">        <!-- Setup -->
-        <section id="setup" class="glass p-7 fade-in">
-            <div class="status-bar">
-                <div class="status-dot"></div>
-                <span class="status-text">Готов к запуску</span>
-            </div>
-            <h1 class="text-2xl text-center mb-2 header-title">⏱ ТАЙМЕР</h1>
-            <p class="text-center text-sm header-sub mb-7">До важного события</p>
-            
-            <div class="space-y-5">
+    <main class="relative z-10 w-full max-w-lg">
+
+        <!-- Setup -->
+        <section id="setup" class="glass p-8 fade-in">
+            <h1 class="text-center mb-2 header-title">⏱ ТАЙМЕР</h1>
+            <p class="text-center header-sub mb-8">До важного события</p>
+
+            <div class="space-y-6">
                 <input type="text" id="name" class="input" placeholder="Название события" maxlength="30">
                 <input type="datetime-local" id="date" class="input">
                 <button id="startBtn" class="btn" onclick="window.startCountdown()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#0f172a"><path d="M8 5v14l11-7z"/></svg>
-                    Запустить
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#0f172a"><path d="M8 5v14l11-7z"/></svg>
+                    ЗАПУСТИТЬ
                 </button>
             </div>
         </section>
 
         <!-- Countdown -->
-        <section id="countdown" class="hidden glass p-6 text-center fade-in">
-            <div class="flex justify-between items-start mb-5">
+        <section id="countdown" class="hidden glass p-7 text-center fade-in">
+            <div class="flex justify-between items-center mb-6">
                 <div class="text-left">
-                    <h2 id="evtName" class="font-black text-xl truncate max-w-[200px] header-title">СОБЫТИЕ</h2>
-                    <p id="evtDate" class="text-xs opacity-80 mt-1 header-sub">--.--.----</p>
+                    <h2 id="evtName" class="font-black text-2xl header-title truncate">СОБЫТИЕ</h2>
+                    <p id="evtDate" class="text-xs opacity-75 mt-1 header-sub">--.--.----</p>
                 </div>
-                <button onclick="window.resetTimer()" class="opacity-75 hover:opacity-100 p-2 transition" style="color:#7DA1ED">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <button onclick="window.resetTimer()" class="p-3 text-[#7DA1ED] hover:text-[#FDE047] transition">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 </button>
             </div>
 
@@ -131,168 +122,128 @@
                 <div class="timer-box"><span id="d" class="timer-num">00</span><div class="timer-label">ДНЕЙ</div></div>
                 <div class="timer-box"><span id="h" class="timer-num">00</span><div class="timer-label">ЧАСОВ</div></div>
                 <div class="timer-box"><span id="m" class="timer-num">00</span><div class="timer-label">МИН</div></div>
-                <div class="timer-box"><span id="s" class="timer-num">00</span><div class="timer-label">СЕКУНД</div></div>
+                <div class="timer-box"><span id="s" class="timer-num">00</span><div class="timer-label">СЕК</div></div>
             </div>
 
-            <div class="status-bar" style="margin:20px 0">
-                <div class="status-dot"></div>
-                <span class="status-text">Уведомления: дни + часы</span>
-            </div>
-
-            <div class="space-y-3">
-                <button id="notifBtn" class="btn btn-yellow pulse" onclick="window.requestNotifications()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#0f172a"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    Уведомления
-                </button>
-                <button id="installBtn" class="btn" onclick="window.showInstallModal()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#0f172a"><path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>                    На главный экран
+            <div class="mt-8">
+                <button id="notifBtn" class="btn" onclick="window.requestNotifications()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#0f172a"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    ВКЛЮЧИТЬ УВЕДОМЛЕНИЯ
                 </button>
             </div>
         </section>
     </main>
 
-    <!-- Install Modal -->
-    <div id="modal" class="modal" onclick="if(event.target===this)window.closeInstallModal()">
-        <div class="glass modal-content p-6 max-w-sm w-full" style="border-color:#FDE047">
-            <h3 class="font-black text-lg mb-4 text-center header-title">📲 УСТАНОВКА</h3>
-            <div class="text-sm space-y-3 header-sub">
-                <div class="step"><span class="step-num">1</span><span>Нажмите <b>«Поделиться"</b> (iPhone) или <b>⋮</b> (Android)</span></div>
-                <div class="step"><span class="step-num">2</span><span>Выберите <b>"На экран «Домой»"</b></span></div>
-                <div class="step"><span class="step-num">3</span><span>Таймер всегда под рукой! ✨</span></div>
-            </div>
-            <button class="btn btn-yellow mt-5" onclick="window.closeInstallModal()">ПОНЯТНО</button>
-        </div>
-    </div>
-
     <script>
         (function(){
             'use strict';
-            
-            // === GLOBAL VARIABLES ===
+
             let countdownTimer = null;
             let notifInterval = null;
             let targetTimestamp = null;
             let currentEventName = '';
-            
-            const $ = (id) => document.getElementById(id);
-            const COLORS = { blue: '#7DA1ED', yellow: '#FDE047', dark: '#0f172a' };
-            
-            // === ICON SVG ===
+
+            const $ = id => document.getElementById(id);
+            const COLORS = { blue: '#7DA1ED', yellow: '#FDE047' };
+
             function getIconSVG() {
-                const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
-                    <rect width="192" height="192" fill="${COLORS.blue}"/>
-                    <text x="96" y="120" font-size="90" text-anchor="middle" fill="${COLORS.yellow}" font-weight="bold">⏱</text>
-                </svg>`;
-                return 'data:image/svg+xml,' + encodeURIComponent(svg);
+                return 'data:image/svg+xml,' + encodeURIComponent(`
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+                        <rect width="192" height="192" fill="${COLORS.blue}"/>
+                        <text x="96" y="118" font-size="92" text-anchor="middle" fill="${COLORS.yellow}" font-weight="900">⏱</text>
+                    </svg>
+                `);
             }
-            
-            // === NOTIFICATION BODY (DAYS + HOURS ONLY) ===
+
             function getNotifBody() {
                 if (!targetTimestamp) return '';
                 const dist = targetTimestamp - Date.now();
                 if (dist < 0) return 'Событие уже наступило! 🎉';
                 const days = Math.floor(dist / 86400000);
                 const hours = Math.floor((dist % 86400000) / 3600000);
-                if (days > 0) return `Осталось: ${days}д ${hours}ч`;
-                return `Осталось: ${hours}ч`;            }
-            
-            // === UPDATE TIMER DISPLAY ===
+                return days > 0 ? `Осталось: ${days}д ${hours}ч` : `Осталось: ${hours}ч`;
+            }
+
             function updateDisplay() {
                 if (!targetTimestamp) return;
                 const dist = targetTimestamp - Date.now();
-                
+
                 if (dist < 0) {
                     clearInterval(countdownTimer);
                     ['d','h','m','s'].forEach(id => $(id).textContent = '00');
                     const nameEl = $('evtName');
-                    if (!nameEl.textContent.includes('✓')) {
-                        nameEl.textContent = nameEl.textContent + ' ✓';
-                    }
+                    if (!nameEl.textContent.includes('✓')) nameEl.textContent += ' ✓';
+
                     if (Notification.permission === 'granted') {
                         new Notification('Событие наступило! 🎉', {
                             body: currentEventName,
                             icon: getIconSVG(),
-                            tag: 'countdown',
+                            tag: 'countdown-end',
                             renotify: true,
                             requireInteraction: true
                         });
                     }
                     return;
                 }
-                
+
                 const d = Math.floor(dist / 86400000);
                 const h = Math.floor((dist % 86400000) / 3600000);
                 const m = Math.floor((dist % 3600000) / 60000);
                 const s = Math.floor((dist % 60000) / 1000);
-                
-                $( 'd' ).textContent = String(d).padStart(2, '0');
-                $( 'h' ).textContent = String(h).padStart(2, '0');
-                $( 'm' ).textContent = String(m).padStart(2, '0');
-                $( 's' ).textContent = String(s).padStart(2, '0');
+
+                $('d').textContent = String(d).padStart(2,'0');
+                $('h').textContent = String(h).padStart(2,'0');
+                $('m').textContent = String(m).padStart(2,'0');
+                $('s').textContent = String(s).padStart(2,'0');
             }
-            
-            // === START COUNTDOWN (GLOBAL) ===
+
             window.startCountdown = function(showSetup = true) {
                 const nameInput = $('name');
                 const dateInput = $('date');
-                
+
                 const eventName = (nameInput.value || 'СОБЫТИЕ').toUpperCase();
                 const dateValue = dateInput.value;
-                
-                if (!dateValue) {
-                    alert('Выберите дату и время события!');
-                    return;
-                }
-                                currentEventName = eventName;
+
+                if (!dateValue) { alert('Выберите дату и время!'); return; }
+
+                currentEventName = eventName;
                 targetTimestamp = new Date(dateValue).getTime();
-                
-                // Save to localStorage
-                localStorage.setItem('countdown_evt', JSON.stringify({ name: eventName, date: dateValue }));
-                
-                // Update UI
+
+                localStorage.setItem('countdown_evt', JSON.stringify({name: eventName, date: dateValue}));
+
                 $('evtName').textContent = eventName;
-                $('evtDate').textContent = new Date(dateValue).toLocaleDateString('ru-RU', {
-                    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-                });
-                
+                $('evtDate').textContent = new Date(dateValue).toLocaleDateString('ru-RU', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+
                 if (showSetup) {
                     $('setup').classList.add('hidden');
                     $('countdown').classList.remove('hidden');
                 }
-                
-                // Start timer
+
                 if (countdownTimer) clearInterval(countdownTimer);
                 updateDisplay();
                 countdownTimer = setInterval(updateDisplay, 1000);
-                
-                // Start notifications if permitted
-                if (Notification.permission === 'granted') {
-                    startNotificationUpdates();
-                }
+
+                if (Notification.permission === 'granted') startNotificationUpdates();
             };
-            
-            // === RESET TIMER (GLOBAL) ===
+
             window.resetTimer = function() {
                 localStorage.removeItem('countdown_evt');
                 if (countdownTimer) clearInterval(countdownTimer);
                 if (notifInterval) clearInterval(notifInterval);
                 location.reload();
             };
-            
-            // === NOTIFICATION UPDATES ===
+
             function startNotificationUpdates() {
                 if (notifInterval) clearInterval(notifInterval);
-                
-                // Show initial notification
                 sendNotification();
-                
-                // Update every 60 seconds (to avoid spam)
+
                 notifInterval = setInterval(() => {
                     if (document.hidden && Notification.permission === 'granted') {
                         sendNotification();
                     }
-                }, 60000);
-            }            
+                }, 45000);
+            }
+
             function sendNotification() {
                 if (!targetTimestamp || !currentEventName) return;
                 new Notification(`⏱ ${currentEventName}`, {
@@ -301,123 +252,58 @@
                     tag: 'countdown',
                     renotify: true,
                     requireInteraction: true,
-                    actions: [
-                        { action: 'open', title: 'Открыть' },
-                        { action: 'later', title: 'Позже' }
-                    ]
+                    actions: [{action:'open', title:'Открыть таймер'}]
                 });
             }
-            
-            // === REQUEST NOTIFICATIONS (GLOBAL) ===
+
             window.requestNotifications = function() {
-                if (!('Notification' in window)) {
-                    alert('Ваш браузер не поддерживает уведомления');
-                    return;
-                }
-                
-                Notification.requestPermission().then(function(permission) {
+                if (!('Notification' in window)) { alert('Браузер не поддерживает уведомления'); return; }
+
+                Notification.requestPermission().then(permission => {
                     const btn = $('notifBtn');
                     if (permission === 'granted') {
-                        btn.textContent = '✓ ВКЛЮЧЕНО';
+                        btn.innerHTML = `✓ УВЕДОМЛЕНИЯ ВКЛЮЧЕНЫ`;
                         btn.className = 'btn btn-success';
-                        btn.classList.remove('pulse', 'btn-yellow');
-                        
-                        if (targetTimestamp && currentEventName) {
-                            startNotificationUpdates();
-                        }
-                        
-                        new Notification('Таймер активен ⏱', {
-                            body: 'Уведомления: дни и часы',
-                            icon: getIconSVG(),
-                            requireInteraction: true
+                        if (targetTimestamp) startNotificationUpdates();
+
+                        new Notification('Таймер готов ⏱', {
+                            body: 'Уведомления будут приходить в фоне',
+                            icon: getIconSVG()
                         });
                     } else {
-                        alert('Разрешите уведомления для отслеживания');
+                        alert('Разрешите уведомления в настройках браузера');
                     }
                 });
             };
-            
-            // === INSTALL MODAL (GLOBAL) ===
-            let deferredPrompt = null;
-            
-            window.addEventListener('beforeinstallprompt', function(e) {
-                e.preventDefault();                deferredPrompt = e;
-            });
-            
-            window.showInstallModal = function() {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then(function(choiceResult) {
-                        if (choiceResult.outcome === 'accepted') {
-                            const btn = $('installBtn');
-                            btn.textContent = '✓ УСТАНОВЛЕНО';
-                            btn.className = 'btn btn-success';
-                        }
-                        deferredPrompt = null;
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:application/javascript,' + encodeURIComponent(`
+                    self.addEventListener('install', () => self.skipWaiting());
+                    self.addEventListener('activate', () => self.clients.claim());
+                    self.addEventListener('notificationclick', e => {
+                        e.notification.close();
+                        if (e.action === 'open') clients.openWindow('/');
                     });
-                } else {
-                    const modal = $('modal');
-                    modal.classList.remove('hidden');
-                    setTimeout(function() { modal.classList.add('active'); }, 10);
-                }
-            };
-            
-            window.closeInstallModal = function() {
-                const modal = $('modal');
-                modal.classList.remove('active');
-                setTimeout(function() { modal.classList.add('hidden'); }, 200);
-            };
-            
-            // === HANDLE NOTIFICATION CLICKS ===
-            if ('serviceWorker' in navigator && 'Notification' in window) {
-                navigator.serviceWorker.addEventListener('message', function(event) {
-                    if (event.data && event.data.action === 'notification-click') {
-                        if (event.data.actionType === 'open') {
-                            window.focus();
-                        }
-                    }
-                });
+                `)).then(() => console.log('✅ Service Worker готов'));
             }
-            
-            // === PAGE VISIBILITY ===
-            document.addEventListener('visibilitychange', function() {
+
+            window.addEventListener('DOMContentLoaded', () => {
+                const saved = localStorage.getItem('countdown_evt');
+                if (saved) {
+                    try {
+                        const data = JSON.parse(saved);
+                        $('name').value = data.name;
+                        $('date').value = data.date;
+                        setTimeout(() => window.startCountdown(false), 80);
+                    } catch(e){}
+                }
+            });
+
+            document.addEventListener('visibilitychange', () => {
                 if (document.hidden && Notification.permission === 'granted' && targetTimestamp) {
                     sendNotification();
                 }
             });
-            
-            // === LOAD SAVED EVENT ON START ===
-            window.addEventListener('DOMContentLoaded', function() {
-                const saved = localStorage.getItem('countdown_evt');
-                if (saved) {
-                    try {                        const data = JSON.parse(saved);
-                        $('name').value = data.name.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-                        $('date').value = data.date;
-                        // Auto-start after short delay to ensure DOM is ready
-                        setTimeout(function() { window.startCountdown(false); }, 100);
-                    } catch(e) {
-                        console.log('Could not load saved event');
-                    }
-                }
-                
-                // Hide install button if already in standalone mode
-                if (window.matchMedia('(display-mode: standalone)').matches) {
-                    const installBtn = $('installBtn');
-                    if (installBtn) installBtn.classList.add('hidden');
-                }
-            });
-            
-            // === KEYBOARD SUPPORT FOR BUTTONS ===
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    const active = document.activeElement;
-                    if (active && active.classList.contains('btn')) {
-                        e.preventDefault();
-                        active.click();
-                    }
-                }
-            });
-            
         })();
     </script>
 </body>
