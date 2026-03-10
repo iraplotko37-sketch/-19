@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liquid Glass Wheel</title>
+    <title>Smooth Liquid Wheel</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #7DA1ED;
             --accent: #FDE047;
-            --accent-soft: #fbbf24;
-            --glass: rgba(255, 255, 255, 0.12);
+            --glass: rgba(255, 255, 255, 0.15);
             --glass-border: rgba(255, 255, 255, 0.3);
-            --text-dark: #2c3e50;
         }
 
         * { 
-            box-sizing: border-box; 
-            margin: 0; padding: 0; 
+            box-sizing: border-box; margin: 0; padding: 0; 
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
@@ -27,15 +24,11 @@
             background: radial-gradient(circle at center, #91b3f2 0%, #7DA1ED 100%);
             font-family: 'Manrope', sans-serif;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 20px;
-            overflow-x: hidden;
+            display: flex; align-items: center; justify-content: center;
+            color: white; padding: 20px; overflow: hidden;
         }
 
-        /* SVG Фильтр Жидкого Стекла */
+        /* SVG Фильтр */
         svg#filters { display: none; }
 
         .container {
@@ -44,144 +37,75 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 40px;
-            padding: 40px 30px;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25), 
-                        inset 0 0 20px rgba(255,255,255,0.1);
+            padding: 40px 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
             position: relative;
-            width: 100%;
-            max-width: 440px;
+            width: 100%; max-width: 400px;
             text-align: center;
         }
 
-        /* Кнопка настроек (Фирменный SVG) */
         .settings-toggle {
-            position: absolute;
-            top: 25px;
-            right: 25px;
+            position: absolute; top: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--glass-border);
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 40px; height: 40px; border-radius: 10px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
             z-index: 10;
         }
-        .settings-toggle svg { fill: var(--accent); width: 24px; height: 24px; transition: 0.5s; }
-        .settings-toggle:hover { background: rgba(255,255,255,0.2); transform: scale(1.1); }
-        .settings-toggle:hover svg { transform: rotate(90deg); }
+        .settings-toggle svg { fill: var(--accent); width: 20px; height: 20px; }
 
-        /* Колесо */
-        .wheel-box {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px 0;
-        }
+        .wheel-box { position: relative; margin: 20px 0; display: flex; justify-content: center; }
 
         canvas {
+            width: 300px; height: 300px;
             border-radius: 50%;
-            border: 8px solid var(--glass-border);
-            background: rgba(255,255,255,0.05);
-            width: 320px;
-            height: 320px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            transition: transform 3s cubic-bezier(0.1, 0, 0.2, 1);
+            border: 6px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
         .pointer {
-            position: absolute;
-            top: -10px;
-            width: 30px;
-            height: 40px;
+            position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%);
+            width: 24px; height: 30px;
             background: var(--accent);
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 5;
-            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 3px 2px rgba(0,0,0,0.3));
         }
 
         .spin-btn {
-            margin-top: 30px;
-            padding: 16px 50px;
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--text-dark);
-            background: linear-gradient(135deg, var(--accent), var(--accent-soft));
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(253, 224, 71, 0.3);
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .spin-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(253, 224, 71, 0.5); }
-        .spin-btn:active { transform: translateY(0); }
-        .spin-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
-
-        /* Настройки */
-        .settings-panel {
-            max-height: 0;
-            overflow: hidden;
-            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0;
-        }
-        .settings-panel.open { max-height: 500px; opacity: 1; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--glass-border); }
-
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"] {
-            flex: 1;
-            padding: 14px 18px;
-            border-radius: 15px;
-            border: 1px solid var(--glass-border);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-family: inherit;
-            outline: none;
-        }
-        input[type="text"]:focus { background: rgba(255,255,255,0.2); border-color: var(--accent); }
-
-        .add-btn {
-            padding: 0 20px;
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 16px; font-weight: 800;
+            color: #2c3e50;
             background: var(--accent);
-            border: none;
-            border-radius: 15px;
-            font-weight: 800;
-            cursor: pointer;
+            border: none; border-radius: 15px;
+            cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(253, 224, 71, 0.4);
         }
-
-        .items-list {
-            background: rgba(0,0,0,0.15);
-            border-radius: 20px;
-            padding: 10px;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-        .list-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 15px;
-            background: rgba(255,255,255,0.05);
-            margin-bottom: 5px;
-            border-radius: 12px;
-            font-size: 14px;
-            align-items: center;
-        }
-        .delete-btn { background: none; border: none; color: #ff6b6b; font-size: 20px; cursor: pointer; padding: 0 5px; }
+        .spin-btn:disabled { opacity: 0.5; filter: grayscale(1); }
 
         #result-display {
-            margin-top: 20px;
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--accent);
-            height: 30px;
-            text-shadow: 0 0 15px rgba(253, 224, 71, 0.5);
+            margin-top: 15px; font-size: 20px; font-weight: 800;
+            color: var(--accent); min-height: 28px;
+            text-shadow: 0 0 10px rgba(253, 224, 71, 0.3);
         }
 
+        .settings-panel {
+            max-height: 0; overflow: hidden;
+            transition: 0.4s ease; opacity: 0;
+        }
+        .settings-panel.open { max-height: 400px; opacity: 1; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+
+        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        input {
+            flex: 1; padding: 10px; border-radius: 10px;
+            border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1);
+            color: white; outline: none;
+        }
+        .add-btn { padding: 10px 15px; background: var(--accent); border: none; border-radius: 10px; font-weight: 800; }
+        .items-list { background: rgba(0,0,0,0.1); border-radius: 15px; max-height: 150px; overflow-y: auto; text-align: left; }
+        .list-item { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -189,7 +113,7 @@
     <svg id="filters">
         <filter id="displacementFilter">
             <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G" />
         </filter>
     </svg>
 
@@ -200,14 +124,15 @@
 
         <div class="wheel-box">
             <div class="pointer"></div>
-            <canvas id="wheelCanvas" width="640" height="640"></canvas>
-            <div id="result-display"></div>
-            <button class="spin-btn" id="spinBtn" onclick="spinWheel()">Крутить!</button>
+            <canvas id="wheelCanvas" width="600" height="600"></canvas>
         </div>
+        
+        <div id="result-display"></div>
+        <button class="spin-btn" id="spinBtn" onclick="startSpin()">Крутить!</button>
 
         <div class="settings-panel" id="settingsPanel">
             <div class="input-group">
-                <input type="text" id="itemInput" placeholder="Новый приз..." onkeypress="if(event.key==='Enter')addItem()">
+                <input type="text" id="itemInput" placeholder="Добавить..." onkeypress="if(event.key==='Enter')addItem()">
                 <button class="add-btn" onclick="addItem()">+</button>
             </div>
             <div class="items-list" id="itemsList"></div>
@@ -220,101 +145,111 @@
         const spinBtn = document.getElementById('spinBtn');
         const resultDisplay = document.getElementById('result-display');
         const itemsList = document.getElementById('itemsList');
-        const itemInput = document.getElementById('itemInput');
-        const settingsPanel = document.getElementById('settingsPanel');
 
         let segments = ['100$', 'Пусто', 'Бонус', '500$', 'Скидка', 'ДЖЕКПОТ'];
         const colors = ['#7DA1ED', '#FDE047', '#FFFFFF'];
-        let currentRotation = 0;
+        
+        let angle = 0; // Текущий угол в радианах
         let isSpinning = false;
 
-        function drawWheel() {
+        function draw() {
             const size = canvas.width;
-            const centerX = size / 2;
-            const centerY = size / 2;
+            const center = size / 2;
             const radius = size / 2 - 10;
-            const step = (Math.PI * 2) / segments.length;
+            const arc = (Math.PI * 2) / segments.length;
 
             ctx.clearRect(0, 0, size, size);
-
-            segments.forEach((msg, i) => {
-                const angle = i * step;
+            
+            segments.forEach((text, i) => {
+                const segAngle = angle + i * arc;
                 
                 // Сектор
                 ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, angle, angle + step);
                 ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, radius, segAngle, segAngle + arc);
                 ctx.fill();
                 ctx.strokeStyle = 'rgba(0,0,0,0.1)';
                 ctx.stroke();
 
                 // Текст
                 ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(angle + step / 2);
+                ctx.translate(center, center);
+                ctx.rotate(segAngle + arc / 2);
                 ctx.textAlign = "right";
-                ctx.fillStyle = (colors[i % colors.length] === '#FDE047' || colors[i % colors.length] === '#FFFFFF') ? '#2c3e50' : '#fff';
-                ctx.font = "900 32px Manrope";
-                ctx.fillText(msg, radius - 40, 12);
+                ctx.fillStyle = (colors[i % colors.length] === '#7DA1ED') ? "#fff" : "#2c3e50";
+                ctx.font = "bold 34px Manrope";
+                ctx.fillText(text, radius - 30, 12);
                 ctx.restore();
             });
-
-            // Центр
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
-            ctx.fillStyle = '#fff';
-            ctx.fill();
         }
 
-        function spinWheel() {
-            if (isSpinning || segments.length < 2) return;
+        function startSpin() {
+            if (isSpinning) return;
             isSpinning = true;
             spinBtn.disabled = true;
             resultDisplay.textContent = "";
 
-            const rotations = 5 + Math.random() * 5;
-            const extraDeg = Math.random() * 360;
-            const totalSpin = rotations * 360 + extraDeg;
-            const finalRotation = currentRotation + (totalSpin * Math.PI / 180);
+            let velocity = 0.3 + Math.random() * 0.2; // Начальная скорость
+            const friction = 0.985; // Трение (чем ближе к 1, тем дольше крутится)
+            const stopVelocity = 0.002; // Скорость остановки
 
-            canvas.style.transform = `rotate(${totalSpin + (currentRotation * 180 / Math.PI)}deg)`;
+            function animate() {
+                angle += velocity;
+                velocity *= friction; // Замедляем
 
-            setTimeout(() => {
-                isSpinning = false;
-                spinBtn.disabled = false;
-                currentRotation = (totalSpin + (currentRotation * 180 / Math.PI)) % 360;
-                
-                const segmentAngle = 360 / segments.length;
-                const actualAngle = (360 - (currentRotation % 360) + 270) % 360;
-                const winIdx = Math.floor(actualAngle / segmentAngle) % segments.length;
+                draw();
 
-                resultDisplay.textContent = `🎉 ${segments[winIdx]}`;
-            }, 3000);
+                if (velocity > stopVelocity) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    
+                    // Расчет победителя (стрелка сверху = -90 градусов или 3/2 PI)
+                    const totalArc = Math.PI * 2;
+                    const normalizedAngle = (angle % totalArc + totalArc) % totalArc;
+                    // Индекс сектора под стрелкой
+                    const winningIndex = segments.length - 1 - Math.floor(((normalizedAngle + Math.PI/2) % totalArc) / (totalArc / segments.length));
+                    const finalIdx = (winningIndex + segments.length) % segments.length;
+                    
+                    resultDisplay.textContent = `🎉 ${segments[finalIdx]}`;
+                }
+            }
+            animate();
         }
 
-        function toggleSettings() { settingsPanel.classList.toggle('open'); }
-        
+        function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
+
         function addItem() {
-            const val = itemInput.value.trim();
-            if (val) { segments.push(val); itemInput.value = ''; renderList(); drawWheel(); }
+            const input = document.getElementById('itemInput');
+            if (input.value.trim()) {
+                segments.push(input.value.trim());
+                input.value = "";
+                renderList();
+                draw();
+            }
         }
 
         function removeItem(i) {
-            if (segments.length > 2) { segments.splice(i, 1); renderList(); drawWheel(); }
+            if (segments.length > 2) {
+                segments.splice(i, 1);
+                renderList();
+                draw();
+            }
         }
 
         function renderList() {
             itemsList.innerHTML = segments.map((s, i) => `
                 <div class="list-item">
                     <span>${s}</span>
-                    <button class="delete-btn" onclick="removeItem(${i})">&times;</button>
+                    <button style="color:#ff6b6b; border:none; background:none; cursor:pointer;" onclick="removeItem(${i})">×</button>
                 </div>
             `).join('');
         }
 
         renderList();
-        drawWheel();
+        draw();
     </script>
 </body>
 </html>
