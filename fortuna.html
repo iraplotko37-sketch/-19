@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smooth Liquid Wheel</title>
+    <title>Fast Liquid Wheel</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,7 +28,6 @@
             color: white; padding: 20px; overflow: hidden;
         }
 
-        /* SVG Фильтр */
         svg#filters { display: none; }
 
         .container {
@@ -82,7 +81,9 @@
             border: none; border-radius: 15px;
             cursor: pointer; text-transform: uppercase;
             box-shadow: 0 5px 15px rgba(253, 224, 71, 0.4);
+            transition: transform 0.1s;
         }
+        .spin-btn:active { transform: scale(0.95); }
         .spin-btn:disabled { opacity: 0.5; filter: grayscale(1); }
 
         #result-display {
@@ -149,7 +150,7 @@
         let segments = ['100$', 'Пусто', 'Бонус', '500$', 'Скидка', 'ДЖЕКПОТ'];
         const colors = ['#7DA1ED', '#FDE047', '#FFFFFF'];
         
-        let angle = 0; // Текущий угол в радианах
+        let angle = 0; 
         let isSpinning = false;
 
         function draw() {
@@ -162,8 +163,6 @@
             
             segments.forEach((text, i) => {
                 const segAngle = angle + i * arc;
-                
-                // Сектор
                 ctx.beginPath();
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.moveTo(center, center);
@@ -172,7 +171,6 @@
                 ctx.strokeStyle = 'rgba(0,0,0,0.1)';
                 ctx.stroke();
 
-                // Текст
                 ctx.save();
                 ctx.translate(center, center);
                 ctx.rotate(segAngle + arc / 2);
@@ -190,13 +188,14 @@
             spinBtn.disabled = true;
             resultDisplay.textContent = "";
 
-            let velocity = 0.3 + Math.random() * 0.2; // Начальная скорость
-            const friction = 0.985; // Трение (чем ближе к 1, тем дольше крутится)
-            const stopVelocity = 0.002; // Скорость остановки
+            // ИЗМЕНЕНИЯ ТУТ:
+            let velocity = 0.6 + Math.random() * 0.3; // Увеличили начальный толчок (было ~0.3)
+            const friction = 0.955;                   // Усилили трение (было 0.985)
+            const stopVelocity = 0.003;               // Порог остановки
 
             function animate() {
                 angle += velocity;
-                velocity *= friction; // Замедляем
+                velocity *= friction; 
 
                 draw();
 
@@ -206,10 +205,8 @@
                     isSpinning = false;
                     spinBtn.disabled = false;
                     
-                    // Расчет победителя (стрелка сверху = -90 градусов или 3/2 PI)
                     const totalArc = Math.PI * 2;
                     const normalizedAngle = (angle % totalArc + totalArc) % totalArc;
-                    // Индекс сектора под стрелкой
                     const winningIndex = segments.length - 1 - Math.floor(((normalizedAngle + Math.PI/2) % totalArc) / (totalArc / segments.length));
                     const finalIdx = (winningIndex + segments.length) % segments.length;
                     
@@ -220,7 +217,6 @@
         }
 
         function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
-
         function addItem() {
             const input = document.getElementById('itemInput');
             if (input.value.trim()) {
@@ -230,7 +226,6 @@
                 draw();
             }
         }
-
         function removeItem(i) {
             if (segments.length > 2) {
                 segments.splice(i, 1);
@@ -238,7 +233,6 @@
                 draw();
             }
         }
-
         function renderList() {
             itemsList.innerHTML = segments.map((s, i) => `
                 <div class="list-item">
