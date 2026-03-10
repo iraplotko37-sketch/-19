@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liquid Clock</title>
+    <title>Liquid Clock Deluxe</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #7DA1ED;
+            --primary: #E0E9F0; /* Светлый фон */
             --accent: #FDE047;
-            --glass: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass: rgba(255, 255, 255, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.4);
             --clock-main: #FFFFFF;
+            --clock-main-rgb: 255, 255, 255;
+            --tick-color: rgba(255, 255, 255, 0.4);
         }
 
         [data-theme="dark"] {
@@ -20,16 +22,18 @@
             --accent: #ff6b6b;
             --glass: rgba(0, 0, 0, 0.2);
             --glass-border: rgba(255, 255, 255, 0.1);
+            --tick-color: rgba(255, 255, 255, 0.2);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body { 
             background: var(--primary); 
-            background: radial-gradient(circle at center, var(--primary) 0%, #4A69AD 100%);
+            background: radial-gradient(circle at center, var(--primary) 0%, #BCC9D4 100%);
             font-family: 'Manrope', sans-serif; 
             height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             color: white;
@@ -37,29 +41,11 @@
             transition: background 0.5s ease;
         }
 
-        /* Эффект Liquid Glass */
-        .clock-container { 
-            background: var(--glass); 
-            backdrop-filter: blur(20px) url(#displacementFilter);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); 
-            border-radius: 50%; 
-            width: min(85vw, 450px);
-            height: min(85vw, 450px);
-            box-shadow: 
-                inset 0 0 30px rgba(255,255,255,0.1),
-                0 25px 50px -12px rgba(0, 0, 0, 0.3);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Полноэкранный оверлей */
+        /* Оверлей */
         #audio-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             backdrop-filter: blur(10px);
             z-index: 100;
             display: flex;
@@ -71,39 +57,109 @@
             transition: opacity 0.5s;
         }
 
+        /* Контейнер Liquid Glass */
+        .glass-panel { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px) url(#displacementFilter);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); 
+            box-shadow: 
+                inset 0 0 30px rgba(255,255,255,0.1),
+                0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Механические часы */
+        .clock-mechanical { 
+            border-radius: 50%; 
+            width: min(85vw, 450px);
+            height: min(85vw, 450px);
+        }
+
+        /* Электронные часы */
+        .clock-digital { 
+            border-radius: 32px; 
+            width: min(85vw, 450px);
+            height: min(40vw, 200px);
+            padding: 30px;
+        }
+
         /* Стрелки */
         .hand {
             position: absolute;
             background-color: var(--clock-main);
             border-radius: 10px;
-            transition: background-color 0.5s ease;
             z-index: 5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background-color 0.5s ease, opacity 0.5s ease;
         }
 
         .hand.hour { width: 8px; height: 25%; transform-origin: 50% 100%; top: 25%; }
         .hand.minute { width: 5px; height: 35%; transform-origin: 50% 100%; top: 15%; }
-        .hand.second { width: 2px; height: 40%; background-color: var(--accent); transform-origin: 50% 100%; top: 10%; }
+        .hand.second { width: 2px; height: 40%; background-color: var(--accent); transform-origin: 50% 100%; top: 10%; z-index: 6; }
 
-        /* Цифровой дисплей */
-        .digital-display {
+        /* Центральная точка */
+        .clock-center {
             position: absolute;
-            bottom: 25%;
-            display: flex;
-            gap: 10px;
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--clock-main);
-            opacity: 0.8;
-            pointer-events: none;
+            width: 14px; height: 14px;
+            background: #2c3e50;
+            background: radial-gradient(circle at 3px 3px, #576574, #2c3e50);
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: opacity 0.5s ease;
         }
-        #d-sec { font-weight: 300; font-size: 1.5rem; align-self: flex-end; margin-bottom: 5px; color: var(--accent); }
 
+        /* Шкала делений */
         .clock-face {
             position: absolute;
             width: 100%; height: 100%;
             pointer-events: none;
+            transition: opacity 0.5s ease;
         }
-        .clock-tick { stroke: var(--clock-main); opacity: 0.3; }
+        .clock-tick { stroke: var(--tick-color); stroke-linecap: round; }
+        .clock-tick.hour { stroke: rgba(var(--clock-main-rgb), 0.7); }
+
+        /* Цифровой дисплей (стильный, отдельный) */
+        .digital-display {
+            display: flex;
+            gap: 15px;
+            font-size: min(12vw, 5rem);
+            font-weight: 800;
+            color: var(--clock-main);
+            opacity: 0.9;
+            transition: opacity 0.5s ease;
+            line-height: 1;
+        }
+        #d-sec { font-weight: 300; font-size: min(8vw, 3rem); align-self: flex-end; color: var(--accent); }
+
+        /* Утилиты скрытия */
+        .hidden { opacity: 0 !important; pointer-events: none; }
+        
+        /* Переключатель режимов */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 10px 20px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+        .controls label { font-size: 0.8rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; cursor: pointer; }
+        
+        /* Toggle CSS */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 34px; border: 1px solid var(--glass-border); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--accent); transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
     </style>
 </head>
@@ -123,19 +179,29 @@
 
     <audio id="clock-audio" src="/audio/clock.mp3" preload="auto" loop></audio>
 
-    <div class="clock-container">
+    <div id="clock-wrapper" class="glass-panel clock-mechanical">
         <svg class="clock-face" viewBox="0 0 100 100"></svg>
 
-        <div class="digital-display">
+        <div class="hand hour" id="hand-hour"></div>
+        <div class="hand minute" id="hand-min"></div>
+        <div class="hand second" id="hand-sec"></div>
+        <div class="clock-center"></div>
+
+        <div class="digital-display hidden" id="digital-display">
             <span id="d-hour">00</span>
             <span>:</span>
             <span id="d-min">00</span>
             <span id="d-sec">00</span>
         </div>
+    </div>
 
-        <div class="hand hour" id="hand-hour"></div>
-        <div class="hand minute" id="hand-min"></div>
-        <div class="hand second" id="hand-sec"></div>
+    <div class="controls">
+        <label for="mode-switch">Мех.</label>
+        <label class="switch">
+            <input type="checkbox" id="mode-switch">
+            <span class="slider"></span>
+        </label>
+        <label for="mode-switch">Элек.</label>
     </div>
 
     <script>
@@ -143,57 +209,43 @@
         const audio = document.getElementById('clock-audio');
         const overlay = document.getElementById('audio-overlay');
         const syncStatus = document.getElementById('sync-status');
+        const clockWrapper = document.getElementById('clock-wrapper');
+        const modeSwitch = document.getElementById('mode-switch');
         let audioEnabled = false;
 
         // Синхронизация времени
         async function syncServerTime() {
             try {
-                const start = Date.now();
                 const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
                 const data = await response.json();
-                const end = Date.now();
-                const serverTime = new Date(data.utc_datetime).getTime();
-                const latency = (end - start) / 2;
-                timeOffset = (serverTime + latency) - end;
+                timeOffset = (new Date(data.utc_datetime).getTime()) - Date.now();
                 syncStatus.textContent = "(Время синхронизировано)";
             } catch (e) {
                 syncStatus.textContent = "(Используется системное время)";
             }
         }
 
-        // Темы
+        // Логика тем и звука (без изменений)
         function updateTheme(hour) {
             const urlParams = new URLSearchParams(window.location.search);
-            const manual = urlParams.get('theme');
-            const theme = manual || (hour >= 19 || hour < 7 ? 'dark' : 'light');
-            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-theme', urlParams.get('theme') || (hour >= 19 || hour < 7 ? 'dark' : 'light'));
         }
 
-        // Управление звуком
         overlay.addEventListener('click', () => {
             audioEnabled = true;
-            syncAudio();
+            if (audio.paused) audio.play().catch(() => {});
             overlay.style.opacity = '0';
             setTimeout(() => overlay.remove(), 500);
         });
 
-        function syncAudio() {
-            if (!audioEnabled) return;
-            const now = new Date(Date.now() + timeOffset);
-            const targetTime = now.getSeconds() + (now.getMilliseconds() / 1000);
-            if (Math.abs(audio.currentTime - targetTime) > 0.5) audio.currentTime = targetTime;
-            if (audio.paused) audio.play().catch(() => {});
-        }
-
-        // Отрисовка делений
+        // Отрисовка делений (теперь полные 60)
         function initTicks() {
             const svg = document.querySelector('.clock-face');
             for (let i = 0; i < 60; i++) {
-                if (i % 5 !== 0 && i <= 45) continue;
                 const angle = (i * 6) * (Math.PI / 180);
                 const isHour = i % 5 === 0;
-                const r = 45;
-                const len = isHour ? 5 : 2;
+                const r = 46;
+                const len = isHour ? 4 : 1.5; 
                 const x1 = 50 + Math.sin(angle) * r;
                 const y1 = 50 - Math.cos(angle) * r;
                 const x2 = 50 + Math.sin(angle) * (r - len);
@@ -202,12 +254,13 @@
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", x1); line.setAttribute("y1", y1);
                 line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-                line.setAttribute("class", "clock-tick");
-                line.setAttribute("stroke-width", isHour ? 1 : 0.5);
+                line.setAttribute("class", isHour ? "clock-tick hour" : "clock-tick");
+                line.setAttribute("stroke-width", isHour ? 1.2 : 0.6);
                 svg.appendChild(line);
             }
         }
 
+        // Основной цикл обновления
         function update() {
             const now = new Date(Date.now() + timeOffset);
             const h = now.getHours();
@@ -217,12 +270,13 @@
 
             updateTheme(h);
 
-            // Digital
-            document.getElementById('d-hour').textContent = String(h).padStart(2, '0');
-            document.getElementById('d-min').textContent = String(m).padStart(2, '0');
-            document.getElementById('d-sec').textContent = String(s).padStart(2, '0');
+            // Цифровой дисплей
+            const pad = (n) => String(n).padStart(2, '0');
+            document.getElementById('d-hour').textContent = pad(h);
+            document.getElementById('d-min').textContent = pad(m);
+            document.getElementById('d-sec').textContent = pad(s);
 
-            // Analog
+            // Аналоговые стрелки (плавное движение секундной)
             const sDeg = (s * 6) + (ms * 0.006);
             const mDeg = (m * 6) + (s * 0.1);
             const hDeg = ((h % 12) * 30) + (m * 0.5);
@@ -231,10 +285,41 @@
             document.getElementById('hand-min').style.transform = `rotate(${mDeg}deg)`;
             document.getElementById('hand-hour').style.transform = `rotate(${hDeg}deg)`;
 
-            if (audioEnabled && ms < 20) syncAudio();
-
             requestAnimationFrame(update);
         }
+
+        // Переключение режимов
+        modeSwitch.addEventListener('change', () => {
+            const isDigital = modeSwitch.checked;
+            
+            // Получаем все элементы
+            const hands = document.querySelectorAll('.hand, .clock-center');
+            const face = document.querySelector('.clock-face');
+            const digital = document.getElementById('digital-display');
+
+            if (isDigital) {
+                // Переключаем в Электронный
+                clockWrapper.classList.remove('clock-mechanical');
+                clockWrapper.classList.add('clock-digital');
+                
+                hands.forEach(el => el.classList.add('hidden'));
+                face.classList.add('hidden');
+                
+                setTimeout(() => digital.classList.remove('hidden'), 200);
+
+            } else {
+                // Переключаем в Механический
+                clockWrapper.classList.remove('clock-digital');
+                clockWrapper.classList.add('clock-mechanical');
+
+                digital.classList.add('hidden');
+                
+                setTimeout(() => {
+                    hands.forEach(el => el.classList.remove('hidden'));
+                    face.classList.remove('hidden');
+                }, 200);
+            }
+        });
 
         initTicks();
         syncServerTime();
