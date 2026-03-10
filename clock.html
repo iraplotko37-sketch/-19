@@ -3,33 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liquid Clock Deluxe</title>
+    <title>Liquid Clock Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #E0E9F0; /* Светлый фон */
+            --primary: #7DA1ED; /* Тот самый голубой */
             --accent: #FDE047;
-            --glass: rgba(255, 255, 255, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.3);
             --clock-main: #FFFFFF;
-            --clock-main-rgb: 255, 255, 255;
             --tick-color: rgba(255, 255, 255, 0.4);
         }
 
-        [data-theme="dark"] {
-            --primary: #161625;
-            --accent: #ff6b6b;
-            --glass: rgba(0, 0, 0, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --tick-color: rgba(255, 255, 255, 0.2);
+        * { 
+            box-sizing: border-box; 
+            margin: 0; padding: 0; 
+            -webkit-tap-highlight-color: transparent; /* Убираем голубое выделение при тапе */
+            user-select: none; /* Запрещаем выделение текста */
         }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body { 
             background: var(--primary); 
-            background: radial-gradient(circle at center, var(--primary) 0%, #BCC9D4 100%);
+            background: radial-gradient(circle at center, #91b3f2 0%, #7DA1ED 100%);
             font-family: 'Manrope', sans-serif; 
             height: 100vh;
             display: flex;
@@ -38,214 +34,207 @@
             justify-content: center;
             color: white;
             overflow: hidden;
-            transition: background 0.5s ease;
         }
 
-        /* Оверлей */
+        /* SVG Фильтр Жидкого Стекла */
+        svg#filters { display: none; }
+
+        /* Оверлей включения звука */
         #audio-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
             z-index: 100;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
             cursor: pointer;
-            transition: opacity 0.5s;
+            transition: opacity 0.4s ease;
         }
 
-        /* Контейнер Liquid Glass */
+        /* Основной контейнер */
         .glass-panel { 
             background: var(--glass); 
             backdrop-filter: blur(20px) url(#displacementFilter);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border); 
             box-shadow: 
-                inset 0 0 30px rgba(255,255,255,0.1),
-                0 25px 50px -12px rgba(0, 0, 0, 0.2);
+                inset 0 0 25px rgba(255,255,255,0.1),
+                0 30px 60px -12px rgba(0, 0, 0, 0.25);
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Механические часы */
-        .clock-mechanical { 
+        /* Режимы корпуса */
+        .mode-mechanical { 
             border-radius: 50%; 
-            width: min(85vw, 450px);
-            height: min(85vw, 450px);
+            width: min(88vw, 420px);
+            height: min(88vw, 420px);
         }
 
-        /* Электронные часы */
-        .clock-digital { 
-            border-radius: 32px; 
-            width: min(85vw, 450px);
-            height: min(40vw, 200px);
-            padding: 30px;
+        .mode-digital { 
+            border-radius: 40px; 
+            width: min(90vw, 440px);
+            height: 180px;
         }
 
-        /* Стрелки */
+        /* Механические элементы */
         .hand {
             position: absolute;
             background-color: var(--clock-main);
             border-radius: 10px;
             z-index: 5;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background-color 0.5s ease, opacity 0.5s ease;
+            transform-origin: 50% 100%;
+            transition: opacity 0.3s ease;
         }
+        .hand.hour { width: 8px; height: 26%; top: 24%; }
+        .hand.minute { width: 5px; height: 36%; top: 14%; }
+        .hand.second { width: 2px; height: 42%; background-color: var(--accent); top: 8%; z-index: 6; }
 
-        .hand.hour { width: 8px; height: 25%; transform-origin: 50% 100%; top: 25%; }
-        .hand.minute { width: 5px; height: 35%; transform-origin: 50% 100%; top: 15%; }
-        .hand.second { width: 2px; height: 40%; background-color: var(--accent); transform-origin: 50% 100%; top: 10%; z-index: 6; }
-
-        /* Центральная точка */
         .clock-center {
             position: absolute;
-            width: 14px; height: 14px;
-            background: #2c3e50;
-            background: radial-gradient(circle at 3px 3px, #576574, #2c3e50);
+            width: 16px; height: 16px;
+            background: radial-gradient(circle at 30% 30%, #ecf0f1, #2c3e50);
             border-radius: 50%;
             z-index: 10;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            transition: opacity 0.5s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: opacity 0.3s ease;
         }
 
-        /* Шкала делений */
         .clock-face {
             position: absolute;
             width: 100%; height: 100%;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.3s ease;
         }
         .clock-tick { stroke: var(--tick-color); stroke-linecap: round; }
-        .clock-tick.hour { stroke: rgba(var(--clock-main-rgb), 0.7); }
+        .clock-tick.hour { stroke: rgba(255,255,255,0.8); stroke-width: 1.5; }
 
-        /* Цифровой дисплей (стильный, отдельный) */
-        .digital-display {
+        /* Электронное табло (Улучшенное) */
+        .digital-wrapper {
             display: flex;
-            gap: 15px;
-            font-size: min(12vw, 5rem);
-            font-weight: 800;
-            color: var(--clock-main);
-            opacity: 0.9;
-            transition: opacity 0.5s ease;
-            line-height: 1;
+            align-items: baseline;
+            gap: 8px;
+            transition: opacity 0.3s ease, transform 0.4s ease;
         }
-        #d-sec { font-weight: 300; font-size: min(8vw, 3rem); align-self: flex-end; color: var(--accent); }
 
-        /* Утилиты скрытия */
-        .hidden { opacity: 0 !important; pointer-events: none; }
-        
-        /* Переключатель режимов */
+        .digit-group {
+            background: rgba(0,0,0,0.1);
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: min(14vw, 4.5rem);
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            min-width: 1.4ch;
+            text-align: center;
+        }
+
+        .dots { font-size: 3rem; font-weight: 800; animation: blink 1s infinite; opacity: 0.6; }
+        @keyframes blink { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.8; } }
+
+        #d-sec { font-size: 1.8rem; color: var(--accent); margin-left: 5px; text-shadow: none; }
+
+        /* Логика скрытия */
+        .hidden { opacity: 0 !important; pointer-events: none; transform: scale(0.9); }
+
+        /* Переключатель (Исправлен) */
         .controls {
-            margin-top: 40px;
+            margin-top: 50px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            background: var(--glass);
+            gap: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            border-radius: 100px;
             border: 1px solid var(--glass-border);
-            padding: 10px 20px;
-            border-radius: 50px;
-            backdrop-filter: blur(10px);
         }
-        .controls label { font-size: 0.8rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; cursor: pointer; }
-        
-        /* Toggle CSS */
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 34px; border: 1px solid var(--glass-border); }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: var(--accent); transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .controls label { font-size: 11px; font-weight: 800; letter-spacing: 2px; cursor: pointer; color: rgba(255,255,255,0.6); transition: 0.3s; }
+        input:checked ~ .label-elec { color: var(--accent); }
+        input:not(:checked) ~ .label-mech { color: var(--accent); }
+
+        .switch { position: relative; width: 50px; height: 26px; cursor: pointer; }
+        .switch input { display: none; }
+        .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.2); border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); }
+        .slider:before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input:checked + .slider:before { transform: translateX(24px); background: var(--accent); }
 
     </style>
 </head>
 <body>
 
-    <svg style="display: none">
+    <svg id="filters">
         <filter id="displacementFilter">
             <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" result="noise" />
             <feDisplacementMap in="SourceGraphic" in2="noise" scale="12" xChannelSelector="R" yChannelSelector="G" />
         </filter>
     </svg>
 
-    <div id="audio-overlay">
-        <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 10px;">Включить звук</div>
-        <span id="sync-status" style="opacity: 0.6; font-size: 0.9rem;">(Синхронизация...)</span>
+    <div id="audio-overlay" onclick="enableAudio()">
+        <h1 style="font-size: 2rem; margin-bottom: 10px;">Liquid Clock</h1>
+        <p style="opacity: 0.7;">Нажми, чтобы запустить</p>
     </div>
 
-    <audio id="clock-audio" src="/audio/clock.mp3" preload="auto" loop></audio>
+    <audio id="clock-audio" src="/audio/clock.mp3" loop></audio>
 
-    <div id="clock-wrapper" class="glass-panel clock-mechanical">
+    <div id="clock-wrapper" class="glass-panel mode-mechanical">
         <svg class="clock-face" viewBox="0 0 100 100"></svg>
 
         <div class="hand hour" id="hand-hour"></div>
         <div class="hand minute" id="hand-min"></div>
         <div class="hand second" id="hand-sec"></div>
-        <div class="clock-center"></div>
+        <div class="clock-center" id="center-dot"></div>
 
-        <div class="digital-display hidden" id="digital-display">
-            <span id="d-hour">00</span>
-            <span>:</span>
-            <span id="d-min">00</span>
-            <span id="d-sec">00</span>
+        <div class="digital-wrapper hidden" id="digital-wrapper">
+            <div class="digit-group" id="d-hour">00</div>
+            <div class="dots">:</div>
+            <div class="digit-group" id="d-min">00</div>
+            <div id="d-sec">00</div>
         </div>
     </div>
 
     <div class="controls">
-        <label for="mode-switch">Мех.</label>
+        <label class="label-mech">MECH</label>
         <label class="switch">
-            <input type="checkbox" id="mode-switch">
+            <input type="checkbox" id="mode-switch" onchange="toggleMode()">
             <span class="slider"></span>
         </label>
-        <label for="mode-switch">Элек.</label>
+        <label class="label-elec">ELEC</label>
     </div>
 
     <script>
         let timeOffset = 0;
         const audio = document.getElementById('clock-audio');
-        const overlay = document.getElementById('audio-overlay');
-        const syncStatus = document.getElementById('sync-status');
-        const clockWrapper = document.getElementById('clock-wrapper');
+        const wrapper = document.getElementById('clock-wrapper');
         const modeSwitch = document.getElementById('mode-switch');
-        let audioEnabled = false;
-
-        // Синхронизация времени
-        async function syncServerTime() {
+        
+        // Синхронизация
+        async function syncTime() {
             try {
-                const response = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
-                const data = await response.json();
-                timeOffset = (new Date(data.utc_datetime).getTime()) - Date.now();
-                syncStatus.textContent = "(Время синхронизировано)";
-            } catch (e) {
-                syncStatus.textContent = "(Используется системное время)";
-            }
+                const res = await fetch('https://worldtimeapi.org/api/timezone/Etc/UTC');
+                const data = await res.json();
+                timeOffset = new Date(data.utc_datetime).getTime() - Date.now();
+            } catch(e) {}
         }
 
-        // Логика тем и звука (без изменений)
-        function updateTheme(hour) {
-            const urlParams = new URLSearchParams(window.location.search);
-            document.documentElement.setAttribute('data-theme', urlParams.get('theme') || (hour >= 19 || hour < 7 ? 'dark' : 'light'));
+        function enableAudio() {
+            audio.play().catch(() => {});
+            document.getElementById('audio-overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('audio-overlay').remove(), 400);
         }
 
-        overlay.addEventListener('click', () => {
-            audioEnabled = true;
-            if (audio.paused) audio.play().catch(() => {});
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 500);
-        });
-
-        // Отрисовка делений (теперь полные 60)
         function initTicks() {
             const svg = document.querySelector('.clock-face');
             for (let i = 0; i < 60; i++) {
-                const angle = (i * 6) * (Math.PI / 180);
+                const angle = i * 6 * (Math.PI / 180);
                 const isHour = i % 5 === 0;
-                const r = 46;
-                const len = isHour ? 4 : 1.5; 
+                const r = 47;
+                const len = isHour ? 4 : 1.5;
                 const x1 = 50 + Math.sin(angle) * r;
                 const y1 = 50 - Math.cos(angle) * r;
                 const x2 = 50 + Math.sin(angle) * (r - len);
@@ -254,13 +243,34 @@
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", x1); line.setAttribute("y1", y1);
                 line.setAttribute("x2", x2); line.setAttribute("y2", y2);
-                line.setAttribute("class", isHour ? "clock-tick hour" : "clock-tick");
-                line.setAttribute("stroke-width", isHour ? 1.2 : 0.6);
+                line.classList.add('clock-tick');
+                if (isHour) line.classList.add('hour');
                 svg.appendChild(line);
             }
         }
 
-        // Основной цикл обновления
+        function toggleMode() {
+            const isElec = modeSwitch.checked;
+            const mechElements = [
+                document.getElementById('hand-hour'),
+                document.getElementById('hand-min'),
+                document.getElementById('hand-sec'),
+                document.getElementById('center-dot'),
+                document.querySelector('.clock-face')
+            ];
+            const digital = document.getElementById('digital-wrapper');
+
+            if (isElec) {
+                wrapper.className = 'glass-panel mode-digital';
+                mechElements.forEach(el => el.classList.add('hidden'));
+                digital.classList.remove('hidden');
+            } else {
+                wrapper.className = 'glass-panel mode-mechanical';
+                mechElements.forEach(el => el.classList.remove('hidden'));
+                digital.classList.add('hidden');
+            }
+        }
+
         function update() {
             const now = new Date(Date.now() + timeOffset);
             const h = now.getHours();
@@ -268,15 +278,13 @@
             const s = now.getSeconds();
             const ms = now.getMilliseconds();
 
-            updateTheme(h);
-
-            // Цифровой дисплей
-            const pad = (n) => String(n).padStart(2, '0');
+            // Цифровые
+            const pad = n => String(n).padStart(2, '0');
             document.getElementById('d-hour').textContent = pad(h);
             document.getElementById('d-min').textContent = pad(m);
             document.getElementById('d-sec').textContent = pad(s);
 
-            // Аналоговые стрелки (плавное движение секундной)
+            // Аналоговые
             const sDeg = (s * 6) + (ms * 0.006);
             const mDeg = (m * 6) + (s * 0.1);
             const hDeg = ((h % 12) * 30) + (m * 0.5);
@@ -288,41 +296,8 @@
             requestAnimationFrame(update);
         }
 
-        // Переключение режимов
-        modeSwitch.addEventListener('change', () => {
-            const isDigital = modeSwitch.checked;
-            
-            // Получаем все элементы
-            const hands = document.querySelectorAll('.hand, .clock-center');
-            const face = document.querySelector('.clock-face');
-            const digital = document.getElementById('digital-display');
-
-            if (isDigital) {
-                // Переключаем в Электронный
-                clockWrapper.classList.remove('clock-mechanical');
-                clockWrapper.classList.add('clock-digital');
-                
-                hands.forEach(el => el.classList.add('hidden'));
-                face.classList.add('hidden');
-                
-                setTimeout(() => digital.classList.remove('hidden'), 200);
-
-            } else {
-                // Переключаем в Механический
-                clockWrapper.classList.remove('clock-digital');
-                clockWrapper.classList.add('clock-mechanical');
-
-                digital.classList.add('hidden');
-                
-                setTimeout(() => {
-                    hands.forEach(el => el.classList.remove('hidden'));
-                    face.classList.remove('hidden');
-                }, 200);
-            }
-        });
-
         initTicks();
-        syncServerTime();
+        syncTime();
         update();
     </script>
 </body>
