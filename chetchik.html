@@ -73,8 +73,23 @@
             letter-spacing: 0.05em;
             cursor: pointer;
             transition: all 0.2s;
+            margin-bottom: 10px;
         }
-        .btn-main:active { transform: scale(0.95); opacity: 0.9; }
+        .btn-main:active { transform: scale(0.95); }
+
+        .btn-outline {
+            width: 100%;
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 12px;
+            border-radius: 16px;
+            text-transform: uppercase;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
 
         .timer-display { display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-bottom: 32px; }
         #w-days { font-size: 110px; font-weight: 900; color: var(--accent); letter-spacing: -0.05em; line-height: 1; }
@@ -105,6 +120,9 @@
 
     <div id="setup" class="card" style="padding: 32px;">
         <h1>Новое событие</h1>
+        
+        <button id="notif-btn" onclick="enableNotifs()" class="btn-outline">🔔 Включить уведомления</button>
+
         <input type="text" id="name" placeholder="Что ждем?" class="input-field">
         <input type="date" id="date" class="input-field" style="margin-bottom: 24px;">
         <button onclick="save()" class="btn-main">Создать таймер</button>
@@ -132,10 +150,21 @@
 
         let timerInterval;
 
-        // Запрос разрешений на уведомления
-        async function initNotifications() {
-            if ("Notification" in window) {
-                await Notification.requestPermission();
+        // Включение уведомлений вручную
+        async function enableNotifs() {
+            if (!("Notification" in window)) {
+                alert("Ваш браузер не поддерживает уведомления.");
+                return;
+            }
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                document.getElementById('notif-btn').classList.add('hidden');
+                // Тестовое уведомление
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification("Таймер", { body: "Уведомления успешно включены!", icon: "https://cdn-icons-png.flaticon.com/512/3652/3652191.png" });
+                });
+            } else {
+                alert("Уведомления заблокированы. Пожалуйста, разрешите их в настройках сайта.");
             }
         }
 
@@ -144,7 +173,7 @@
                 navigator.serviceWorker.ready.then(reg => {
                     reg.showNotification(title, {
                         body: body,
-                        tag: 'timer-update', // Заменяет старое уведомление новым
+                        tag: 'timer-update',
                         icon: 'https://cdn-icons-png.flaticon.com/512/3652/3652191.png',
                         silent: true,
                         renotify: false
@@ -154,7 +183,6 @@
         }
 
         function save() {
-            initNotifications();
             const nameInput = document.getElementById('name').value;
             const dateInput = document.getElementById('date').value;
             if (!dateInput) return alert('Выбери дату!');
@@ -188,8 +216,7 @@
             document.getElementById('w-mins').textContent = m.toString().padStart(2, '0');
             document.getElementById('w-secs').textContent = s.toString().padStart(2, '0');
 
-            // Уведомление в шторку, когда сайт свернут (раз в час или когда захочешь)
-            // Чтобы не частить, шлем только когда секунды равны 0 (раз в минуту)
+            // Пуш раз в минуту, если сайт скрыт
             if (document.hidden && s === 0) {
                 sendPush(data.name, `Осталось: ${d}д ${h}ч ${m}м`);
             }
@@ -213,10 +240,16 @@
         }
 
         window.onload = () => {
-            // Регистрация сервис-воркера для уведомлений
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('data:application/javascript,self.addEventListener("fetch",()=>{})');
             }
+            
+            // Если уведомления уже разрешены — прячем кнопку
+            if (Notification.permission === "granted") {
+                const nBtn = document.getElementById('notif-btn');
+                if (nBtn) nBtn.classList.add('hidden');
+            }
+
             const today = new Date().toISOString().split("T")[0];
             document.getElementById('date').setAttribute('min', today);
             const savedData = store.get();
