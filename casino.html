@@ -3,333 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>19-sandy Slots</title>
+    <title>19-sandy Premium Slots</title>
     <style>
-        /* --- 19-sandy PALETTE & VARIABLES --- */
         :root {
             --accent: #FDE047;
             --accent-secondary: #38BDF8;
             --bg-base: #749CF9;
-            --bg-dark: #1a1a2e;
             --text-main: #FFFFFF;
             --text-muted: #BAE6FD;
-            --glass-bg: rgba(253, 224, 71, 0.08);
-            --glass-border: rgba(56, 189, 248, 0.25);
-            --hover-bg: rgba(253, 224, 71, 0.15);
-            --hover-glow: rgba(56, 189, 248, 0.35);
-            --shadow-color: rgba(0, 0, 0, 0.4);
-            --shadow-dark: rgba(0, 0, 0, 0.6);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.3);
         }
+        
         body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            width: 100vw;
+            margin: 0; padding: 0; height: 100vh; width: 100vw;
             background-color: var(--bg-base);
             background-image: 
                 radial-gradient(circle at 0% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 50%),
                 radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            color: var(--text-main);
-        }
-        h1 { 
-            font-weight: 300;
-            letter-spacing: 3px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-            font-size: 2rem;
-            text-shadow: 0 4px 10px var(--shadow-color);
-            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .machine-wrapper {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 40px 50px;
-            border-radius: 30px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 40px var(--shadow-color);
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            position: relative;
-        }
-        .reels-container {
-            display: flex;
-            gap: 15px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: inset 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .reel {
-            width: 100px;
-            height: 140px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 70px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.2s;
-        }
-        .reel.spinning span {
-            display: block;
-            animation: blurScroll 0.1s infinite linear;
-            filter: blur(2px);
-            opacity: 0.8;
-        }
-        @keyframes blurScroll {
-            0% { transform: translateY(-20px); }
-            50% { transform: translateY(20px); }
-            100% { transform: translateY(-20px); }
-        }
-        /* --- РУЧКА --- */
-        .handle-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            height: 180px;
-            justify-content: flex-start;
-            cursor: pointer;
-            transition: transform 0.1s;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .handle-area:active {
-            transform: scale(0.98);
-        }
-        .handle-base {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--accent), #fbbf24);
-            border-radius: 50%;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            z-index: 2;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .handle-base::after {
-            content: '';
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-        }
-        .handle-lever {
-            width: 14px;
-            height: 140px;
-            background: linear-gradient(to right, #cbd5e1, #ffffff, #cbd5e1);
-            position: absolute;
-            top: 30px;
-            left: 23px;
-            transform-origin: top center;
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            border-radius: 10px;
-            z-index: 1;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
-            border: 1px solid rgba(0,0,0,0.1);
-        }
-        .handle-knob {
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle at 30% 30%, var(--accent-secondary), #0284c7);
-            border-radius: 50%;
-            position: absolute;
-            bottom: -25px;
-            left: -18px;
-            box-shadow: 0 5px 10px var(--shadow-color);
-            border: 2px solid #fff;
-        }
-        .handle-area.pulled .handle-lever {
-            transform: rotate(45deg);
-        }
-        #status {
-            margin-top: 30px;
-            font-size: 28px;
-            font-weight: 600;
-            color: var(--text-main);
-            min-height: 40px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-shadow: 0 2px 4px var(--shadow-color);
-        }
-        #status.visible {
-            opacity: 1;
-        }
-        .win-text { 
-            color: var(--accent) !important; 
-            text-shadow: 0 0 15px var(--accent); 
-        }
-        .lose-text { 
-            color: var(--text-muted) !important; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; color: var(--text-main);
         }
 
-        /* ==================== МОБИЛЬНАЯ ВЕРСИЯ РУЧКИ ==================== */
+        .glass-filter { position: absolute; width: 0; height: 0; }
+
+        /* ЖИДКИЙ ЗАГОЛОВОК */
+        h1 { 
+            font-weight: 300; letter-spacing: 4px; margin-bottom: 20px;
+            text-transform: uppercase; font-size: 2.2rem;
+            text-shadow: 0 4px 15px var(--shadow-color);
+            background: linear-gradient(135deg, var(--accent), #fff, var(--accent-secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            backdrop-filter: blur(2px) url(#liquid);
+        }
+
+        .machine-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) url(#liquid);
+            -webkit-backdrop-filter: blur(25px);
+            /* УМЕНЬШЕННЫЙ РАЗМЕР КОРПУСА */
+            padding: 30px 40px; border-radius: 35px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 30px 60px var(--shadow-color), inset 0 0 25px rgba(255,255,255,0.15);
+            display: flex; align-items: center; gap: 30px; position: relative;
+        }
+
+        .reels-container {
+            display: flex; gap: 12px; background: rgba(0, 0, 0, 0.25);
+            padding: 15px; border-radius: 25px; box-shadow: inset 0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        .reel {
+            /* УМЕНЬШЕННЫЙ РАЗМЕР БАРАБАНОВ */
+            width: 80px; height: 110px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; border: 1px solid var(--glass-border);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 45px; /* Размер эмодзи */
+        }
+
+        .reel span { display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+
+        .reel.spinning span {
+            animation: blurScroll 0.1s infinite linear;
+            filter: blur(6px); opacity: 0.5;
+        }
+
+        @keyframes blurScroll {
+            0% { transform: translateY(-50px); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* --- РУЧКА --- */
+        .handle-area {
+            display: flex; flex-direction: column; align-items: center;
+            position: relative; height: 160px; cursor: pointer;
+            transition: transform 0.1s; -webkit-tap-highlight-color: transparent;
+        }
+
+        .handle-base {
+            width: 55px; height: 55px; background: var(--glass-bg);
+            backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
+            border-radius: 50%; z-index: 5; position: relative;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .handle-lever {
+            width: 16px; height: 120px; background: var(--glass-bg);
+            backdrop-filter: blur(5px); border: 1px solid var(--glass-border);
+            position: absolute; top: 50px; left: 20px;
+            transform-origin: top center; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            border-radius: 0 0 10px 10px; z-index: 1;
+        }
+
+        .handle-knob {
+            width: 50px; height: 50px; background: var(--glass-bg);
+            backdrop-filter: blur(10px) url(#liquid); border: 1px solid var(--glass-border);
+            border-radius: 50%; position: absolute; bottom: -25px; left: -17px;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.5), 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .handle-area.pulled .handle-lever { transform: rotate(45deg); }
+
+        #status {
+            margin-top: 25px; font-size: 24px; font-weight: 600;
+            min-height: 40px; text-align: center; opacity: 0; transition: opacity 0.3s;
+        }
+        #status.visible { opacity: 1; }
+        .win-text { color: var(--accent); text-shadow: 0 0 20px rgba(253, 224, 71, 0.6); }
+        .lose-text { color: var(--text-muted); }
+
         @media (max-width: 600px) {
-            .machine-wrapper {
-                flex-direction: column;
-                padding: 35px 25px;
-                gap: 35px;
-            }
-            
-            .handle-area {
-                transform: none;
-                flex-direction: row;
-                height: 85px;
-                width: 200px;
-                justify-content: center;
-                align-items: center;
-            }
-            
-            .handle-base {
-                margin-right: 15px;
-            }
-            
-            .handle-lever {
-                width: 140px;
-                height: 16px;
-                transform: none;
-                position: relative;
-                top: 0;
-                left: 0;
-                transform-origin: left center;
-            }
-            
-            .handle-knob {
-                bottom: auto;
-                left: 122px;
-                top: -18px;
-            }
-            
-            .handle-area.pulled .handle-lever {
-                transform: rotate(40deg) !important;
-            }
-            
-            .reel {
-                width: 75px;
-                height: 105px;
-                font-size: 50px;
-            }
+            .machine-wrapper { flex-direction: column; padding: 25px 20px; gap: 25px; }
+            .handle-area { flex-direction: row; height: 75px; width: 180px; justify-content: center; }
+            .handle-base { margin-right: 12px; }
+            .handle-lever { width: 110px; height: 16px; position: relative; top: 0; left: -10px; transform-origin: left center; }
+            .handle-knob { bottom: -17px; left: 95px; top: auto; }
+            .handle-area.pulled .handle-lever { transform: rotate(40deg) !important; }
+            .reel { width: 65px; height: 90px; font-size: 35px; }
         }
     </style>
 </head>
 <body>
+
+    <svg class="glass-filter">
+        <filter id="liquid">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
+        </filter>
+    </svg>
+
     <h1>Happy Casino</h1>
+    
     <div class="machine-wrapper">
         <div class="reels-container">
-            <div class="reel" id="reel1"><span>🍒</span></div>
-            <div class="reel" id="reel2"><span>🍋</span></div>
-            <div class="reel" id="reel3"><span>🍇</span></div>
+            <div class="reel" id="reel1"></div>
+            <div class="reel" id="reel2"></div>
+            <div class="reel" id="reel3"></div>
         </div>
+        
         <div class="handle-area" id="handle" onclick="pullHandle()">
             <div class="handle-base"></div>
-            <div class="handle-lever">
-                <div class="handle-knob"></div>
-            </div>
+            <div class="handle-lever"><div class="handle-knob"></div></div>
         </div>
     </div>
-    <div id="status">Потяните ручку</div>
+    
+    <div id="status">Испытай удачу</div>
 
     <script>
-        const symbols = ['🍒', '🍋', '🍇', '🍉', '🔔', '💎', '7️⃣'];
-        const CHANCE_JACKPOT = 1;
-        const CHANCE_SMALL = 10;
+        // ЗАМЕНА НА ЭМОДЗИ
+        const symbols = ['7️⃣', '💎', '🔔', '🍒', '🌟'];
         const reels = [document.getElementById('reel1'), document.getElementById('reel2'), document.getElementById('reel3')];
         const statusDiv = document.getElementById('status');
         const handleDiv = document.getElementById('handle');
         let isSpinning = false;
 
-        function getRandomSymbol() {
-            return symbols[Math.floor(Math.random() * symbols.length)];
-        }
-
-        function generateResult() {
-            const roll = Math.random() * 100;
-            let s1, s2, s3;
-            if (roll < CHANCE_JACKPOT) {
-                const sym = getRandomSymbol();
-                return { s1: sym, s2: sym, s3: sym, type: 'jackpot' };
-            } else if (roll < CHANCE_JACKPOT + CHANCE_SMALL) {
-                const sym = getRandomSymbol();
-                let other = getRandomSymbol();
-                while (other === sym) other = getRandomSymbol();
-                const pattern = Math.floor(Math.random() * 3);
-                if (pattern === 0) return { s1: sym, s2: sym, s3: other, type: 'small' };
-                if (pattern === 1) return { s1: sym, s2: other, s3: sym, type: 'small' };
-                return { s1: other, s2: sym, s3: sym, type: 'small' };
-            } else {
-                s1 = getRandomSymbol(); s2 = getRandomSymbol(); s3 = getRandomSymbol();
-                while (s1 === s2 || s2 === s3 || s1 === s3) {
-                    s1 = getRandomSymbol(); s2 = getRandomSymbol(); s3 = getRandomSymbol();
-                }
-                return { s1, s2, s3, type: 'lose' };
-            }
+        function init() {
+            reels.forEach(r => r.innerHTML = `<span>${symbols[Math.floor(Math.random()*symbols.length)]}</span>`);
         }
 
         function pullHandle() {
             if (isSpinning) return;
             isSpinning = true;
-            statusDiv.className = "visible";
-            statusDiv.textContent = "Вращение...";
             statusDiv.className = "visible lose-text";
+            statusDiv.textContent = "Вращение...";
             handleDiv.classList.add('pulled');
             setTimeout(() => handleDiv.classList.remove('pulled'), 600);
 
             reels.forEach(reel => {
                 reel.classList.add('spinning');
                 reel.interval = setInterval(() => {
-                    reel.innerHTML = `<span>${getRandomSymbol()}</span>`;
+                    reel.innerHTML = `<span>${symbols[Math.floor(Math.random()*symbols.length)]}</span>`;
                 }, 100);
             });
 
-            const result = generateResult();
-            setTimeout(() => stopReel(0, result.s1), 800);
-            setTimeout(() => stopReel(1, result.s2), 1400);
-            setTimeout(() => stopReel(2, result.s3, result.type), 2000);
+            setTimeout(() => stopReel(0, symbols[Math.floor(Math.random()*symbols.length)]), 800);
+            setTimeout(() => stopReel(1, symbols[Math.floor(Math.random()*symbols.length)]), 1400);
+            setTimeout(() => stopReel(2, symbols[Math.floor(Math.random()*symbols.length)]), 2000);
         }
 
-        function stopReel(index, symbol, type = null) {
+        function stopReel(index, symbol) {
             const reel = reels[index];
             clearInterval(reel.interval);
             reel.classList.remove('spinning');
             reel.innerHTML = `<span>${symbol}</span>`;
+            reel.dataset.res = symbol;
             if (index === 2) {
                 isSpinning = false;
-                showResult(type);
+                checkResult();
             }
         }
 
-        function showResult(type) {
-            if (type === 'jackpot') {
-                statusDiv.textContent = "🎉 ДЖЕКПОТ! 3 ОДИНАКОВЫХ! 🎉";
+        function checkResult() {
+            const res = reels.map(r => r.dataset.res);
+            if (res[0] === res[1] && res[1] === res[2]) {
+                statusDiv.textContent = "🎉 КРУПНЫЙ ВЫИГРЫШ! 🎉";
                 statusDiv.className = "visible win-text";
-                reels.forEach(r => r.style.transform = "scale(1.1)");
-                setTimeout(() => reels.forEach(r => r.style.transform = "scale(1)"), 300);
-            } else if (type === 'small') {
-                statusDiv.textContent = "✨ Хорошо! 2 совпадения!";
+            } else if (res[0] === res[1] || res[1] === res[2] || res[0] === res[2]) {
+                statusDiv.textContent = "✨ 2 Совпадения!";
                 statusDiv.className = "visible win-text";
             } else {
                 statusDiv.textContent = "Попробуйте еще раз";
                 statusDiv.className = "visible lose-text";
             }
         }
+
+        init();
     </script>
 </body>
-</html>
+</
