@@ -7,6 +7,9 @@
     
     <meta name="theme-color" content="#7DA1ED">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Таймер","short_name":"Таймер","start_url":".","display":"standalone","background_color":"#7DA1ED","theme_color":"#7DA1ED","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3652/3652191.png","sizes":"512x512","type":"image/png"}]}'>
 
     <style>
         :root { 
@@ -16,7 +19,6 @@
             --white-15: rgba(255, 255, 255, 0.15);
         }
 
-        /* Базовые настройки как в Tailwind */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body { 
@@ -31,27 +33,25 @@
             overflow: hidden;
         }
 
-        /* Карточка с эффектом стекла */
         .card { 
             background: var(--white-15); 
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.2); 
-            border-radius: 24px; /* rounded-3xl */
+            border-radius: 24px; 
             width: 100%;
             max-width: 384px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
-        /* Заголовки */
         h1 { font-size: 24px; font-weight: 900; margin-bottom: 24px; text-align: center; }
         h2 { font-size: 18px; font-weight: 500; opacity: 0.8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
 
-        /* Поля ввода */
         .input-field { 
             width: 100%;
             background: var(--white-20); 
             border: 1px solid rgba(255,255,255,0.3); 
-            border-radius: 12px; /* rounded-xl */
+            border-radius: 12px; 
             padding: 14px 16px;
             color: white;
             font-size: 16px;
@@ -60,31 +60,26 @@
             margin-bottom: 12px;
         }
         .input-field:focus { border-color: var(--accent); background: rgba(255,255,255,0.3); }
-        .input-field::placeholder { color: #d1d5db; }
 
-        /* Кнопка */
         .btn-main { 
             width: 100%;
             background: var(--accent); 
             color: #4A4A22; 
             font-weight: 800; 
             padding: 16px;
-            border-radius: 16px; /* rounded-2xl */
+            border-radius: 16px; 
             border: none;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             cursor: pointer;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             transition: all 0.2s;
         }
         .btn-main:active { transform: scale(0.95); opacity: 0.9; }
 
-        /* Таймер */
         .timer-display { display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-bottom: 32px; }
-        #w-days { font-size: 120px; font-weight: 900; color: var(--accent); letter-spacing: -0.05em; line-height: 1; }
+        #w-days { font-size: 110px; font-weight: 900; color: var(--accent); letter-spacing: -0.05em; line-height: 1; }
         .unit-main { font-size: 24px; font-weight: 700; opacity: 0.8; }
 
-        /* Сетка мелких блоков */
         .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
         .stat-card { 
             background: var(--white-15); 
@@ -96,16 +91,13 @@
         .stat-val { font-size: 24px; font-weight: 700; }
         .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; opacity: 0.6; margin-top: 4px; }
 
-        /* Утилиты */
         .hidden { display: none !important; }
         .reset-btn { 
             background: none; border: none; border-bottom: 1px solid white; 
-            color: white; opacity: 0.4; font-size: 12px; text-transform: uppercase; 
-            letter-spacing: 0.1em; cursor: pointer; transition: 0.2s;
+            color: white; opacity: 0.4; font-size: 11px; text-transform: uppercase; 
+            letter-spacing: 0.1em; cursor: pointer;
         }
-        .reset-btn:hover { opacity: 1; }
 
-        /* Фикс для календаря */
         input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.6; }
     </style>
 </head>
@@ -120,27 +112,15 @@
 
     <div id="widget" class="hidden" style="width: 100%; max-width: 384px; text-align: center;">
         <h2 id="w-name">Событие</h2>
-        
         <div class="timer-display">
             <span id="w-days">0</span>
             <span class="unit-main">дн</span>
         </div>
-        
         <div class="grid-stats">
-            <div class="stat-card">
-                <div id="w-hours" class="stat-val">00</div>
-                <div class="stat-label">часов</div>
-            </div>
-            <div class="stat-card">
-                <div id="w-mins" class="stat-val">00</div>
-                <div class="stat-label">минут</div>
-            </div>
-            <div class="stat-card">
-                <div id="w-secs" class="stat-val">00</div>
-                <div class="stat-label">секунд</div>
-            </div>
+            <div class="stat-card"><div id="w-hours" class="stat-val">00</div><div class="stat-label">часов</div></div>
+            <div class="stat-card"><div id="w-mins" class="stat-val">00</div><div class="stat-label">минут</div></div>
+            <div class="stat-card"><div id="w-secs" class="stat-val">00</div><div class="stat-label">секунд</div></div>
         </div>
-
         <button onclick="reset()" class="reset-btn">Сбросить всё</button>
     </div>
 
@@ -152,29 +132,39 @@
 
         let timerInterval;
 
+        // Запрос разрешений на уведомления
+        async function initNotifications() {
+            if ("Notification" in window) {
+                await Notification.requestPermission();
+            }
+        }
+
+        function sendPush(title, body) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(title, {
+                        body: body,
+                        tag: 'timer-update', // Заменяет старое уведомление новым
+                        icon: 'https://cdn-icons-png.flaticon.com/512/3652/3652191.png',
+                        silent: true,
+                        renotify: false
+                    });
+                });
+            }
+        }
+
         function save() {
+            initNotifications();
             const nameInput = document.getElementById('name').value;
             const dateInput = document.getElementById('date').value;
-            if (!dateInput) return alert('Пожалуйста, выбери дату!');
+            if (!dateInput) return alert('Выбери дату!');
 
             const targetDate = new Date(dateInput);
             targetDate.setHours(0, 0, 0, 0);
 
-            const eventData = {
-                name: nameInput || 'Важное событие',
-                date: targetDate.getTime()
-            };
-
+            const eventData = { name: nameInput || 'Событие', date: targetDate.getTime() };
             store.set(eventData);
             startWidget(eventData);
-        }
-
-        function reset() {
-            if (confirm('Удалить таймер?')) {
-                clearInterval(timerInterval);
-                localStorage.removeItem('event_timer');
-                location.reload();
-            }
         }
 
         function update() {
@@ -185,7 +175,6 @@
             
             if (diff <= 0) {
                 ['w-days','w-hours','w-mins','w-secs'].forEach(id => document.getElementById(id).textContent = id === 'w-days' ? '0' : '00');
-                document.title = "Свершилось!";
                 return;
             }
 
@@ -198,7 +187,12 @@
             document.getElementById('w-hours').textContent = h.toString().padStart(2, '0');
             document.getElementById('w-mins').textContent = m.toString().padStart(2, '0');
             document.getElementById('w-secs').textContent = s.toString().padStart(2, '0');
-            document.title = `${d}д. до ${data.name}`;
+
+            // Уведомление в шторку, когда сайт свернут (раз в час или когда захочешь)
+            // Чтобы не частить, шлем только когда секунды равны 0 (раз в минуту)
+            if (document.hidden && s === 0) {
+                sendPush(data.name, `Осталось: ${d}д ${h}ч ${m}м`);
+            }
         }
 
         function startWidget(data) {
@@ -210,7 +204,19 @@
             update();
         }
 
+        function reset() {
+            if (confirm('Удалить?')) {
+                clearInterval(timerInterval);
+                localStorage.removeItem('event_timer');
+                location.reload();
+            }
+        }
+
         window.onload = () => {
+            // Регистрация сервис-воркера для уведомлений
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('data:application/javascript,self.addEventListener("fetch",()=>{})');
+            }
             const today = new Date().toISOString().split("T")[0];
             document.getElementById('date').setAttribute('min', today);
             const savedData = store.get();
