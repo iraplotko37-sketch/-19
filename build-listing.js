@@ -1,6 +1,6 @@
 // filename: build-listing.js
 // (c) 2026 BlankHtmlPage
-// Style: Liquid Glassmorphism ("19-sandy") - Final Optimized Version
+// Style: Liquid Glassmorphism ("19-sandy") - Final Integrated UI
 
 const fs = require('fs');
 const path = require('path');
@@ -24,16 +24,11 @@ const getIcon = (name, isDir) => {
     if (isDir) return 'fa-folder';
     const ext = path.extname(name).toLowerCase();
     const icons = {
-        // Audio & Video
         '.mp3': 'fa-file-audio', '.wav': 'fa-file-audio', '.mp4': 'fa-file-video', '.webm': 'fa-file-video',
-        // Images
         '.jpg': 'fa-file-image', '.jpeg': 'fa-file-image', '.png': 'fa-file-image', '.svg': 'fa-file-image', '.webp': 'fa-file-image',
-        // Archives
         '.zip': 'fa-file-zipper', '.rar': 'fa-file-zipper', '.7z': 'fa-file-zipper',
-        // Docs
         '.pdf': 'fa-file-pdf', '.txt': 'fa-file-lines', '.doc': 'fa-file-word', '.docx': 'fa-file-word',
-        // Code
-        '.js': 'fa-file-code', '.html': 'fa-file-code', '.css': 'fa-file-code', '.json': 'fa-file-code', '.py': 'fa-file-code'
+        '.js': 'fa-file-code', '.html': 'fa-file-code', '.css': 'fa-file-code', '.json': 'fa-file-code'
     };
     return icons[ext] || 'fa-file';
 };
@@ -45,7 +40,6 @@ function scan(dirPath, rootRelativePath = '') {
     let html = '<ul class="file-tree">';
     try {
         const items = fs.readdirSync(dirPath, { withFileTypes: true });
-        
         items.sort((a, b) => {
             if (a.isDirectory() === b.isDirectory()) return a.name.localeCompare(b.name);
             return a.isDirectory() ? -1 : 1;
@@ -81,9 +75,7 @@ function scan(dirPath, rootRelativePath = '') {
                 </li>`;
             }
         }
-    } catch (e) {
-        console.error(`Error scanning ${dirPath}:`, e.message);
-    }
+    } catch (e) { console.error(e.message); }
     html += '</ul>';
     return html;
 }
@@ -107,14 +99,13 @@ const generateHTML = (content) => `
             --accent-secondary: #38BDF8;
             --glass-dark: rgba(255, 255, 255, 0.12);
             --glass-light: rgba(255, 255, 255, 0.25);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --shadow: rgba(0, 0, 0, 0.2);
+            --glass-border: rgba(255, 255, 255, 0.2);
         }
 
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-base);
-            background-image: radial-gradient(circle at 5% 5%, rgba(253, 224, 71, 0.15), transparent 30%);
+            background-image: radial-gradient(circle at 5% 5%, rgba(253, 224, 71, 0.1), transparent 30%);
             background-attachment: fixed;
             font-family: 'Outfit', sans-serif; color: white;
             min-height: 100vh; overflow-x: hidden;
@@ -126,97 +117,82 @@ const generateHTML = (content) => `
             text-align: center; font-size: 2.5rem; margin-bottom: 2rem;
             background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 4px 10px var(--shadow));
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
         }
 
-        /* --- ПОИСК И КНОПКА --- */
-        .search-wrapper { display: flex; gap: 12px; align-items: center; margin-bottom: 1rem; }
+        /* --- ИНТЕГРИРОВАННЫЙ ПОИСК --- */
+        .search-wrapper { 
+            display: flex; gap: 0; align-items: center; margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 35px; border: 1px solid var(--glass-border);
+            padding: 4px; transition: 0.3s;
+        }
+        .search-wrapper:focus-within {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
+        }
 
         .filter-btn {
-            width: 54px; height: 54px; flex-shrink: 0;
-            background: var(--glass-light);
-            backdrop-filter: blur(10px) url(#liquid);
-            -webkit-backdrop-filter: blur(10px);
-            border: 2px solid #fff; border-radius: 50%;
+            width: 48px; height: 48px; flex-shrink: 0;
+            background: transparent; border: none; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.6), 0 5px 15px var(--shadow);
-            transition: 0.2s; color: white; font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: 0.3s;
         }
-        .filter-btn:hover { transform: scale(1.05); }
-        .filter-btn:active { transform: scale(0.95); }
+        .filter-btn:hover { color: var(--accent); background: rgba(255,255,255,0.1); }
 
         .search-input {
-            flex: 1; padding: 16px 25px;
-            background: rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 35px; color: white; outline: none;
-            font-size: 1rem; transition: 0.3s;
+            flex: 1; padding: 12px 20px 12px 10px;
+            background: transparent; border: none; color: white; outline: none;
+            font-size: 1rem;
         }
-        .search-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.12); }
+        .search-input::placeholder { color: rgba(255, 255, 255, 0.3); }
 
-        /* --- ВЫПАДАЮЩИЕ ФИЛЬТРЫ --- */
+        /* --- ПАНЕЛЬ ФИЛЬТРОВ --- */
         .filter-panel {
             max-height: 0; overflow: hidden; opacity: 0;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            backdrop-filter: blur(10px); border-radius: 20px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 0 solid var(--glass-border);
-            margin-bottom: 0;
+            border: 0 solid var(--glass-border); margin-bottom: 0;
         }
         .filter-panel.show {
-            max-height: 250px; opacity: 1; padding: 15px; 
-            margin-bottom: 2rem; border-width: 1px;
+            max-height: 200px; opacity: 1; padding: 15px; margin-bottom: 1.5rem; border-width: 1px;
         }
 
         .filter-tags { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .tag {
-            padding: 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.1);
-            font-size: 0.85rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+            padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.1);
+            font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
-        .tag:hover { background: rgba(255,255,255,0.2); }
         .tag.active { background: var(--accent); color: #000; font-weight: 600; }
 
         /* --- СПИСОК ФАЙЛОВ --- */
         .glass-panel {
-            background: var(--glass-dark);
-            backdrop-filter: blur(20px); /* Оптимизировано (без url#liquid для скролла) */
+            background: var(--glass-dark); backdrop-filter: blur(20px);
             border-radius: 30px; border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-            padding: 10px 0;
-            will-change: transform;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1); padding: 10px 0;
         }
 
         .item-row {
-            display: flex; align-items: center; padding: 0.9rem 1.4rem;
+            display: flex; align-items: center; padding: 0.8rem 1.4rem;
             margin: 4px 10px; border-radius: 15px; text-decoration: none; 
             color: white; transition: 0.2s; min-width: 0;
         }
-        .item-row:hover { background: var(--glass-light); transform: translateX(5px); }
+        .item-row:hover { background: var(--glass-light); }
 
-        .icon { width: 28px; margin-right: 14px; color: var(--accent); flex-shrink: 0; font-size: 1.1rem; }
+        .icon { width: 26px; margin-right: 12px; color: var(--accent); flex-shrink: 0; }
+        .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 300; }
         
-        /* Исправление длинных названий */
-        .name { 
-            flex: 1; min-width: 0; white-space: nowrap; 
-            overflow: hidden; text-overflow: ellipsis; 
-            font-weight: 300;
-        }
-
         .file-tree { list-style: none; padding: 0; margin: 0; }
-        .file-tree ul { 
-            list-style: none; padding-left: 22px; display: none; 
-            border-left: 1px solid rgba(255,255,255,0.1); margin-left: 14px;
-        }
-        .folder.open > ul { display: block; animation: slideIn 0.3s ease-out; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .file-tree ul { list-style: none; padding-left: 20px; display: none; border-left: 1px solid rgba(255,255,255,0.1); margin-left: 15px; }
+        .folder.open > ul { display: block; }
 
         .arrow { flex-shrink: 0; transition: 0.3s; opacity: 0.4; font-size: 0.7rem; }
         .folder.open > .item-row .arrow { transform: rotate(90deg); opacity: 1; color: var(--accent); }
 
-        footer { text-align: center; padding: 3rem; opacity: 0.5; font-size: 0.8rem; }
+        footer { text-align: center; padding: 3rem; opacity: 0.4; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -240,10 +216,10 @@ const generateHTML = (content) => `
         <div class="filter-panel" id="filterPanel">
             <div class="filter-tags">
                 <div class="tag active" onclick="toggleTag(this, 'all')">Все</div>
-                <div class="tag" onclick="toggleTag(this, 'media')"><i class="fas fa-play"></i> Медиа</div>
-                <div class="tag" onclick="toggleTag(this, 'docs')"><i class="fas fa-file-alt"></i> Документы</div>
-                <div class="tag" onclick="toggleTag(this, 'code')"><i class="fas fa-code"></i> Код</div>
-                <div class="tag" onclick="toggleTag(this, 'dir')"><i class="fas fa-folder"></i> Только папки</div>
+                <div class="tag" onclick="toggleTag(this, 'media')">Медиа</div>
+                <div class="tag" onclick="toggleTag(this, 'docs')">Документы</div>
+                <div class="tag" onclick="toggleTag(this, 'code')">Код</div>
+                <div class="tag" onclick="toggleTag(this, 'dir')">Папки</div>
             </div>
         </div>
 
@@ -260,8 +236,7 @@ const generateHTML = (content) => `
         let activeFilter = 'all';
 
         function toggleFilterPanel() {
-            const panel = document.getElementById('filterPanel');
-            panel.classList.toggle('show');
+            document.getElementById('filterPanel').classList.toggle('show');
         }
 
         function toggleFolder(element) {
@@ -278,29 +253,23 @@ const generateHTML = (content) => `
         function runFilters() {
             const query = document.getElementById('fileSearch').value.toLowerCase();
             const items = document.querySelectorAll('li.file, li.folder');
-            
             const groups = {
                 media: ['mp3', 'mp4', 'wav', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webm', 'ico'],
-                docs: ['pdf', 'txt', 'doc', 'docx', 'zip', 'rar', '7z', 'pdf'],
-                code: ['js', 'html', 'css', 'json', 'py', 'cpp', 'ts']
+                docs: ['pdf', 'txt', 'doc', 'docx', 'zip', 'rar', '7z'],
+                code: ['js', 'html', 'css', 'json', 'py', 'ts']
             };
 
             items.forEach(item => {
                 const name = item.getAttribute('data-name');
                 const path = item.getAttribute('data-path');
                 const type = item.getAttribute('data-type');
-                
                 const matchesQuery = name.includes(query) || path.includes(query);
-                let matchesTag = true;
-
-                if (activeFilter !== 'all') {
-                    if (activeFilter === 'dir') matchesTag = (type === 'dir');
-                    else matchesTag = groups[activeFilter] && groups[activeFilter].includes(type);
-                }
+                let matchesTag = (activeFilter === 'all') || 
+                                 (activeFilter === 'dir' && type === 'dir') || 
+                                 (groups[activeFilter] && groups[activeFilter].includes(type));
 
                 if (matchesQuery && matchesTag) {
                     item.style.display = "";
-                    // Авто-раскрытие папок при активном поиске
                     if (query.length > 0) {
                         let p = item.parentElement.closest('.folder');
                         while(p) { p.classList.add('open'); p.style.display = ""; p = p.parentElement.closest('.folder'); }
@@ -316,10 +285,6 @@ const generateHTML = (content) => `
 `;
 
 // --- EXECUTION ---
-console.log('🚀 Сканирование директории...');
 const treeContent = scan('.');
-
-console.log('📄 Генерация HTML...');
 fs.writeFileSync(OUTPUT_FILE, generateHTML(treeContent));
-
-console.log(`✅ Готово! Файл создан: ${OUTPUT_FILE}`);
+console.log(`✅ Листинг успешно создан в ${OUTPUT_FILE}`);
