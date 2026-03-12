@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ахмед нашёл тебе хуй ♂</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #0d0d0d;
+      color: #ff3366;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 3.2rem;
+      margin: 0 0 30px;
+      text-shadow: 0 0 20px #ff3366, 0 0 40px #ff00aa;
+      letter-spacing: 2px;
+    }
+    #pic {
+      max-width: 90vw;
+      max-height: 70vh;
+      object-fit: contain;
+      border: 4px solid #ff3366;
+      border-radius: 16px;
+      box-shadow: 0 0 60px rgba(255,51,102,0.7);
+      background: black;
+      transition: transform 0.4s;
+    }
+    #pic:hover {
+      transform: scale(1.03);
+    }
+    button {
+      margin-top: 40px;
+      padding: 18px 60px;
+      font-size: 1.6rem;
+      background: linear-gradient(45deg, #ff3366, #cc00ff);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(255,51,102,0.5);
+      transition: all 0.3s;
+    }
+    button:hover {
+      transform: translateY(-4px) scale(1.08);
+      box-shadow: 0 20px 50px rgba(255,51,102,0.8);
+    }
+    .small-hint {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #aaa;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Ахмед тебе хуй принёс, братишка 😈🍆</h1>
+
+<img id="pic" src="" alt="тут будет член... наверное">
+
+<button onclick="showRandomDick()">Дай другой, Ахмед!</button>
+
+<div class="small-hint">18+, не жалуйся потом</div>
+
+<script>
+// Очень грубый и максимально нестабильный способ (2025–2026 годы)
+// Всё может в любой момент сломаться, потому что сайты дохнут / меняют структуру
+
+const sources = [
+  // самые живучие на 2025–2026 по моим наблюдениям
+  "https://www.reddit.com/r/randomdicks/.json?limit=30",
+  "https://www.reddit.com/r/massivecock/.json?limit=30",
+  "https://www.reddit.com/r/ThickDick/.json?limit=30",
+  "https://www.reddit.com/r/bigblackcocks/.json?limit=20",
+  "https://www.reddit.com/r/MassiveDicks/.json?limit=20",
+];
+
+async function getRandomDick() {
+  // берём случайный саб
+  const url = sources[Math.floor(Math.random() * sources.length)];
+
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'ахмед-любит-члены/1.0' }
+    });
+    
+    if (!res.ok) throw new Error("reddit не дал");
+
+    const data = await res.json();
+    const posts = data.data.children;
+
+    // ищем посты с картинками
+    const imagePosts = posts.filter(p => {
+      const u = p.data.url;
+      return u && /\.(jpg|jpeg|png|gif)$/i.test(u) &&
+             !u.includes("gallery") && 
+             !u.includes("v.redd.it") && 
+             !u.includes("youtube.com") &&
+             !u.includes("i.imgur.com/a/"); // альбомы пропускаем
+    });
+
+    if (imagePosts.length === 0) return null;
+
+    const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
+    let url = randomPost.data.url;
+
+    // иногда reddit отдаёт preview вместо оригинала
+    if (randomPost.data.preview && randomPost.data.preview.images?.[0]?.source?.url) {
+      url = randomPost.data.preview.images[0].source.url.replace(/&amp;/g, "&");
+    }
+
+    return url;
+  } catch (e) {
+    console.error("Ахмед обосрался:", e);
+    return null;
+  }
+}
+
+async function showRandomDick() {
+  const img = document.getElementById("pic");
+  img.src = "https://via.placeholder.com/600x800/000/333?text=Ахмед+ищет+тебе+хороший+хуй...";
+  
+  let url = null;
+  let attempts = 0;
+  
+  while (!url && attempts < 5) {
+    url = await getRandomDick();
+    attempts++;
+  }
+
+  if (url) {
+    img.src = url;
+  } else {
+    img.src = "https://via.placeholder.com/600x800/ff3366/000?text=Сегодня+Ахмед+не+нашёл+хуй+😢\nПопробуй+ещё+раз";
+  }
+}
+
+// сразу показываем один при загрузке
+window.onload = showRandomDick;
+
+</script>
+
+</body>
+</html>
