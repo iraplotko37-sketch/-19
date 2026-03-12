@@ -1,6 +1,6 @@
 // filename: build-listing.js
-// (c) 2026 BlankHtmlPage
-// Style: Liquid Glassmorphism ("19-sandy") + Pro Media Player
+// Style: Ultimate Liquid Glassmorphism (2026 Edition)
+// Features: Cinematic Player, Auto-hide UI, Speed List, No Outlines
 
 const fs = require('fs');
 const path = require('path');
@@ -90,7 +90,7 @@ const generateHTML = (content) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Files</title>
+    <title>Cloud Drive</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -103,10 +103,17 @@ const generateHTML = (content) => `
             --glass-border: rgba(255, 255, 255, 0.2);
         }
 
+        /* УБИРАЕМ СИНЕЕ ВЫДЕЛЕНИЕ ПРИ КЛИКЕ И ФОКУСЕ */
+        *, *::before, *::after {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
         body {
             margin: 0; padding: 0;
             background-color: var(--bg-base);
-            background-image: radial-gradient(circle at 5% 5%, rgba(253, 224, 71, 0.1), transparent 30%);
+            background-image: radial-gradient(circle at 5% 5%, rgba(253, 224, 71, 0.15), transparent 30%);
             background-attachment: fixed;
             font-family: 'Outfit', sans-serif; color: white;
             min-height: 100vh; overflow-x: hidden;
@@ -114,7 +121,6 @@ const generateHTML = (content) => `
 
         .container { max-width: 900px; margin: 3rem auto; padding: 0 15px; }
 
-        /* --- ПОИСК --- */
         .search-wrapper { 
             display: flex; gap: 0; align-items: center; margin-bottom: 1rem;
             background: rgba(255, 255, 255, 0.07);
@@ -128,314 +134,319 @@ const generateHTML = (content) => `
             width: 48px; height: 48px; flex-shrink: 0;
             background: transparent; border: none; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: 0.3s;
-            outline: none; -webkit-tap-highlight-color: transparent; user-select: none;
+            color: rgba(255, 255, 255, 0.6); font-size: 1.1rem; transition: 0.3s;
         }
         .filter-btn:hover { color: var(--accent); background: rgba(255,255,255,0.1); }
-        .filter-btn:focus { outline: none; }
 
         .search-input {
             flex: 1; padding: 12px 20px 12px 10px;
-            background: transparent; border: none; color: white; outline: none; font-size: 1rem;
+            background: transparent; border: none; color: white; font-size: 1rem;
         }
+        .search-input::placeholder { color: rgba(255, 255, 255, 0.4); }
 
-        /* --- ФИЛЬТРЫ И СПИСОК ФАЙЛОВ --- */
         .filter-panel {
             max-height: 0; overflow: hidden; opacity: 0;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 20px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 0 solid var(--glass-border); margin-bottom: 0;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 0 solid var(--glass-border);
         }
         .filter-panel.show { max-height: 200px; opacity: 1; padding: 15px; margin-bottom: 1.5rem; border-width: 1px; }
 
         .filter-tags { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .tag {
-            padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.1); font-size: 0.8rem;
-            cursor: pointer; transition: 0.2s; border: 1px solid transparent; outline: none; -webkit-tap-highlight-color: transparent;
+            padding: 6px 16px; border-radius: 20px; background: rgba(255,255,255,0.1); font-size: 0.85rem;
+            cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
-        .tag.active { background: var(--accent); color: #000; font-weight: 600; }
+        .tag.active { background: var(--accent); color: #000; font-weight: 600; border-color: var(--accent); }
 
         .glass-panel {
-            background: var(--glass-dark); backdrop-filter: blur(20px); border-radius: 30px;
+            background: var(--glass-dark); backdrop-filter: blur(25px); border-radius: 35px;
             border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.1); padding: 10px 0;
         }
 
         .item-row {
-            display: flex; align-items: center; padding: 0.8rem 1.4rem; margin: 4px 10px; border-radius: 15px;
-            text-decoration: none; color: white; transition: 0.2s; min-width: 0; -webkit-tap-highlight-color: transparent;
+            display: flex; align-items: center; padding: 0.8rem 1.4rem; margin: 4px 12px; border-radius: 18px;
+            text-decoration: none; color: white; transition: 0.2s;
         }
         .item-row:hover { background: var(--glass-light); }
-        .icon { width: 26px; margin-right: 12px; color: var(--accent); flex-shrink: 0; }
+        .icon { width: 26px; margin-right: 12px; color: var(--accent); flex-shrink: 0; font-size: 1.1rem; }
         .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 300; }
-        .action { font-size: 0.8rem; opacity: 0; transition: 0.2s; color: var(--accent-secondary); }
-        .item-row:hover .action { opacity: 1; }
         
         .file-tree { list-style: none; padding: 0; margin: 0; }
         .file-tree ul { list-style: none; padding-left: 20px; display: none; border-left: 1px solid rgba(255,255,255,0.1); margin-left: 15px; }
         .folder.open > ul { display: block; }
-        .arrow { flex-shrink: 0; transition: 0.3s; opacity: 0.4; font-size: 0.7rem; }
+        .arrow { flex-shrink: 0; transition: 0.3s; opacity: 0.4; font-size: 0.7rem; margin-left: 10px; }
         .folder.open > .item-row .arrow { transform: rotate(90deg); opacity: 1; color: var(--accent); }
 
-        footer { text-align: center; padding: 3rem; opacity: 0.4; font-size: 0.8rem; }
-
-        /* --- PRO GLASS MEDIA PLAYER --- */
+        /* --- CINEMATIC MEDIA PLAYER --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(116, 156, 249, 0.6); /* Светло-голубой фон */
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            background: rgba(116, 156, 249, 0.7); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; justify-content: center; align-items: center;
-            z-index: 1000; opacity: 0; pointer-events: none; transition: 0.15s ease; /* Ускорили открытие */
+            z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s ease;
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .player-box {
-            background: rgba(255, 255, 255, 0.15); border: 1px solid var(--glass-border);
-            border-radius: 30px; padding: 20px; width: 90%; max-width: 800px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-            transform: scale(0.95) translateY(10px); transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            background: rgba(255, 255, 255, 0.12); border: 1px solid var(--glass-border);
+            border-radius: 35px; padding: 25px; width: 92%; max-width: 850px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.15);
+            transform: scale(0.97); transition: 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
             display: flex; flex-direction: column; gap: 15px; position: relative;
+            overflow: hidden;
         }
-        .modal-overlay.active .player-box { transform: scale(1) translateY(0); }
+        .modal-overlay.active .player-box { transform: scale(1); }
 
-        /* Стили для Fullscreen */
-        .player-box:fullscreen {
-            max-width: 100vw; width: 100vw; height: 100vh; border-radius: 0; border: none;
-            background: #000; justify-content: center; padding: 0;
-        }
-        .player-box:fullscreen .player-header { position: absolute; top: 0; width: 100%; padding: 20px; background: rgba(0,0,0,0.5); z-index: 10; box-sizing: border-box; }
-        .player-box:fullscreen .media-container { background: #000; display: flex; align-items: center; height: calc(100vh - 80px); }
-        .player-box:fullscreen video { max-height: 100%; }
-        .player-box:fullscreen .custom-controls { position: absolute; bottom: 0; width: 100%; border-radius: 0; background: rgba(0,0,0,0.7); box-sizing: border-box; }
+        /* Скрытие интерфейса */
+        .player-header, .custom-controls { transition: opacity 0.5s ease, transform 0.5s ease; opacity: 1; position: relative; z-index: 10; }
+        .hide-ui .player-header { opacity: 0; transform: translateY(-15px); }
+        .hide-ui .custom-controls { opacity: 0; transform: translateY(15px); }
+        .hide-ui { cursor: none; }
 
         .player-header { display: flex; justify-content: space-between; align-items: center; }
-        .player-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px; color: var(--accent); }
-        .close-btn { 
-            background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;
-            width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.1);
-            transition: 0.2s; display: flex; align-items: center; justify-content: center; outline: none;
-        }
-        .close-btn:hover { background: rgba(255, 255, 255, 0.2); }
+        .player-title { font-weight: 600; color: var(--accent); font-size: 1.1rem; }
 
-        .media-container { width: 100%; border-radius: 15px; overflow: hidden; background: rgba(0,0,0,0.2); display: none; position: relative; cursor: pointer; }
+        .media-container { width: 100%; border-radius: 20px; overflow: hidden; background: #000; display: none; position: relative; cursor: pointer; }
         .media-container.show { display: block; }
-        video { width: 100%; display: block; max-height: 55vh; outline: none; object-fit: contain; }
+        video { width: 100%; display: block; max-height: 55vh; object-fit: contain; }
+
+        /* Анимированный статус по центру */
+        .center-status {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(253, 224, 71, 0.9); color: #000; width: 80px; height: 80px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; opacity: 0; pointer-events: none; z-index: 5;
+        }
+        .center-status.animate-in {
+            animation: pingStatus 0.5s ease-out forwards;
+        }
+        @keyframes pingStatus {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.3); }
+        }
 
         .custom-controls {
-            display: flex; align-items: center; gap: 12px;
-            background: rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(255,255,255,0.15); padding: 12px 22px; border-radius: 25px;
         }
+
         .play-pause-btn {
             background: var(--accent); color: #000; border: none; border-radius: 50%;
-            width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; transition: 0.2s; flex-shrink: 0; outline: none; box-shadow: 0 4px 15px rgba(253, 224, 71, 0.3);
+            width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: 0.2s; flex-shrink: 0;
         }
-        .play-pause-btn:hover { transform: scale(1.05); }
-        
-        /* Новый крутой ползунок */
-        input[type=range] {
-            -webkit-appearance: none; flex: 1; background: transparent; height: 6px; border-radius: 3px; cursor: pointer; outline: none;
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px;
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
-            background: var(--accent); margin-top: -5px; box-shadow: 0 0 10px rgba(253, 224, 71, 0.6); transition: 0.1s;
-        }
-        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+        .play-pause-btn:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(253, 224, 71, 0.4); }
 
-        .time-box { font-size: 0.85rem; opacity: 0.8; font-family: monospace; min-width: 85px; text-align: center; }
-        
-        .mini-btn {
-            background: transparent; color: white; border: none; cursor: pointer; font-size: 1rem;
-            width: 35px; height: 35px; border-radius: 50%; transition: 0.2s; outline: none; display: flex; align-items: center; justify-content: center;
+        input[type=range] { -webkit-appearance: none; flex: 1; background: transparent; cursor: pointer; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 18px; width: 18px; border-radius: 50%; background: var(--accent); margin-top: -6px; box-shadow: 0 0 8px rgba(0,0,0,0.2); }
+
+        .time-box { font-size: 0.8rem; font-family: monospace; min-width: 90px; text-align: center; color: rgba(255,255,255,0.8); }
+
+        /* Стилизованный список скорости */
+        .speed-wrap { position: relative; }
+        .speed-select {
+            background: rgba(255,255,255,0.1); color: white; border: 1px solid var(--glass-border); 
+            border-radius: 12px; padding: 6px 10px; font-size: 0.8rem; cursor: pointer; 
+            font-family: inherit; appearance: none; -webkit-appearance: none; padding-right: 25px;
         }
-        .mini-btn:hover { background: rgba(255,255,255,0.15); color: var(--accent); }
-        .speed-btn { font-size: 0.8rem; font-weight: 600; font-family: 'Outfit', sans-serif; width: 40px; }
+        .speed-wrap::after {
+            content: '\\f0d7'; font-family: 'Font Awesome 5 Free'; font-weight: 900;
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            font-size: 0.7rem; pointer-events: none; opacity: 0.6;
+        }
+        .speed-select option { background: #5c8ae6; color: white; }
+
+        .mini-btn { background: transparent; color: white; border: none; cursor: pointer; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 1rem; }
+        .mini-btn:hover { background: rgba(255,255,255,0.12); color: var(--accent); }
+
+        footer { text-align: center; padding: 4rem; opacity: 0.4; font-size: 0.8rem; letter-spacing: 1px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="search-wrapper">
-            <button class="filter-btn" onclick="toggleFilterPanel()" title="Фильтры">
-                <i class="fas fa-sliders-h"></i>
-            </button>
-            <input type="text" id="fileSearch" class="search-input" placeholder="Искать файлы или папки..." onkeyup="runFilters()">
+            <button class="filter-btn" onclick="toggleFilterPanel()"><i class="fas fa-sliders-h"></i></button>
+            <input type="text" id="fileSearch" class="search-input" placeholder="Найти в хранилище..." onkeyup="runFilters()">
         </div>
 
         <div class="filter-panel" id="filterPanel">
             <div class="filter-tags">
-                <div class="tag active" onclick="toggleTag(this, 'all')">Все</div>
+                <div class="tag active" onclick="toggleTag(this, 'all')">Все файлы</div>
                 <div class="tag" onclick="toggleTag(this, 'media')">Медиа</div>
                 <div class="tag" onclick="toggleTag(this, 'docs')">Документы</div>
-                <div class="tag" onclick="toggleTag(this, 'code')">Код</div>
+                <div class="tag" onclick="toggleTag(this, 'code')">Разработка</div>
                 <div class="tag" onclick="toggleTag(this, 'dir')">Папки</div>
             </div>
         </div>
 
-        <div class="glass-panel">
-            ${content}
-        </div>
+        <div class="glass-panel">${content}</div>
     </div>
 
     <div class="modal-overlay" id="playerModal" onclick="closePlayer(event)">
         <div class="player-box" id="playerBox" onclick="event.stopPropagation()">
             <div class="player-header">
-                <div class="player-title" id="playerTitle">Media.mp4</div>
-                <button class="close-btn" onclick="closePlayer(true)"><i class="fas fa-times"></i></button>
+                <div class="player-title" id="playerTitle">Filament.mp4</div>
+                <button class="mini-btn" onclick="closePlayer(true)"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="media-container" id="videoContainer" onclick="togglePlay()">
-                <video id="glassVideo" preload="metadata"></video>
+                <div class="center-status" id="centerStatus"><i class="fas fa-play"></i></div>
+                <video id="glassVideo" playsinline></video>
             </div>
             
-            <audio id="glassAudio" preload="metadata"></audio>
+            <audio id="glassAudio"></audio>
 
             <div class="custom-controls">
-                <button class="play-pause-btn" id="playBtn" onclick="togglePlay()">
-                    <i class="fas fa-play"></i>
-                </button>
+                <button class="play-pause-btn" id="playBtn" onclick="togglePlay()"><i class="fas fa-play"></i></button>
                 <input type="range" id="progressBar" min="0" max="100" value="0" step="0.1">
                 <div class="time-box" id="timeBox">0:00 / 0:00</div>
-                <button class="mini-btn speed-btn" id="speedBtn" onclick="toggleSpeed()">1x</button>
-                <button class="mini-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
-                    <i class="fas fa-expand"></i>
-                </button>
+                
+                <div class="speed-wrap">
+                    <select class="speed-select" id="speedSelect" onchange="changeSpeed(this.value)">
+                        <option value="0.5">0.5x</option>
+                        <option value="1" selected>1.0x</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
+                </div>
+
+                <button class="mini-btn" onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
             </div>
         </div>
     </div>
 
     <footer>
-        &copy; 2026 Plotko Mark &bull; Liquid Glass Index
+        &copy; 2026 Plotko Mark &bull; DESIGNED FOR SPEED
     </footer>
 
     <script>
-        // --- Фильтры ---
+        // --- Общая логика ---
         function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('show'); }
-        function toggleFolder(element) { element.parentElement.classList.toggle('open'); }
+        function toggleFolder(el) { el.parentElement.classList.toggle('open'); }
         let activeFilter = 'all';
-        function toggleTag(el, filter) {
-            document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-            el.classList.add('active'); activeFilter = filter; runFilters();
-        }
+        function toggleTag(el, f) { document.querySelectorAll('.tag').forEach(t=>t.classList.remove('active')); el.classList.add('active'); activeFilter=f; runFilters(); }
+        
         function runFilters() {
-            const query = document.getElementById('fileSearch').value.toLowerCase();
+            const q = document.getElementById('fileSearch').value.toLowerCase();
             const items = document.querySelectorAll('li.file, li.folder');
-            const groups = {
-                media: ['mp3', 'mp4', 'wav', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webm', 'ico'],
-                docs: ['pdf', 'txt', 'doc', 'docx', 'zip', 'rar', '7z'], code: ['js', 'html', 'css', 'json', 'py', 'ts']
-            };
+            const groups = { media:['mp3','mp4','wav','png','jpg','webm','mkv','mov'], docs:['pdf','txt','zip','rar','7z'], code:['js','html','css','json','py'] };
             items.forEach(item => {
-                const name = item.getAttribute('data-name'); const path = item.getAttribute('data-path'); const type = item.getAttribute('data-type');
-                const matchesQuery = name.includes(query) || path.includes(query);
-                let matchesTag = (activeFilter === 'all') || (activeFilter === 'dir' && type === 'dir') || (groups[activeFilter] && groups[activeFilter].includes(type));
-                if (matchesQuery && matchesTag) {
-                    item.style.display = "";
-                    if (query.length > 0) { let p = item.parentElement.closest('.folder'); while(p) { p.classList.add('open'); p.style.display = ""; p = p.parentElement.closest('.folder'); } }
-                } else { item.style.display = "none"; }
+                const name = item.getAttribute('data-name');
+                const type = item.getAttribute('data-type');
+                const matchesQ = name.includes(q);
+                let matchesT = (activeFilter==='all') || (activeFilter==='dir' && type==='dir') || (groups[activeFilter] && groups[activeFilter].includes(type));
+                item.style.display = (matchesQ && matchesT) ? "" : "none";
             });
         }
 
-        // --- Pro Media Player ---
-        let currentMediaElement = null;
-        const vPlayer = document.getElementById('glassVideo');
-        const aPlayer = document.getElementById('glassAudio');
-        const playBtn = document.getElementById('playBtn');
-        const progress = document.getElementById('progressBar');
-        const timeBox = document.getElementById('timeBox');
-        const speedBtn = document.getElementById('speedBtn');
-        const playerBox = document.getElementById('playerBox');
-        
-        let isDragging = false;
-        const speeds = [1, 1.25, 1.5, 2, 0.5];
-        let currentSpeedIndex = 0;
+        // --- ЛОГИКА ПЛЕЕРА ---
+        let currentMedia = null;
+        let idleTimer;
+        const pBox = document.getElementById('playerBox');
+        const cStatus = document.getElementById('centerStatus');
+        const vEl = document.getElementById('glassVideo');
+        const aEl = document.getElementById('glassAudio');
 
         function openPlayer(url, type, name) {
             document.getElementById('playerTitle').innerText = name;
-            document.getElementById('videoContainer').classList.remove('show');
-            document.getElementById('fullscreenBtn').style.display = type === 'video' ? 'flex' : 'none';
+            vEl.pause(); aEl.pause(); vEl.src = ""; aEl.src = "";
             
-            vPlayer.pause(); vPlayer.src = "";
-            aPlayer.pause(); aPlayer.src = "";
-            currentSpeedIndex = 0; speedBtn.innerText = '1x';
-
-            if (type === 'video') { currentMediaElement = vPlayer; document.getElementById('videoContainer').classList.add('show'); } 
-            else { currentMediaElement = aPlayer; }
-
-            currentMediaElement.src = url;
-            currentMediaElement.playbackRate = 1;
+            const isVideo = type === 'video';
+            document.getElementById('videoContainer').style.display = isVideo ? 'block' : 'none';
+            currentMedia = isVideo ? vEl : aEl;
             
-            currentMediaElement.ontimeupdate = updateProgress;
-            currentMediaElement.onended = () => { playBtn.innerHTML = '<i class="fas fa-play"></i>'; };
-            currentMediaElement.onloadedmetadata = updateProgress;
-
+            currentMedia.src = url;
+            currentMedia.playbackRate = parseFloat(document.getElementById('speedSelect').value);
+            currentMedia.ontimeupdate = updateProgress;
+            currentMedia.onloadedmetadata = updateProgress;
+            
             document.getElementById('playerModal').classList.add('active');
+            resetIdleTimer();
             togglePlay(true);
         }
 
-        function closePlayer(force) {
-            if (force === true || force.target === document.getElementById('playerModal')) {
+        function closePlayer(e) {
+            if (e === true || e.target.id === 'playerModal') {
                 document.getElementById('playerModal').classList.remove('active');
-                if (currentMediaElement) currentMediaElement.pause();
-                if (document.fullscreenElement) document.exitFullscreen();
+                if(currentMedia) currentMedia.pause();
+                if(document.fullscreenElement) document.exitFullscreen();
+                clearTimeout(idleTimer);
             }
         }
 
         function togglePlay(forcePlay) {
-            if (!currentMediaElement) return;
-            if (currentMediaElement.paused || forcePlay === true) {
-                currentMediaElement.play(); playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            if(!currentMedia) return;
+            const isPaused = currentMedia.paused;
+            
+            if (isPaused || forcePlay === true) {
+                currentMedia.play();
+                showStatusIcon('play');
             } else {
-                currentMediaElement.pause(); playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                currentMedia.pause();
+                showStatusIcon('pause');
             }
+            updateBtnUI();
+            resetIdleTimer();
         }
 
-        function toggleSpeed() {
-            if (!currentMediaElement) return;
-            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
-            const s = speeds[currentSpeedIndex];
-            currentMediaElement.playbackRate = s;
-            speedBtn.innerText = s + 'x';
+        function updateBtnUI() {
+            document.getElementById('playBtn').innerHTML = currentMedia.paused ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+        }
+
+        function showStatusIcon(type) {
+            cStatus.innerHTML = type === 'play' ? '<i class="fas fa-play"></i>' : '<i class="fas fa-pause"></i>';
+            cStatus.classList.remove('animate-in');
+            void cStatus.offsetWidth; // Триггер анимации
+            cStatus.classList.add('animate-in');
+        }
+
+        function changeSpeed(val) { 
+            if(currentMedia) currentMedia.playbackRate = parseFloat(val); 
+        }
+
+        function updateProgress() {
+            if(!currentMedia) return;
+            const progress = document.getElementById('progressBar');
+            const cur = currentMedia.currentTime, dur = currentMedia.duration || 0;
+            progress.value = (cur / dur) * 100 || 0;
+            document.getElementById('timeBox').innerText = formatTime(cur) + ' / ' + formatTime(dur);
+        }
+
+        document.getElementById('progressBar').oninput = function() {
+            if(currentMedia && currentMedia.duration) {
+                currentMedia.currentTime = (this.value / 100) * currentMedia.duration;
+            }
+        };
+
+        function formatTime(s) {
+            if(isNaN(s)) return "0:00";
+            const m = Math.floor(s/60); const sec = Math.floor(s%60);
+            return m + ':' + (sec < 10 ? '0' : '') + sec;
         }
 
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                playerBox.requestFullscreen().catch(err => console.log(err));
-            } else {
-                document.exitFullscreen();
+            if (!document.fullscreenElement) pBox.requestFullscreen().catch(e=>console.log(e));
+            else document.exitFullscreen();
+        }
+
+        // Автоскрытие интерфейса
+        function resetIdleTimer() {
+            pBox.classList.remove('hide-ui');
+            clearTimeout(idleTimer);
+            if (currentMedia && !currentMedia.paused) {
+                idleTimer = setTimeout(() => pBox.classList.add('hide-ui'), 3000);
             }
         }
 
-        // Логика ползунка
-        progress.addEventListener('input', (e) => {
-            isDragging = true;
-            if (currentMediaElement && currentMediaElement.duration) {
-                const time = (e.target.value / 100) * currentMediaElement.duration;
-                timeBox.innerText = formatTime(time) + ' / ' + formatTime(currentMediaElement.duration);
-            }
-        });
+        pBox.onmousemove = resetIdleTimer;
+        pBox.onclick = resetIdleTimer;
+        pBox.ontouchstart = resetIdleTimer;
 
-        progress.addEventListener('change', (e) => {
-            isDragging = false;
-            if (currentMediaElement && currentMediaElement.duration) {
-                currentMediaElement.currentTime = (e.target.value / 100) * currentMediaElement.duration;
-            }
-        });
-
-        function updateProgress() {
-            if (!currentMediaElement) return;
-            const cur = currentMediaElement.currentTime || 0;
-            const dur = currentMediaElement.duration || 0;
-            if (!isDragging) {
-                progress.value = dur > 0 ? (cur / dur) * 100 : 0;
-            }
-            timeBox.innerText = formatTime(cur) + ' / ' + formatTime(dur);
-        }
-
-        function formatTime(sec) {
-            if (isNaN(sec)) return "0:00";
-            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
-            return m + ':' + (s < 10 ? '0' : '') + s;
-        }
+        // Закрытие по ESC
+        window.onkeydown = (e) => { if(e.key === 'Escape') closePlayer(true); };
     </script>
 </body>
 </html>
@@ -443,4 +454,4 @@ const generateHTML = (content) => `
 
 const treeContent = scan('.');
 fs.writeFileSync(OUTPUT_FILE, generateHTML(treeContent));
-console.log(`✅ Листинг успешно создан в ${OUTPUT_FILE}`);
+console.log(`✅ Идеальный листинг создан: ${OUTPUT_FILE}`);
