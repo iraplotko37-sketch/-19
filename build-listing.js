@@ -1,13 +1,10 @@
 // filename: build-listing.js
 // (c) 2026 BlankHtmlPage
-// Style: Liquid Glassmorphism ("19-sandy") - Final Integrated UI
+// Style: Liquid Glassmorphism ("19-sandy") - Final UI (No Blue Outline)
 
 const fs = require('fs');
 const path = require('path');
 
-/**
- * CONFIGURATION
- */
 const OUTPUT_FILE = 'files.html';
 const SITE_TITLE = 'Index of /';
 
@@ -17,15 +14,12 @@ const BLACKLIST = new Set([
     '.gitignore', 'README.md', 'files.html', 'favicon.ico'
 ]);
 
-/**
- * ICON MAPPING
- */
 const getIcon = (name, isDir) => {
     if (isDir) return 'fa-folder';
     const ext = path.extname(name).toLowerCase();
     const icons = {
         '.mp3': 'fa-file-audio', '.wav': 'fa-file-audio', '.mp4': 'fa-file-video', '.webm': 'fa-file-video',
-        '.jpg': 'fa-file-image', '.jpeg': 'fa-file-image', '.png': 'fa-file-image', '.svg': 'fa-file-image', '.webp': 'fa-file-image',
+        '.jpg': 'fa-file-image', '.jpeg': 'fa-file-image', '.png': 'fa-file-image', '.svg': 'fa-file-image',
         '.zip': 'fa-file-zipper', '.rar': 'fa-file-zipper', '.7z': 'fa-file-zipper',
         '.pdf': 'fa-file-pdf', '.txt': 'fa-file-lines', '.doc': 'fa-file-word', '.docx': 'fa-file-word',
         '.js': 'fa-file-code', '.html': 'fa-file-code', '.css': 'fa-file-code', '.json': 'fa-file-code'
@@ -33,9 +27,6 @@ const getIcon = (name, isDir) => {
     return icons[ext] || 'fa-file';
 };
 
-/**
- * RECURSIVE SCANNER
- */
 function scan(dirPath, rootRelativePath = '') {
     let html = '<ul class="file-tree">';
     try {
@@ -47,7 +38,6 @@ function scan(dirPath, rootRelativePath = '') {
 
         for (const item of items) {
             if (BLACKLIST.has(item.name) || item.name.startsWith('.')) continue;
-
             const relativePath = path.join(rootRelativePath, item.name);
             const fullPath = path.join(dirPath, item.name);
             const icon = getIcon(item.name, item.isDirectory());
@@ -80,9 +70,6 @@ function scan(dirPath, rootRelativePath = '') {
     return html;
 }
 
-/**
- * HTML TEMPLATE
- */
 const generateHTML = (content) => `
 <!DOCTYPE html>
 <html lang="ru">
@@ -120,7 +107,7 @@ const generateHTML = (content) => `
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
         }
 
-        /* --- ИНТЕГРИРОВАННЫЙ ПОИСК --- */
+        /* --- ПОИСК БЕЗ СИНЕЙ РАМКИ --- */
         .search-wrapper { 
             display: flex; gap: 0; align-items: center; margin-bottom: 1rem;
             background: rgba(255, 255, 255, 0.07);
@@ -131,7 +118,6 @@ const generateHTML = (content) => `
         .search-wrapper:focus-within {
             border-color: var(--accent);
             background: rgba(255, 255, 255, 0.12);
-            box-shadow: 0 0 20px rgba(253, 224, 71, 0.1);
         }
 
         .filter-btn {
@@ -139,15 +125,19 @@ const generateHTML = (content) => `
             background: transparent; border: none; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: 0.3s;
+            outline: none; /* Убирает синюю рамку при клике */
+            -webkit-tap-highlight-color: transparent; /* Убирает засвет на мобилках */
+            user-select: none;
         }
         .filter-btn:hover { color: var(--accent); background: rgba(255,255,255,0.1); }
+        .filter-btn:focus { outline: none; }
 
         .search-input {
             flex: 1; padding: 12px 20px 12px 10px;
             background: transparent; border: none; color: white; outline: none;
             font-size: 1rem;
         }
-        .search-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        .search-input:focus { outline: none; }
 
         /* --- ПАНЕЛЬ ФИЛЬТРОВ --- */
         .filter-panel {
@@ -165,6 +155,7 @@ const generateHTML = (content) => `
         .tag {
             padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.1);
             font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+            outline: none; -webkit-tap-highlight-color: transparent;
         }
         .tag.active { background: var(--accent); color: #000; font-weight: 600; }
 
@@ -179,16 +170,14 @@ const generateHTML = (content) => `
             display: flex; align-items: center; padding: 0.8rem 1.4rem;
             margin: 4px 10px; border-radius: 15px; text-decoration: none; 
             color: white; transition: 0.2s; min-width: 0;
+            -webkit-tap-highlight-color: transparent;
         }
         .item-row:hover { background: var(--glass-light); }
-
         .icon { width: 26px; margin-right: 12px; color: var(--accent); flex-shrink: 0; }
         .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 300; }
-        
         .file-tree { list-style: none; padding: 0; margin: 0; }
         .file-tree ul { list-style: none; padding-left: 20px; display: none; border-left: 1px solid rgba(255,255,255,0.1); margin-left: 15px; }
         .folder.open > ul { display: block; }
-
         .arrow { flex-shrink: 0; transition: 0.3s; opacity: 0.4; font-size: 0.7rem; }
         .folder.open > .item-row .arrow { transform: rotate(90deg); opacity: 1; color: var(--accent); }
 
@@ -228,21 +217,11 @@ const generateHTML = (content) => `
         </div>
     </div>
 
-    <footer>
-        &copy; 2026 Plotko Mark &bull; Liquid Glass Index
-    </footer>
-
     <script>
+        function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('show'); }
+        function toggleFolder(element) { element.parentElement.classList.toggle('open'); }
+        
         let activeFilter = 'all';
-
-        function toggleFilterPanel() {
-            document.getElementById('filterPanel').classList.toggle('show');
-        }
-
-        function toggleFolder(element) {
-            element.parentElement.classList.toggle('open');
-        }
-
         function toggleTag(el, filter) {
             document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
@@ -264,9 +243,7 @@ const generateHTML = (content) => `
                 const path = item.getAttribute('data-path');
                 const type = item.getAttribute('data-type');
                 const matchesQuery = name.includes(query) || path.includes(query);
-                let matchesTag = (activeFilter === 'all') || 
-                                 (activeFilter === 'dir' && type === 'dir') || 
-                                 (groups[activeFilter] && groups[activeFilter].includes(type));
+                let matchesTag = (activeFilter === 'all') || (activeFilter === 'dir' && type === 'dir') || (groups[activeFilter] && groups[activeFilter].includes(type));
 
                 if (matchesQuery && matchesTag) {
                     item.style.display = "";
@@ -274,9 +251,7 @@ const generateHTML = (content) => `
                         let p = item.parentElement.closest('.folder');
                         while(p) { p.classList.add('open'); p.style.display = ""; p = p.parentElement.closest('.folder'); }
                     }
-                } else {
-                    item.style.display = "none";
-                }
+                } else { item.style.display = "none"; }
             });
         }
     </script>
@@ -284,7 +259,6 @@ const generateHTML = (content) => `
 </html>
 `;
 
-// --- EXECUTION ---
 const treeContent = scan('.');
 fs.writeFileSync(OUTPUT_FILE, generateHTML(treeContent));
 console.log(`✅ Листинг успешно создан в ${OUTPUT_FILE}`);
