@@ -1,6 +1,6 @@
 // filename: build-listing.js
 // (c) 2026 BlankHtmlPage
-// Style: Liquid Glassmorphism ("19-sandy") + Custom Media Player
+// Style: Liquid Glassmorphism ("19-sandy") + Pro Media Player
 
 const fs = require('fs');
 const path = require('path');
@@ -54,8 +54,6 @@ function scan(dirPath, rootRelativePath = '') {
                 </li>`;
             } else {
                 const webPath = relativePath.split(path.sep).map(encodeURIComponent).join('/');
-                
-                // Проверяем, является ли файл медиа, чтобы открыть его в кастомном плеере
                 const isVideo = ['mp4', 'webm', 'mkv', 'mov', 'avi'].includes(ext);
                 const isAudio = ['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext);
                 
@@ -124,9 +122,7 @@ const generateHTML = (content) => `
             border-radius: 35px; border: 1px solid var(--glass-border);
             padding: 4px; transition: 0.3s;
         }
-        .search-wrapper:focus-within {
-            border-color: var(--accent); background: rgba(255, 255, 255, 0.12);
-        }
+        .search-wrapper:focus-within { border-color: var(--accent); background: rgba(255, 255, 255, 0.12); }
 
         .filter-btn {
             width: 48px; height: 48px; flex-shrink: 0;
@@ -140,43 +136,32 @@ const generateHTML = (content) => `
 
         .search-input {
             flex: 1; padding: 12px 20px 12px 10px;
-            background: transparent; border: none; color: white; outline: none;
-            font-size: 1rem;
+            background: transparent; border: none; color: white; outline: none; font-size: 1rem;
         }
-        .search-input:focus { outline: none; }
 
-        /* --- ПАНЕЛЬ ФИЛЬТРОВ --- */
+        /* --- ФИЛЬТРЫ И СПИСОК ФАЙЛОВ --- */
         .filter-panel {
             max-height: 0; overflow: hidden; opacity: 0;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px); border-radius: 20px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 0 solid var(--glass-border); margin-bottom: 0;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 0 solid var(--glass-border); margin-bottom: 0;
         }
-        .filter-panel.show {
-            max-height: 200px; opacity: 1; padding: 15px; margin-bottom: 1.5rem; border-width: 1px;
-        }
+        .filter-panel.show { max-height: 200px; opacity: 1; padding: 15px; margin-bottom: 1.5rem; border-width: 1px; }
 
         .filter-tags { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .tag {
-            padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.1);
-            font-size: 0.8rem; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-            outline: none; -webkit-tap-highlight-color: transparent;
+            padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.1); font-size: 0.8rem;
+            cursor: pointer; transition: 0.2s; border: 1px solid transparent; outline: none; -webkit-tap-highlight-color: transparent;
         }
         .tag.active { background: var(--accent); color: #000; font-weight: 600; }
 
-        /* --- СПИСОК ФАЙЛОВ --- */
         .glass-panel {
-            background: var(--glass-dark); backdrop-filter: blur(20px);
-            border-radius: 30px; border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.1); padding: 10px 0;
+            background: var(--glass-dark); backdrop-filter: blur(20px); border-radius: 30px;
+            border: 1px solid var(--glass-border); box-shadow: 0 25px 50px rgba(0,0,0,0.1); padding: 10px 0;
         }
 
         .item-row {
-            display: flex; align-items: center; padding: 0.8rem 1.4rem;
-            margin: 4px 10px; border-radius: 15px; text-decoration: none; 
-            color: white; transition: 0.2s; min-width: 0;
-            -webkit-tap-highlight-color: transparent;
+            display: flex; align-items: center; padding: 0.8rem 1.4rem; margin: 4px 10px; border-radius: 15px;
+            text-decoration: none; color: white; transition: 0.2s; min-width: 0; -webkit-tap-highlight-color: transparent;
         }
         .item-row:hover { background: var(--glass-light); }
         .icon { width: 26px; margin-right: 12px; color: var(--accent); flex-shrink: 0; }
@@ -192,56 +177,84 @@ const generateHTML = (content) => `
 
         footer { text-align: center; padding: 3rem; opacity: 0.4; font-size: 0.8rem; }
 
-        /* --- GLASS PLAYER MODAL --- */
+        /* --- PRO GLASS MEDIA PLAYER --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px);
+            background: rgba(116, 156, 249, 0.6); /* Светло-голубой фон */
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
             display: flex; justify-content: center; align-items: center;
-            z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s ease;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: 0.15s ease; /* Ускорили открытие */
         }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         
         .player-box {
-            background: var(--glass-dark); border: 1px solid var(--glass-border);
-            border-radius: 30px; padding: 20px; width: 90%; max-width: 700px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-            transform: scale(0.95); transition: 0.3s ease;
-            display: flex; flex-direction: column; gap: 15px;
+            background: rgba(255, 255, 255, 0.15); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 20px; width: 90%; max-width: 800px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            transform: scale(0.95) translateY(10px); transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex; flex-direction: column; gap: 15px; position: relative;
         }
-        .modal-overlay.active .player-box { transform: scale(1); }
+        .modal-overlay.active .player-box { transform: scale(1) translateY(0); }
+
+        /* Стили для Fullscreen */
+        .player-box:fullscreen {
+            max-width: 100vw; width: 100vw; height: 100vh; border-radius: 0; border: none;
+            background: #000; justify-content: center; padding: 0;
+        }
+        .player-box:fullscreen .player-header { position: absolute; top: 0; width: 100%; padding: 20px; background: rgba(0,0,0,0.5); z-index: 10; box-sizing: border-box; }
+        .player-box:fullscreen .media-container { background: #000; display: flex; align-items: center; height: calc(100vh - 80px); }
+        .player-box:fullscreen video { max-height: 100%; }
+        .player-box:fullscreen .custom-controls { position: absolute; bottom: 0; width: 100%; border-radius: 0; background: rgba(0,0,0,0.7); box-sizing: border-box; }
 
         .player-header { display: flex; justify-content: space-between; align-items: center; }
         .player-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px; color: var(--accent); }
         .close-btn { 
             background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;
             width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.1);
-            transition: 0.2s; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; outline: none;
         }
-        .close-btn:hover { background: rgba(255, 100, 100, 0.8); }
+        .close-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-        .media-container { width: 100%; border-radius: 15px; overflow: hidden; background: rgba(0,0,0,0.3); display: none; }
+        .media-container { width: 100%; border-radius: 15px; overflow: hidden; background: rgba(0,0,0,0.2); display: none; position: relative; cursor: pointer; }
         .media-container.show { display: block; }
-        video { width: 100%; display: block; max-height: 50vh; outline: none; }
+        video { width: 100%; display: block; max-height: 55vh; outline: none; object-fit: contain; }
 
         .custom-controls {
-            display: flex; align-items: center; gap: 15px;
-            background: rgba(255,255,255,0.08); padding: 12px 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 20px;
         }
         .play-pause-btn {
             background: var(--accent); color: #000; border: none; border-radius: 50%;
             width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; transition: 0.2s; box-shadow: 0 4px 15px rgba(253, 224, 71, 0.3);
+            font-size: 1.1rem; transition: 0.2s; flex-shrink: 0; outline: none; box-shadow: 0 4px 15px rgba(253, 224, 71, 0.3);
         }
         .play-pause-btn:hover { transform: scale(1.05); }
         
-        .progress-area { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; position: relative; }
-        .progress-bar { height: 100%; background: var(--accent-secondary); border-radius: 4px; width: 0%; pointer-events: none; transition: width 0.1s linear; }
-        .time-box { font-size: 0.85rem; opacity: 0.8; font-family: monospace; min-width: 90px; text-align: right; }
+        /* Новый крутой ползунок */
+        input[type=range] {
+            -webkit-appearance: none; flex: 1; background: transparent; height: 6px; border-radius: 3px; cursor: pointer; outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; background: rgba(255, 255, 255, 0.2); border-radius: 3px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: var(--accent); margin-top: -5px; box-shadow: 0 0 10px rgba(253, 224, 71, 0.6); transition: 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .time-box { font-size: 0.85rem; opacity: 0.8; font-family: monospace; min-width: 85px; text-align: center; }
+        
+        .mini-btn {
+            background: transparent; color: white; border: none; cursor: pointer; font-size: 1rem;
+            width: 35px; height: 35px; border-radius: 50%; transition: 0.2s; outline: none; display: flex; align-items: center; justify-content: center;
+        }
+        .mini-btn:hover { background: rgba(255,255,255,0.15); color: var(--accent); }
+        .speed-btn { font-size: 0.8rem; font-weight: 600; font-family: 'Outfit', sans-serif; width: 40px; }
     </style>
 </head>
 <body>
     <div class="container">
-        
         <div class="search-wrapper">
             <button class="filter-btn" onclick="toggleFilterPanel()" title="Фильтры">
                 <i class="fas fa-sliders-h"></i>
@@ -265,13 +278,13 @@ const generateHTML = (content) => `
     </div>
 
     <div class="modal-overlay" id="playerModal" onclick="closePlayer(event)">
-        <div class="player-box" onclick="event.stopPropagation()">
+        <div class="player-box" id="playerBox" onclick="event.stopPropagation()">
             <div class="player-header">
                 <div class="player-title" id="playerTitle">Media.mp4</div>
                 <button class="close-btn" onclick="closePlayer(true)"><i class="fas fa-times"></i></button>
             </div>
             
-            <div class="media-container" id="videoContainer">
+            <div class="media-container" id="videoContainer" onclick="togglePlay()">
                 <video id="glassVideo" preload="metadata"></video>
             </div>
             
@@ -281,10 +294,12 @@ const generateHTML = (content) => `
                 <button class="play-pause-btn" id="playBtn" onclick="togglePlay()">
                     <i class="fas fa-play"></i>
                 </button>
-                <div class="progress-area" id="progressArea" onclick="seekMedia(event)">
-                    <div class="progress-bar" id="progressBar"></div>
-                </div>
+                <input type="range" id="progressBar" min="0" max="100" value="0" step="0.1">
                 <div class="time-box" id="timeBox">0:00 / 0:00</div>
+                <button class="mini-btn speed-btn" id="speedBtn" onclick="toggleSpeed()">1x</button>
+                <button class="mini-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -294,120 +309,131 @@ const generateHTML = (content) => `
     </footer>
 
     <script>
-        // --- Логика файлов и поиска ---
+        // --- Фильтры ---
         function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('show'); }
         function toggleFolder(element) { element.parentElement.classList.toggle('open'); }
-        
         let activeFilter = 'all';
         function toggleTag(el, filter) {
             document.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            activeFilter = filter;
-            runFilters();
+            el.classList.add('active'); activeFilter = filter; runFilters();
         }
-
         function runFilters() {
             const query = document.getElementById('fileSearch').value.toLowerCase();
             const items = document.querySelectorAll('li.file, li.folder');
             const groups = {
                 media: ['mp3', 'mp4', 'wav', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webm', 'ico'],
-                docs: ['pdf', 'txt', 'doc', 'docx', 'zip', 'rar', '7z'],
-                code: ['js', 'html', 'css', 'json', 'py', 'ts']
+                docs: ['pdf', 'txt', 'doc', 'docx', 'zip', 'rar', '7z'], code: ['js', 'html', 'css', 'json', 'py', 'ts']
             };
-
             items.forEach(item => {
-                const name = item.getAttribute('data-name');
-                const path = item.getAttribute('data-path');
-                const type = item.getAttribute('data-type');
+                const name = item.getAttribute('data-name'); const path = item.getAttribute('data-path'); const type = item.getAttribute('data-type');
                 const matchesQuery = name.includes(query) || path.includes(query);
                 let matchesTag = (activeFilter === 'all') || (activeFilter === 'dir' && type === 'dir') || (groups[activeFilter] && groups[activeFilter].includes(type));
-
                 if (matchesQuery && matchesTag) {
                     item.style.display = "";
-                    if (query.length > 0) {
-                        let p = item.parentElement.closest('.folder');
-                        while(p) { p.classList.add('open'); p.style.display = ""; p = p.parentElement.closest('.folder'); }
-                    }
+                    if (query.length > 0) { let p = item.parentElement.closest('.folder'); while(p) { p.classList.add('open'); p.style.display = ""; p = p.parentElement.closest('.folder'); } }
                 } else { item.style.display = "none"; }
             });
         }
 
-        // --- Логика Кастомного Плеера ---
+        // --- Pro Media Player ---
         let currentMediaElement = null;
         const vPlayer = document.getElementById('glassVideo');
         const aPlayer = document.getElementById('glassAudio');
         const playBtn = document.getElementById('playBtn');
         const progress = document.getElementById('progressBar');
         const timeBox = document.getElementById('timeBox');
+        const speedBtn = document.getElementById('speedBtn');
+        const playerBox = document.getElementById('playerBox');
+        
+        let isDragging = false;
+        const speeds = [1, 1.25, 1.5, 2, 0.5];
+        let currentSpeedIndex = 0;
 
         function openPlayer(url, type, name) {
             document.getElementById('playerTitle').innerText = name;
             document.getElementById('videoContainer').classList.remove('show');
+            document.getElementById('fullscreenBtn').style.display = type === 'video' ? 'flex' : 'none';
             
-            // Сбрасываем старые ресурсы
             vPlayer.pause(); vPlayer.src = "";
             aPlayer.pause(); aPlayer.src = "";
+            currentSpeedIndex = 0; speedBtn.innerText = '1x';
 
-            if (type === 'video') {
-                currentMediaElement = vPlayer;
-                document.getElementById('videoContainer').classList.add('show');
-            } else {
-                currentMediaElement = aPlayer;
-            }
+            if (type === 'video') { currentMediaElement = vPlayer; document.getElementById('videoContainer').classList.add('show'); } 
+            else { currentMediaElement = aPlayer; }
 
             currentMediaElement.src = url;
+            currentMediaElement.playbackRate = 1;
             
-            // Привязка событий
             currentMediaElement.ontimeupdate = updateProgress;
             currentMediaElement.onended = () => { playBtn.innerHTML = '<i class="fas fa-play"></i>'; };
             currentMediaElement.onloadedmetadata = updateProgress;
 
             document.getElementById('playerModal').classList.add('active');
-            togglePlay(true); // Автостарт
+            togglePlay(true);
         }
 
         function closePlayer(force) {
             if (force === true || force.target === document.getElementById('playerModal')) {
                 document.getElementById('playerModal').classList.remove('active');
-                if (currentMediaElement) {
-                    currentMediaElement.pause();
-                }
+                if (currentMediaElement) currentMediaElement.pause();
+                if (document.fullscreenElement) document.exitFullscreen();
             }
         }
 
         function togglePlay(forcePlay) {
             if (!currentMediaElement) return;
             if (currentMediaElement.paused || forcePlay === true) {
-                currentMediaElement.play();
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                currentMediaElement.play(); playBtn.innerHTML = '<i class="fas fa-pause"></i>';
             } else {
-                currentMediaElement.pause();
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                currentMediaElement.pause(); playBtn.innerHTML = '<i class="fas fa-play"></i>';
             }
         }
+
+        function toggleSpeed() {
+            if (!currentMediaElement) return;
+            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+            const s = speeds[currentSpeedIndex];
+            currentMediaElement.playbackRate = s;
+            speedBtn.innerText = s + 'x';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                playerBox.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Логика ползунка
+        progress.addEventListener('input', (e) => {
+            isDragging = true;
+            if (currentMediaElement && currentMediaElement.duration) {
+                const time = (e.target.value / 100) * currentMediaElement.duration;
+                timeBox.innerText = formatTime(time) + ' / ' + formatTime(currentMediaElement.duration);
+            }
+        });
+
+        progress.addEventListener('change', (e) => {
+            isDragging = false;
+            if (currentMediaElement && currentMediaElement.duration) {
+                currentMediaElement.currentTime = (e.target.value / 100) * currentMediaElement.duration;
+            }
+        });
 
         function updateProgress() {
             if (!currentMediaElement) return;
             const cur = currentMediaElement.currentTime || 0;
             const dur = currentMediaElement.duration || 0;
-            const pct = dur > 0 ? (cur / dur) * 100 : 0;
-            
-            progress.style.width = pct + '%';
+            if (!isDragging) {
+                progress.value = dur > 0 ? (cur / dur) * 100 : 0;
+            }
             timeBox.innerText = formatTime(cur) + ' / ' + formatTime(dur);
-        }
-
-        function seekMedia(e) {
-            if (!currentMediaElement || !currentMediaElement.duration) return;
-            const area = document.getElementById('progressArea');
-            const rect = area.getBoundingClientRect();
-            const pos = (e.clientX - rect.left) / rect.width;
-            currentMediaElement.currentTime = pos * currentMediaElement.duration;
         }
 
         function formatTime(sec) {
             if (isNaN(sec)) return "0:00";
-            const m = Math.floor(sec / 60);
-            const s = Math.floor(sec % 60);
+            const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
             return m + ':' + (s < 10 ? '0' : '') + s;
         }
     </script>
