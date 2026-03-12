@@ -1,12 +1,11 @@
 // filename: build-listing.js
 // (c) 2026 BlankHtmlPage
-// Style: Liquid Glassmorphism ("19-sandy") - Final UI (No Blue Outline)
+// Style: Liquid Glassmorphism ("19-sandy") + Custom Media Player
 
 const fs = require('fs');
 const path = require('path');
 
 const OUTPUT_FILE = 'files.html';
-const SITE_TITLE = 'Index of /';
 
 const BLACKLIST = new Set([
     'node_modules', '.git', '.vercel', '.github', 'api',
@@ -55,14 +54,31 @@ function scan(dirPath, rootRelativePath = '') {
                 </li>`;
             } else {
                 const webPath = relativePath.split(path.sep).map(encodeURIComponent).join('/');
-                html += `
-                <li class="file" data-name="${item.name.toLowerCase()}" data-path="${rootRelativePath.toLowerCase()}" data-type="${ext}">
-                    <a href="/${webPath}" class="item-row file-link">
-                        <span class="icon"><i class="fas ${icon}"></i></span>
-                        <span class="name"><span>${item.name}</span></span>
-                        <span class="action"><i class="fas fa-external-link-alt"></i></span>
-                    </a>
-                </li>`;
+                
+                // Проверяем, является ли файл медиа, чтобы открыть его в кастомном плеере
+                const isVideo = ['mp4', 'webm', 'mkv', 'mov', 'avi'].includes(ext);
+                const isAudio = ['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext);
+                
+                if (isVideo || isAudio) {
+                    const mediaType = isVideo ? 'video' : 'audio';
+                    html += `
+                    <li class="file" data-name="${item.name.toLowerCase()}" data-path="${rootRelativePath.toLowerCase()}" data-type="${ext}">
+                        <a href="#" onclick="openPlayer('/${webPath}', '${mediaType}', '${item.name.replace(/'/g, "\\'")}'); return false;" class="item-row file-link">
+                            <span class="icon"><i class="fas ${icon}"></i></span>
+                            <span class="name"><span>${item.name}</span></span>
+                            <span class="action"><i class="fas fa-play"></i></span>
+                        </a>
+                    </li>`;
+                } else {
+                    html += `
+                    <li class="file" data-name="${item.name.toLowerCase()}" data-path="${rootRelativePath.toLowerCase()}" data-type="${ext}">
+                        <a href="/${webPath}" target="_blank" class="item-row file-link">
+                            <span class="icon"><i class="fas ${icon}"></i></span>
+                            <span class="name"><span>${item.name}</span></span>
+                            <span class="action"><i class="fas fa-external-link-alt"></i></span>
+                        </a>
+                    </li>`;
+                }
             }
         }
     } catch (e) { console.error(e.message); }
@@ -76,7 +92,7 @@ const generateHTML = (content) => `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${SITE_TITLE}</title>
+    <title>Files</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -100,14 +116,7 @@ const generateHTML = (content) => `
 
         .container { max-width: 900px; margin: 3rem auto; padding: 0 15px; }
 
-        h1 { 
-            text-align: center; font-size: 2.5rem; margin-bottom: 2rem;
-            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));
-        }
-
-        /* --- ПОИСК БЕЗ СИНЕЙ РАМКИ --- */
+        /* --- ПОИСК --- */
         .search-wrapper { 
             display: flex; gap: 0; align-items: center; margin-bottom: 1rem;
             background: rgba(255, 255, 255, 0.07);
@@ -116,8 +125,7 @@ const generateHTML = (content) => `
             padding: 4px; transition: 0.3s;
         }
         .search-wrapper:focus-within {
-            border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent); background: rgba(255, 255, 255, 0.12);
         }
 
         .filter-btn {
@@ -125,9 +133,7 @@ const generateHTML = (content) => `
             background: transparent; border: none; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             color: rgba(255, 255, 255, 0.5); font-size: 1.1rem; transition: 0.3s;
-            outline: none; /* Убирает синюю рамку при клике */
-            -webkit-tap-highlight-color: transparent; /* Убирает засвет на мобилках */
-            user-select: none;
+            outline: none; -webkit-tap-highlight-color: transparent; user-select: none;
         }
         .filter-btn:hover { color: var(--accent); background: rgba(255,255,255,0.1); }
         .filter-btn:focus { outline: none; }
@@ -175,6 +181,9 @@ const generateHTML = (content) => `
         .item-row:hover { background: var(--glass-light); }
         .icon { width: 26px; margin-right: 12px; color: var(--accent); flex-shrink: 0; }
         .name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 300; }
+        .action { font-size: 0.8rem; opacity: 0; transition: 0.2s; color: var(--accent-secondary); }
+        .item-row:hover .action { opacity: 1; }
+        
         .file-tree { list-style: none; padding: 0; margin: 0; }
         .file-tree ul { list-style: none; padding-left: 20px; display: none; border-left: 1px solid rgba(255,255,255,0.1); margin-left: 15px; }
         .folder.open > ul { display: block; }
@@ -182,18 +191,56 @@ const generateHTML = (content) => `
         .folder.open > .item-row .arrow { transform: rotate(90deg); opacity: 1; color: var(--accent); }
 
         footer { text-align: center; padding: 3rem; opacity: 0.4; font-size: 0.8rem; }
+
+        /* --- GLASS PLAYER MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .player-box {
+            background: var(--glass-dark); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 20px; width: 90%; max-width: 700px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            transform: scale(0.95); transition: 0.3s ease;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .modal-overlay.active .player-box { transform: scale(1); }
+
+        .player-header { display: flex; justify-content: space-between; align-items: center; }
+        .player-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 15px; color: var(--accent); }
+        .close-btn { 
+            background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;
+            width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.1);
+            transition: 0.2s; display: flex; align-items: center; justify-content: center;
+        }
+        .close-btn:hover { background: rgba(255, 100, 100, 0.8); }
+
+        .media-container { width: 100%; border-radius: 15px; overflow: hidden; background: rgba(0,0,0,0.3); display: none; }
+        .media-container.show { display: block; }
+        video { width: 100%; display: block; max-height: 50vh; outline: none; }
+
+        .custom-controls {
+            display: flex; align-items: center; gap: 15px;
+            background: rgba(255,255,255,0.08); padding: 12px 20px; border-radius: 20px;
+        }
+        .play-pause-btn {
+            background: var(--accent); color: #000; border: none; border-radius: 50%;
+            width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; transition: 0.2s; box-shadow: 0 4px 15px rgba(253, 224, 71, 0.3);
+        }
+        .play-pause-btn:hover { transform: scale(1.05); }
+        
+        .progress-area { flex: 1; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; background: var(--accent-secondary); border-radius: 4px; width: 0%; pointer-events: none; transition: width 0.1s linear; }
+        .time-box { font-size: 0.85rem; opacity: 0.8; font-family: monospace; min-width: 90px; text-align: right; }
     </style>
 </head>
 <body>
-    <svg style="position: absolute; width: 0; height: 0;">
-        <filter id="liquid">
-            <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="8" />
-        </filter>
-    </svg>
-
     <div class="container">
-        <h1 style="backdrop-filter: url(#liquid); -webkit-backdrop-filter: url(#liquid);">${SITE_TITLE}</h1>
         
         <div class="search-wrapper">
             <button class="filter-btn" onclick="toggleFilterPanel()" title="Фильтры">
@@ -217,7 +264,37 @@ const generateHTML = (content) => `
         </div>
     </div>
 
+    <div class="modal-overlay" id="playerModal" onclick="closePlayer(event)">
+        <div class="player-box" onclick="event.stopPropagation()">
+            <div class="player-header">
+                <div class="player-title" id="playerTitle">Media.mp4</div>
+                <button class="close-btn" onclick="closePlayer(true)"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="media-container" id="videoContainer">
+                <video id="glassVideo" preload="metadata"></video>
+            </div>
+            
+            <audio id="glassAudio" preload="metadata"></audio>
+
+            <div class="custom-controls">
+                <button class="play-pause-btn" id="playBtn" onclick="togglePlay()">
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="progress-area" id="progressArea" onclick="seekMedia(event)">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="time-box" id="timeBox">0:00 / 0:00</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Plotko Mark &bull; Liquid Glass Index
+    </footer>
+
     <script>
+        // --- Логика файлов и поиска ---
         function toggleFilterPanel() { document.getElementById('filterPanel').classList.toggle('show'); }
         function toggleFolder(element) { element.parentElement.classList.toggle('open'); }
         
@@ -253,6 +330,85 @@ const generateHTML = (content) => `
                     }
                 } else { item.style.display = "none"; }
             });
+        }
+
+        // --- Логика Кастомного Плеера ---
+        let currentMediaElement = null;
+        const vPlayer = document.getElementById('glassVideo');
+        const aPlayer = document.getElementById('glassAudio');
+        const playBtn = document.getElementById('playBtn');
+        const progress = document.getElementById('progressBar');
+        const timeBox = document.getElementById('timeBox');
+
+        function openPlayer(url, type, name) {
+            document.getElementById('playerTitle').innerText = name;
+            document.getElementById('videoContainer').classList.remove('show');
+            
+            // Сбрасываем старые ресурсы
+            vPlayer.pause(); vPlayer.src = "";
+            aPlayer.pause(); aPlayer.src = "";
+
+            if (type === 'video') {
+                currentMediaElement = vPlayer;
+                document.getElementById('videoContainer').classList.add('show');
+            } else {
+                currentMediaElement = aPlayer;
+            }
+
+            currentMediaElement.src = url;
+            
+            // Привязка событий
+            currentMediaElement.ontimeupdate = updateProgress;
+            currentMediaElement.onended = () => { playBtn.innerHTML = '<i class="fas fa-play"></i>'; };
+            currentMediaElement.onloadedmetadata = updateProgress;
+
+            document.getElementById('playerModal').classList.add('active');
+            togglePlay(true); // Автостарт
+        }
+
+        function closePlayer(force) {
+            if (force === true || force.target === document.getElementById('playerModal')) {
+                document.getElementById('playerModal').classList.remove('active');
+                if (currentMediaElement) {
+                    currentMediaElement.pause();
+                }
+            }
+        }
+
+        function togglePlay(forcePlay) {
+            if (!currentMediaElement) return;
+            if (currentMediaElement.paused || forcePlay === true) {
+                currentMediaElement.play();
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                currentMediaElement.pause();
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        }
+
+        function updateProgress() {
+            if (!currentMediaElement) return;
+            const cur = currentMediaElement.currentTime || 0;
+            const dur = currentMediaElement.duration || 0;
+            const pct = dur > 0 ? (cur / dur) * 100 : 0;
+            
+            progress.style.width = pct + '%';
+            timeBox.innerText = formatTime(cur) + ' / ' + formatTime(dur);
+        }
+
+        function seekMedia(e) {
+            if (!currentMediaElement || !currentMediaElement.duration) return;
+            const area = document.getElementById('progressArea');
+            const rect = area.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            currentMediaElement.currentTime = pos * currentMediaElement.duration;
+        }
+
+        function formatTime(sec) {
+            if (isNaN(sec)) return "0:00";
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return m + ':' + (s < 10 ? '0' : '') + s;
         }
     </script>
 </body>
