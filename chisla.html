@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Числа • Быстро</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#7DA1ED;--accent:#FDE047;--glass:rgba(255,255,255,.12);--glass-border:rgba(255,255,255,.25);--success:#4ade80;--error:#f87171;--kb-bg:rgba(15,25,45,.4);--kb-key:rgba(255,255,255,.12);--kb-active:rgba(253,224,71,.9)}
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:manipulation}
+        body{background:radial-gradient(circle at 50% 30%,#8faef5 0%,#7DA1ED 100%);font-family:'Manrope',system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;padding:10px}
+        .container{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--glass-border);border-radius:24px;padding:16px 12px;box-shadow:0 25px 50px rgba(0,0,0,.25);width:100%;max-width:420px;text-align:center;position:relative;overflow:hidden}
+        h1{font-size:17px;font-weight:800;margin-bottom:2px}
+        .subtitle{font-size:11px;opacity:.9;margin-bottom:8px;font-weight:400}
+        .stats{display:flex;justify-content:space-around;padding:6px;background:rgba(0,0,0,.15);border-radius:8px;margin-bottom:8px}
+        .stat-item{text-align:center}.stat-value{font-size:15px;font-weight:800;color:var(--accent)}.stat-label{font-size:8px;opacity:.85}
+        .question-box{background:rgba(0,0,0,.18);border-radius:12px;padding:14px 10px;margin-bottom:8px;border:1px solid var(--glass-border);overflow:hidden}
+        .number-display{font-weight:800;margin-bottom:4px;color:var(--accent);letter-spacing:-0.5px;transition:font-size .15s}
+        .instruction{font-size:11px;opacity:.9}
+        .input-wrap{position:relative;margin-bottom:6px}
+        #answerInput{width:100%;padding:8px 10px;font-size:14px;font-weight:700;border-radius:8px;border:1px solid var(--glass-border);background:rgba(255,255,255,.08);color:#fff;outline:none;text-align:center;font-family:inherit}
+        #answerInput::placeholder{color:rgba(255,255,255,.45)}
+        .btn{width:100%;padding:8px;font-size:12px;font-weight:800;border:none;border-radius:8px;cursor:pointer;margin-bottom:5px;transition:transform .1s,opacity .2s}
+        .btn:active{transform:scale(.98)}.btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-primary{background:var(--accent);color:#1a202c;box-shadow:0 4px 10px rgba(253,224,71,.3)}
+        .btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid var(--glass-border)}
+        .feedback{padding:6px;border-radius:6px;margin-bottom:6px;font-weight:700;font-size:12px;display:none}
+        .feedback.correct{background:rgba(74,222,128,.25);color:var(--success);border:1px solid var(--success);display:block}
+        .feedback.incorrect{background:rgba(248,113,113,.25);color:var(--error);border:1px solid var(--error);display:block}
+        .hint{color:var(--accent);font-size:10px;margin-top:3px;min-height:14px;font-weight:700}
+        .hidden{display:none!important}
+        .progress-bar{width:100%;height:3px;background:rgba(0,0,0,.2);border-radius:3px;overflow:hidden;margin:4px 0 8px}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#fff);width:0%;transition:width .3s}
+        .mode-tabs{display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap}
+        .mode-tab{flex:1;min-width:60px;padding:5px 3px;background:rgba(255,255,255,.08);border:1px solid var(--glass-border);border-radius:6px;font-size:9px;font-weight:700;cursor:pointer;transition:all .2s}
+        .mode-tab.active{background:var(--accent);color:#1a202c;border-color:var(--accent)}
+        .streak-badge{position:absolute;top:10px;left:12px;background:var(--accent);color:#1a202c;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+
+        /* === КЛАВИАТУРА (ИСПРАВЛЕНА) === */
+        .keyboard{background:var(--kb-bg);border-radius:12px;padding:5px 4px;margin-top:6px;border:1px solid var(--glass-border);width:100%;overflow:hidden}
+        .kb-row{display:flex;justify-content:center;gap:2px;margin:2px 0}
+        .kb-key{flex:1 1 0;min-width:0;height:48px;background:var(--kb-key);border:1px solid rgba(255,255,255,.15);border-radius:7px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .05s,transform .05s;overflow:hidden}
+        .kb-key:active,.kb-key.active{background:var(--kb-active);color:#1a202c;transform:scale(.96)}
+        .kb-key.ctrl{background:rgba(125,161,237,.25);border-color:rgba(125,161,237,.5);font-size:13px}
+        .kb-key.action{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3)}
+        .kb-key.space{flex:4;background:rgba(255,255,255,.1)}
+        .kb-row.utility .kb-key{height:40px;background:rgba(255,255,255,.08);font-size:12px}
+        .kb-row:last-child .kb-key{height:52px}
+        
+        .review-list{max-height:80px;overflow-y:auto;text-align:left;background:rgba(0,0,0,.15);border-radius:8px;padding:5px;margin:5px 0;font-size:11px}        .review-item{display:flex;justify-content:space-between;padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.05)}
+        .review-item:last-child{border-bottom:none}.review-num{color:var(--accent);font-weight:700}
+        
+        @media(max-width:360px){.container{padding:12px 8px}.kb-key{height:44px;font-size:13px}.kb-row.utility .kb-key{height:36px}.kb-row:last-child .kb-key{height:48px}}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="streak-badge">🔥<span id="streak">0</span></div>
+    <h1>🔢 Числа прописью</h1>
+    <p class="subtitle" id="modeLabel">Все числа • Вперемешку</p>
+
+    <div class="stats">
+        <div class="stat-item"><div class="stat-value" id="score">0</div><div class="stat-label">✓</div></div>
+        <div class="stat-item"><div class="stat-value" id="wrong">0</div><div class="stat-label">✗</div></div>
+        <div class="stat-item"><div class="stat-value" id="left">0</div><div class="stat-label">Осталось</div></div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <div class="mode-tabs">
+        <div class="mode-tab active" data-mode="all">Все</div>
+        <div class="mode-tab" data-mode="compound">Составные</div>
+        <div class="mode-tab" data-mode="review" id="reviewTab" style="display:none">Ошибки</div>
+    </div>
+
+    <div class="question-box">
+        <div class="number-display" id="numberDisplay">0</div>
+        <div class="instruction">Напишите число словами</div>
+    </div>
+
+    <div class="input-wrap">
+        <input type="text" id="answerInput" placeholder="введите ответ..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="none">
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="hint" id="hintText"></div>
+
+    <button class="btn btn-primary" id="checkBtn">Проверить</button>
+    <button class="btn btn-secondary hidden" id="nextBtn">Далее</button>
+    <button class="btn btn-secondary" id="hintBtn">💡 Подсказка</button>
+
+    <!-- === ЭКРАННАЯ КЛАВИАТУРА === -->
+    <div class="keyboard" id="keyboard">
+        <div class="kb-row utility">
+            <div class="kb-key" data-action="cursor-left">◀</div>
+            <div class="kb-key" data-action="cursor-right">▶</div>
+            <div class="kb-key" data-action="cursor-start">⌂</div>
+            <div class="kb-key" data-action="clear">🗑</div>            <div class="kb-key" data-action="cursor-end">⌃</div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key" data-k="й">й</div><div class="kb-key" data-k="ц">ц</div><div class="kb-key" data-k="у">у</div><div class="kb-key" data-k="к">к</div><div class="kb-key" data-k="е">е</div><div class="kb-key" data-k="н">н</div><div class="kb-key" data-k="г">г</div><div class="kb-key" data-k="ш">ш</div><div class="kb-key" data-k="щ">щ</div><div class="kb-key" data-k="з">з</div><div class="kb-key" data-k="х">х</div><div class="kb-key" data-k="ъ">ъ</div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key" data-k="ф">ф</div><div class="kb-key" data-k="ы">ы</div><div class="kb-key" data-k="в">в</div><div class="kb-key" data-k="а">а</div><div class="kb-key" data-k="п">п</div><div class="kb-key" data-k="р">р</div><div class="kb-key" data-k="о">о</div><div class="kb-key" data-k="л">л</div><div class="kb-key" data-k="д">д</div><div class="kb-key" data-k="ж">ж</div><div class="kb-key" data-k="э">э</div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key" data-k="я">я</div><div class="kb-key" data-k="ч">ч</div><div class="kb-key" data-k="с">с</div><div class="kb-key" data-k="м">м</div><div class="kb-key" data-k="и">и</div><div class="kb-key" data-k="т">т</div><div class="kb-key" data-k="ь">ь</div><div class="kb-key" data-k="б">б</div><div class="kb-key" data-k="ю">ю</div>
+            <div class="kb-key ctrl" data-action="backspace" id="backspaceKey">⌫</div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key action" data-action="hint">💡</div>
+            <div class="kb-key space" data-k=" "></div>
+            <div class="kb-key action" data-action="check">✓</div>
+        </div>
+    </div>
+
+    <div class="review-list hidden" id="reviewList"></div>
+</div>
+
+<script>
+const baseNumbers = [
+    {n:0,w:'ноль'},{n:1,w:'один'},{n:2,w:'два'},{n:3,w:'три'},{n:4,w:'четыре'},{n:5,w:'пять'},{n:6,w:'шесть'},{n:7,w:'семь'},{n:8,w:'восемь'},{n:9,w:'девять'},{n:10,w:'десять'},{n:11,w:'одиннадцать'},{n:12,w:'двенадцать'},{n:13,w:'тринадцать'},{n:14,w:'четырнадцать'},{n:15,w:'пятнадцать'},{n:16,w:'шестнадцать'},{n:17,w:'семнадцать'},{n:18,w:'восемнадцать'},{n:19,w:'девятнадцать'},{n:20,w:'двадцать'},{n:30,w:'тридцать'},{n:40,w:'сорок'},{n:50,w:'пятьдесят'},{n:60,w:'шестьдесят'},{n:70,w:'семьдесят'},{n:80,w:'восемьдесят'},{n:90,w:'девяносто'},{n:100,w:'сто'},{n:200,w:'двести'},{n:300,w:'триста'},{n:400,w:'четыреста'},{n:500,w:'пятьсот'},{n:600,w:'шестьсот'},{n:700,w:'семьсот'},{n:800,w:'восемьсот'},{n:900,w:'девятьсот'},{n:1000,w:'тысяча'},{n:1e6,w:'миллион'},{n:1e9,w:'миллиард'},{n:1e12,w:'триллион'}
+];
+
+const ones = ['','один','два','три','четыре','пять','шесть','семь','восемь','девять'];
+const teens = ['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
+const tens = ['','','двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
+const hundreds = ['','сто','двести','триста','четыреста','пятьсот','шестьсот','семьсот','восемьсот','девятьсот'];
+
+function numToWords(n) {
+    if (n === 0) return 'ноль';
+    if (n < 0) return 'минус ' + numToWords(-n);
+    if (n < 10) return ones[n];
+    if (n < 20) return teens[n - 10];
+    if (n < 100) { const t = Math.floor(n/10), o = n%10; return tens[t] + (o ? ' ' + ones[o] : ''); }
+    if (n < 1000) { const h = Math.floor(n/100), r = n%100; return hundreds[h] + (r ? ' ' + numToWords(r) : ''); }
+    if (n === 1000) return 'тысяча';
+    if (n === 1e6) return 'миллион';
+    if (n === 1e9) return 'миллиард';
+    if (n === 1e12) return 'триллион';
+    return n.toString();
+}
+
+function generateCompound() {
+    const arr = [];
+    for (let t = 2; t < 10; t++) for (let o = 1; o < 10; o++) arr.push({n: t*10 + o, w: numToWords(t*10 + o)});
+    [101,105,111,123,135,148,199,201,250,305,345,410,456,520,567,601,678,715,789,802,890,909,999,1001,1234,2045,5099,10100,25300].forEach(n => arr.push({n, w: numToWords(n)}));    return arr;
+}
+
+let pool = [], idx = 0, score = 0, wrong = 0, streak = 0, mode = 'all', mistakes = [];
+const input = document.getElementById('answerInput');
+const els = {
+    num: document.getElementById('numberDisplay'), input, feedback: document.getElementById('feedback'),
+    hint: document.getElementById('hintText'), check: document.getElementById('checkBtn'),
+    next: document.getElementById('nextBtn'), hintBtn: document.getElementById('hintBtn'),
+    score: document.getElementById('score'), wrong: document.getElementById('wrong'),
+    left: document.getElementById('left'), streak: document.getElementById('streak'),
+    progress: document.getElementById('progress'), modeLabel: document.getElementById('modeLabel'),
+    reviewList: document.getElementById('reviewList'), reviewTab: document.getElementById('reviewTab'),
+    keyboard: document.getElementById('keyboard'), backspaceKey: document.getElementById('backspaceKey')
+};
+
+const kb = {
+    insert(char) { const s = input.selectionStart ?? input.value.length; input.value = input.value.slice(0,s)+char+input.value.slice(s); this.setSelection(s+1,s+1); },
+    backspace() { const s = input.selectionStart, e = input.selectionEnd, v = input.value; if(s!==e){input.value=v.slice(0,s)+v.slice(e);this.setSelection(s,s);}else if(s>0){input.value=v.slice(0,s-1)+v.slice(s);this.setSelection(s-1,s-1);} },
+    delete() { const s = input.selectionStart, e = input.selectionEnd, v = input.value; if(s!==e){input.value=v.slice(0,s)+v.slice(e);this.setSelection(s,s);}else if(s<v.length){input.value=v.slice(0,s)+v.slice(s+1);this.setSelection(s,s);} },
+    clear() { input.value='';this.setSelection(0,0); },
+    moveCursor(dir) { const l=input.value.length, p=Math.max(0,Math.min(l,(input.selectionStart??l)+dir)); this.setSelection(p,p); },
+    setStart() { this.setSelection(0,0); },
+    setEnd() { this.setSelection(input.value.length,input.value.length); },
+    setSelection(s,e) { input.focus();input.setSelectionRange(s,e); },
+    validate() { const v=input.value.toLowerCase(), c=v.replace(/[^а-яё\- ]/g,'').replace(/\s+/g,' ').trimStart(); if(v!==c){const p=input.selectionStart;input.value=c;this.setSelection(Math.min(p,c.length),Math.min(p,c.length));} },
+    // ✅ ИСПРАВЛЕНО: плавный backspace с задержкой перед повтором
+    holdRepeat(action) {
+        let repeatTimer, initTimer;
+        const stop = () => { clearTimeout(repeatTimer); clearTimeout(initTimer); repeatTimer=null; initTimer=null; };
+        initTimer = setTimeout(() => {
+            const loop = () => { action(); repeatTimer = setTimeout(loop, 100); };
+            loop();
+        }, 400);
+        return stop;
+    }
+};
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function autoFitNumber(text) {
+    const len = text.replace(/[^0-9]/g,'').length;
+    let size = 44;
+    if(len>5) size=38; if(len>8) size=32; if(len>11) size=28; if(len>14) size=24; if(len>18) size=20;
+    els.num.style.fontSize = size+'px';
+}
+
+function setMode(m){
+    mode=m;
+    document.querySelectorAll('.mode-tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===m));    if(m==='all'){pool=shuffle([...baseNumbers]);els.modeLabel.textContent='Все числа • Вперемешку';}
+    else if(m==='compound'){pool=shuffle(generateCompound()).slice(0,25);els.modeLabel.textContent='Составные числа • 21, 45, 123...';}
+    else if(m==='review'){if(!mistakes.length)return;pool=shuffle([...mistakes]);mistakes=[];els.modeLabel.textContent='Работа над ошибками 🔧';els.reviewList.classList.add('hidden');els.reviewTab.style.display='none';}
+    idx=0;score=0;wrong=0;streak=0;updateStats();loadQuestion();
+}
+
+function loadQuestion(){
+    if(idx>=pool.length){
+        if(mode!=='review'&&mistakes.length>0){els.reviewTab.style.display='block';renderReviewList();}
+        els.num.textContent='🎉 Готово!';input.value='';
+        els.feedback.className='feedback correct';
+        els.feedback.textContent=mode==='review'?'✅ Все ошибки исправлены!':'✅ Раунд пройден!';
+        els.check.classList.add('hidden');els.next.classList.add('hidden');els.hintBtn.disabled=true;
+        els.progress.style.width='100%';return;
+    }
+    const item=pool[idx];
+    els.num.textContent=item.n.toLocaleString('ru-RU');
+    autoFitNumber(els.num.textContent);
+    input.value='';kb.setSelection(0,0);
+    els.feedback.className='feedback';els.feedback.textContent='';els.hint.textContent='';
+    els.check.classList.remove('hidden');els.next.classList.add('hidden');els.hintBtn.disabled=false;
+    input.focus();updateProgress();
+}
+
+function checkAnswer(){
+    const user=input.value.trim().toLowerCase().replace(/\s+/g,' ');
+    const correct=pool[idx].w;
+    input.disabled=true;els.hintBtn.disabled=true;
+    if(user===correct){els.feedback.className='feedback correct';els.feedback.textContent='✅ Верно!';score++;streak++;}
+    else{els.feedback.className='feedback incorrect';els.feedback.textContent=`❌ ${correct}`;wrong++;streak=0;if(!mistakes.some(m=>m.n===pool[idx].n))mistakes.push(pool[idx]);}
+    updateStats();els.check.classList.add('hidden');els.next.classList.remove('hidden');els.next.focus();
+}
+
+function showHint(){const w=pool[idx].w,s=Math.max(2,Math.ceil(w.length*0.35));els.hint.textContent='💡 '+w.substring(0,s)+'…';}
+
+function updateStats(){
+    els.score.textContent=score;els.wrong.textContent=wrong;els.streak.textContent=streak;
+    const rem=Math.max(0,pool.length-idx-(els.feedback.className.includes('correct')||els.feedback.className.includes('incorrect')?1:0));
+    els.left.textContent=rem;
+}
+
+function updateProgress(){els.progress.style.width=(idx/Math.max(1,pool.length)*100)+'%';}
+
+function renderReviewList(){els.reviewList.innerHTML=mistakes.map(m=>`<div class="review-item"><span class="review-num">${m.n.toLocaleString('ru-RU')}</span><span>${m.w}</span></div>`).join('');els.reviewList.classList.remove('hidden');}
+
+function setupEvents(){
+    document.querySelectorAll('.mode-tab').forEach(tab=>{tab.addEventListener('click',()=>{if(tab.dataset.mode==='review'&&!mistakes.length)return;setMode(tab.dataset.mode);});});
+    els.check.onclick=checkAnswer;els.next.onclick=()=>{idx++;loadQuestion();};els.hintBtn.onclick=showHint;
+    input.addEventListener('keydown',e=>{
+        if(e.key==='Enter'){e.preventDefault();if(els.check.classList.contains('hidden')){idx++;loadQuestion();}else checkAnswer();return;}        if(e.key==='Backspace'){e.preventDefault();kb.backspace();return;}if(e.key==='Delete'){e.preventDefault();kb.delete();return;}
+        if(e.key==='ArrowLeft'){e.preventDefault();kb.moveCursor(-1);return;}if(e.key==='ArrowRight'){e.preventDefault();kb.moveCursor(1);return;}
+        if(e.key==='Home'){e.preventDefault();kb.setStart();return;}if(e.key==='End'){e.preventDefault();kb.setEnd();return;}
+        if(e.key.length===1&&!/^[а-яё\- ]$/i.test(e.key))e.preventDefault();
+    });
+    input.addEventListener('input',()=>kb.validate());
+    
+    let holdCleanup=null;
+    const handleKey=(key)=>{
+        const k=key.dataset.k,action=key.dataset.action;
+        if(action==='backspace'){kb.backspace();holdCleanup=kb.holdRepeat(()=>kb.backspace());key.classList.add('active');}
+        else if(action==='delete')kb.delete();else if(action==='clear')kb.clear();
+        else if(action==='cursor-left')kb.moveCursor(-1);else if(action==='cursor-right')kb.moveCursor(1);
+        else if(action==='cursor-start')kb.setStart();else if(action==='cursor-end')kb.setEnd();
+        else if(action==='check'){if(!els.check.classList.contains('hidden'))checkAnswer();}
+        else if(action==='hint')showHint();
+        else if(k)kb.insert(k);
+        if(action!=='backspace'){key.classList.add('active');setTimeout(()=>key.classList.remove('active'),100);}
+        input.focus();
+    };
+    els.keyboard.addEventListener('touchstart',e=>{const key=e.target.closest('.kb-key');if(!key)return;e.preventDefault();handleKey(key);},{passive:false});
+    els.keyboard.addEventListener('mousedown',e=>{const key=e.target.closest('.kb-key');if(!key)return;e.preventDefault();handleKey(key);});
+    const stopHold=()=>{if(holdCleanup){holdCleanup();holdCleanup=null;}};
+    els.keyboard.addEventListener('touchend',stopHold);els.keyboard.addEventListener('touchcancel',stopHold);document.addEventListener('mouseup',stopHold);
+}
+
+init();function init(){shuffle(baseNumbers);pool=[...baseNumbers];updateStats();loadQuestion();setupEvents();}
+</script>
+</body>
+</html>
