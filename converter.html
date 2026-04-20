@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конвертер Видео в MP3</title>
+    
+    <!-- 🔖 Полный набор favicon -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/favicon-144x144.png">
+    <meta name="msapplication-config" content="/browserconfig.xml">
+    
+    <!-- 📚 Стили и шрифты -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- FFmpeg.wasm -->
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    
+    <style>
+    :root {
+        --glass-bg: rgba(253, 224, 71, 0.08);
+        --glass-border: rgba(56, 189, 248, 0.25);
+        --text-main: #FFFFFF;
+        --text-muted: #BAE6FD;
+        --accent: #FDE047;
+        --accent-secondary: #38BDF8;
+        --hover-bg: rgba(253, 224, 71, 0.15);
+        --hover-glow: rgba(56, 189, 248, 0.35);
+        --shadow-color: rgba(0, 0, 0, 0.4);
+        --circle-bg: #000000;
+        --success: #4ADE80;
+        --error: #F87171;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #749CF9;
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(253, 224, 71, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.12) 0%, transparent 50%);
+        background-attachment: fixed;
+    }
+
+    .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 45px 35px;
+        max-width: 520px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 
+            0 25px 50px -12px var(--shadow-color),
+            0 0 0 1px rgba(253, 224, 71, 0.05) inset,
+            0 0 30px rgba(56, 189, 248, 0.08);
+        transition: box-shadow 0.3s ease;
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    .card:hover {
+        box-shadow: 
+            0 25px 50px -12px var(--shadow-color),
+            0 0 0 1px rgba(253, 224, 71, 0.1) inset,
+            0 0 40px rgba(56, 189, 248, 0.15);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .icon-wrapper {
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 20px;
+        background: var(--circle-bg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        padding: 14px;
+        border: 2px solid var(--glass-border);
+    }
+
+    .icon-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .subtitle {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        font-weight: 300;
+    }
+
+    /* Область загрузки */
+    .upload-area {
+        border: 2px dashed var(--glass-border);
+        border-radius: 15px;
+        padding: 40px 20px;
+        margin-bottom: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: rgba(253, 224, 71, 0.05);
+        position: relative;
+    }
+
+    .upload-area:hover {
+        border-color: var(--accent);
+        background: rgba(253, 224, 71, 0.1);
+        transform: scale(1.02);
+    }
+
+    .upload-area.dragover {
+        border-color: var(--accent-secondary);
+        background: rgba(56, 189, 248, 0.15);
+        transform: scale(1.03);
+    }
+
+    .upload-area i {
+        font-size: 3rem;
+        color: var(--accent);
+        margin-bottom: 15px;
+        text-shadow: 0 0 15px rgba(253, 224, 71, 0.4);
+    }
+
+    .upload-area p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    .upload-area input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    /* Информация о файле */
+    .file-info {
+        background: rgba(56, 189, 248, 0.1);
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: none;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .file-info.show {
+        display: flex;
+    }
+
+    .file-info i {
+        font-size: 2rem;
+        color: var(--accent-secondary);
+    }
+
+    .file-details {
+        flex: 1;
+        text-align: left;
+    }
+
+    .file-name {
+        font-weight: 500;
+        margin-bottom: 5px;
+        word-break: break-all;
+    }
+
+    .file-size {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    /* Прогресс бар */
+    .progress-container {
+        margin: 20px 0;
+        display: none;
+    }
+
+    .progress-container.show {
+        display: block;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: rgba(253, 224, 71, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 4px;
+    }
+
+    .progress-text {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    /* Кнопки */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 32px;
+        border-radius: 12px;
+        font-size: 1.05rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid var(--glass-border);
+        background: var(--hover-bg);
+        color: var(--text-main);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, var(--accent), var(--accent-secondary));
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .btn:hover {
+        background: var(--hover-bg);
+        padding-left: 1.7rem;
+        color: #fff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        border-color: var(--accent-secondary);
+    }
+    
+    .btn:hover::before {
+        opacity: 1;
+    }
+
+    .btn i {
+        font-size: 1.1rem;
+        color: var(--accent);
+        transition: color 0.2s ease;
+        text-shadow: 0 0 10px rgba(253, 224, 71, 0.3);
+    }
+    
+    .btn:hover i {
+        color: var(--accent-secondary);
+        text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .btn-success {
+        background: rgba(74, 222, 128, 0.15);
+        border-color: var(--success);
+    }
+
+    .btn-success i {
+        color: var(--success);
+    }
+
+    /* Статус сообщения */
+    .status-message {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 12px;
+        display: none;
+        font-size: 0.95rem;
+    }
+
+    .status-message.show {
+        display: block;
+    }
+
+    .status-message.error {
+        background: rgba(248, 113, 113, 0.15);
+        border: 1px solid var(--error);
+        color: var(--error);
+    }
+
+    .status-message.success {
+        background: rgba(74, 222, 128, 0.15);
+        border: 1px solid var(--success);
+        color: var(--success);
+    }
+
+    /* Футер */
+    .footer {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid var(--glass-border);
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 300;
+        letter-spacing: 0.3px;
+    }
+    
+    .footer a {
+        color: var(--accent);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        font-weight: 400;
+    }
+    
+    .footer a:hover {
+        color: var(--accent-secondary);
+    }
+
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .social-links a {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: rgba(253, 224, 71, 0.1);
+        border: 1px solid var(--glass-border);
+        color: var(--accent);
+        transition: all 0.25s ease;
+        font-size: 1rem;
+    }
+
+    .social-links a:hover {
+        background: var(--hover-bg);
+        color: var(--accent-secondary);
+        border-color: var(--accent-secondary);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.2);
+    }
+
+    .divider {
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        margin: 12px auto;
+        border-radius: 2px;
+        opacity: 0.8;
+    }
+
+    /* Адаптив */
+    @media (max-width: 600px) {
+        .card { padding: 35px 25px; }
+        h1 { font-size: 1.5rem; }
+        .subtitle { font-size: 0.95rem; }
+        .icon-wrapper { width: 75px; height: 75px; padding: 10px; }
+        .btn { padding: 12px 26px; font-size: 0.95rem; }
+        .upload-area { padding: 30px 15px; }
+    }
+
+    /* Спиннер загрузки */
+    .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(253, 224, 71, 0.3);
+        border-radius: 50%;
+        border-top-color: var(--accent);
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-wrapper">
+            <img src="/favicon.ico" alt="favicon">
+        </div>
+
+        <h1>Конвертер Видео в MP3</h1>
+        <div class="divider"></div>
+        <p class="subtitle">
+            Конвертируйте видео файлы в аудио формат MP3<br>
+            Прямо в браузере • Быстро и безопасно
+        </p>
+
+        <!-- Область загрузки -->
+        <div class="upload-area" id="uploadArea">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p><strong>Нажмите для выбора</strong> или перетащите видео файл сюда</p>
+            <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.7;">Поддерживаются: MP4, AVI, MKV, MOV, WebM</p>
+            <input type="file" id="fileInput" accept="video/*">
+        </div>
+
+        <!-- Информация о файле -->
+        <div class="file-info" id="fileInfo">
+            <i class="fas fa-file-video"></i>
+            <div class="file-details">
+                <div class="file-name" id="fileName">video.mp4</div>
+                <div class="file-size" id="fileSize">0 MB</div>
+            </div>
+            <button class="btn" id="removeBtn" style="padding: 8px 16px; font-size: 0.9rem;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Прогресс конвертации -->
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Инициализация...</div>
+        </div>
+
+        <!-- Кнопка конвертации -->
+        <button class="btn" id="convertBtn" disabled>
+            <i class="fas fa-music"></i>
+            Конвертировать в MP3
+        </button>
+
+        <!-- Сообщение о статусе -->
+        <div class="status-message" id="statusMessage"></div>
+
+        <!-- Кнопка скачивания -->
+        <a href="#" class="btn btn-success" id="downloadBtn" style="display: none; margin-top: 15px;">
+            <i class="fas fa-download"></i>
+            Скачать MP3
+        </a>
+
+        <!-- Футер -->
+        <div class="footer">
+            <p></> Coded with love by <a href="https://github.com/iraplotko37-sketch">Mark</a></p>
+            <p style="margin-top: 8px; opacity: 0.7;">© 2026 19-sandy</p>
+            
+            <div class="social-links">
+                <a href="https://github.com/iraplotko37-sketch/-19" title="GitHub">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a href="mailto:iraplotko37@gmail.com" title="Email">
+                    <i class="fas fa-envelope"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { FFmpeg } = FFmpegWASM;
+        const { fetchFile } = FFmpegUtil;
+
+        let ffmpeg = null;
+        let selectedFile = null;
+        let convertedBlob = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeBtn = document.getElementById('removeBtn');
+        const convertBtn = document.getElementById('convertBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const statusMessage = document.getElementById('statusMessage');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Drag and Drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+        });
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0 && files[0].type.startsWith('video/')) {
+                handleFile(files[0]);
+            } else {
+                showStatus('Пожалуйста, выберите видео файл', 'error');
+            }
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.add('show');
+            convertBtn.disabled = false;
+            hideStatus();
+            downloadBtn.style.display = 'none';
+            progressContainer.classList.remove('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        removeBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.remove('show');
+            convertBtn.disabled = true;
+            hideStatus();
+            downloadBtn.style.display = 'none';
+            progressContainer.classList.remove('show');
+        });
+
+        async function loadFFmpeg() {
+            if (ffmpeg) return ffmpeg;
+
+            ffmpeg = new FFmpeg();
+            
+            ffmpeg.on('log', ({ message }) => {
+                console.log(message);
+            });
+
+            ffmpeg.on('progress', ({ progress, time }) => {
+                const percent = Math.round(progress * 100);
+                progressFill.style.width = percent + '%';
+                progressText.textContent = `Конвертация: ${percent}% (${formatTime(time)})`;
+            });
+
+            await ffmpeg.load({
+                coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+            });
+
+            return ffmpeg;
+        }
+
+        function formatTime(seconds) {
+            if (!seconds) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message show ${type}`;
+        }
+
+        function hideStatus() {
+            statusMessage.className = 'status-message';
+        }
+
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                showStatus('Пожалуйста, выберите файл', 'error');
+                return;
+            }
+
+            try {
+                convertBtn.disabled = true;
+                convertBtn.innerHTML = '<span class="spinner"></span> Загрузка FFmpeg...';
+                progressContainer.classList.add('show');
+                progressFill.style.width = '0%';
+                progressText.textContent = 'Инициализация FFmpeg...';
+                hideStatus();
+
+                // Загружаем FFmpeg
+                const instance = await loadFFmpeg();
+
+                // Записываем файл в виртуальную файловую систему
+                progressText.textContent = 'Загрузка видео файла...';
+                await instance.writeFile('input_video', await fetchFile(selectedFile));
+
+                // Конвертируем в MP3
+                progressText.textContent = 'Конвертация в MP3...';
+                await instance.exec([
+                    '-i', 'input_video',
+                    '-vn',
+                    '-acodec', 'libmp3lame',
+                    '-ab', '192k',
+                    '-ar', '44100',
+                    'output.mp3'
+                ]);
+
+                // Читаем результат
+                progressText.textContent = 'Обработка результата...';
+                const data = await instance.readFile('output.mp3');
+
+                // Создаем blob для скачивания
+                convertedBlob = new Blob([data], { type: 'audio/mp3' });
+                const url = URL.createObjectURL(convertedBlob);
+                
+                downloadBtn.href = url;
+                downloadBtn.download = selectedFile.name.replace(/\.[^/.]+$/, '') + '.mp3';
+                downloadBtn.style.display = 'inline-flex';
+
+                showStatus('Конвертация успешно завершена!', 'success');
+                progressText.textContent = 'Готово!';
+                progressFill.style.width = '100%';
+
+            } catch (error) {
+                console.error('Ошибка конвертации:', error);
+                showStatus(`Ошибка: ${error.message}. Попробуйте другой файл.`, 'error');
+                progressText.textContent = 'Ошибка конвертации';
+            } finally {
+                convertBtn.disabled = false;
+                convertBtn.innerHTML = '<i class="fas fa-music"></i> Конвертировать в MP3';
+            }
+        });
+    </script>
+</body>
+</html>
