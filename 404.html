@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>404 — Страница не найдена</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f12;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Фон с крутящимися селёдками */
+    .herring-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .herring {
+      position: absolute;
+      width: 60px;
+      height: auto;
+      opacity: 0.15;
+      animation: spin linear infinite;
+      filter: drop-shadow(0 0 8px rgba(100, 200, 255, 0.3));
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg) translateX(0) scale(1); }
+      25% { transform: rotate(90deg) translateX(20px) scale(1.05); }
+      50% { transform: rotate(180deg) translateX(0) scale(1); }      75% { transform: rotate(270deg) translateX(-20px) scale(0.95); }
+      100% { transform: rotate(360deg) translateX(0) scale(1); }
+    }
+
+    /* Позиционирование селёдок */
+    .herring:nth-child(1) { top: 10%; left: 10%; animation-duration: 18s; }
+    .herring:nth-child(2) { top: 20%; right: 15%; animation-duration: 22s; animation-direction: reverse; }
+    .herring:nth-child(3) { bottom: 25%; left: 20%; animation-duration: 25s; }
+    .herring:nth-child(4) { bottom: 15%; right: 10%; animation-duration: 20s; animation-direction: reverse; }
+    .herring:nth-child(5) { top: 40%; left: 5%; animation-duration: 30s; }
+    .herring:nth-child(6) { top: 60%; right: 25%; animation-duration: 27s; }
+    .herring:nth-child(7) { bottom: 40%; left: 35%; animation-duration: 23s; animation-direction: reverse; }
+    .herring:nth-child(8) { top: 15%; left: 45%; animation-duration: 19s; }
+
+    /* Контент 404 */
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+    }
+
+    .error-code {
+      font-size: 8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #64b3ff, #a07cff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 40px rgba(100, 179, 255, 0.4);
+    }
+
+    .error-title {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .error-desc {
+      font-size: 1.1rem;
+      color: #aaa;
+      margin-bottom: 2rem;
+      line-height: 1.5;
+    }
+
+    .home-link {
+      display: inline-block;      padding: 0.8rem 2rem;
+      background: linear-gradient(135deg, #64b3ff, #a07cff);
+      color: #0f0f12;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(100, 179, 255, 0.5);
+    }
+
+    .home-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(100, 179, 255, 0.7);
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 1rem;
+      font-size: 0.85rem;
+      color: #666;
+      z-index: 10;
+    }
+
+    /* Адаптив */
+    @media (max-width: 600px) {
+      .error-code { font-size: 5rem; }
+      .error-title { font-size: 1.4rem; }
+      .herring { width: 40px; opacity: 0.1; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Фон с крутящимися селёдками -->
+  <div class="herring-bg" aria-hidden="true">
+    <!-- Замените src на прямую ссылку на изображение селёдки из мема -->
+    <!-- Рекомендую использовать PNG с прозрачным фоном -->
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+    <img class="herring" src="https://i.imgur.com/5xKqY8m.png" alt="">
+  </div>
+
+  <!-- Основной контент -->
+  <div class="content">
+    <div class="error-code">404</div>
+    <h1 class="error-title">Страница уплыла 🐟</h1>    <p class="error-desc">
+      Похоже, эта селёдка уплыла в неизвестном направлении.<br>
+      Проверьте адрес или вернитесь на главную.
+    </p>
+    <a href="/" class="home-link">На главную</a>
+  </div>
+
+  <div class="footer">
+    plotko.qzz.io style • 404
+  </div>
+
+  <script>
+    // Дополнительная динамика: случайное смещение и скорость для каждой селёдки
+    document.querySelectorAll('.herring').forEach((el, i) => {
+      const randX = Math.random() * 100 - 50;
+      const randY = Math.random() * 100 - 50;
+      const duration = 15 + Math.random() * 20;
+      el.style.animationDuration = `${duration}s`;
+      el.style.left = `calc(${el.style.left || '0%'} + ${randX}px)`;
+      el.style.top = `calc(${el.style.top || '0%'} + ${randY}px)`;
+    });
+  </script>
+</body>
+      </html> 
