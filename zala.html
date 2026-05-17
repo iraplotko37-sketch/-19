@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BTV Link Generator</title>
+    <title>BTV Liquid Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
             --primary: #7DA1ED;
@@ -33,12 +34,102 @@
             align-items: center;
             justify-content: flex-start;
             padding: 20px;
+            transition: all 0.3s ease;
         }
 
+        .layout-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            width: 40px; 
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .layout-toggle:hover { 
+            background: var(--accent); 
+            color: var(--text-dark); 
+            transform: scale(1.05); 
+        }
+        
         .app-wrapper {
             width: 100%;
-            max-width: 500px;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             margin-top: 40px;
+            transition: max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        body.desktop-mode {
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        body.desktop-mode .app-wrapper {
+            max-width: 1200px;
+            flex-direction: row;
+            align-items: stretch;
+            height: 90vh;
+            margin-top: 0;
+        }
+        body.desktop-mode .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        body.desktop-mode .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        body.desktop-mode .channel-list-container {
+            flex-grow: 1;
+            height: auto;
+        }
+        
+        body.desktop-mode .video-modal {
+            position: relative;
+            top: auto; 
+            left: auto;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            backdrop-filter: none;
+            display: block !important;
+            opacity: 1;
+            pointer-events: auto;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        body.desktop-mode .video-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 30px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body.desktop-mode .close-modal { 
+            display: none; 
         }
 
         .panel {
@@ -47,7 +138,7 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 30px;
-            padding: 25px;
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -55,20 +146,13 @@
         }
 
         h1 {
-            font-size: 24px; 
+            font-size: 22px; 
             font-weight: 800;
             text-transform: uppercase; 
             letter-spacing: 1px;
             text-align: center; 
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .subtitle {
-            font-size: 12px;
-            opacity: 0.8;
-            text-align: center;
-            margin-bottom: 15px;
         }
 
         .channel-list-container {
@@ -78,6 +162,7 @@
             overflow-y: auto;
             padding: 10px;
             border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
         }
 
         input[type="text"] {
@@ -131,9 +216,7 @@
             display: flex; 
             flex-direction: column; 
             gap: 10px;
-            margin-top: 10px;
         }
-
         .mode-switch {
             display: flex; 
             background: rgba(0,0,0,0.2);
@@ -162,9 +245,14 @@
             display: none; 
             gap: 10px; 
             flex-direction: column;
+            animation: fadeIn 0.3s ease;
         }
         .archive-inputs.show { 
             display: flex; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(-5px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
 
         input[type="datetime-local"] {
@@ -182,7 +270,7 @@
             cursor: pointer; 
         }
 
-        .copy-btn {
+        .play-btn {
             padding: 15px;
             font-size: 16px; 
             font-weight: 800;
@@ -196,47 +284,80 @@
             transition: transform 0.1s;
             margin-top: 5px;
         }
-        .copy-btn:active { 
+        .play-btn:active { 
             transform: scale(0.96); 
         }
-        .copy-btn:disabled { 
+        .play-btn:disabled { 
             opacity: 0.5; 
             filter: grayscale(1); 
             cursor: not-allowed; 
         }
 
-        .open-btn {
-            padding: 12px;
-            font-size: 14px; 
-            font-weight: 700;
-            color: white;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            cursor: pointer; 
-            text-transform: uppercase;
-            transition: all 0.3s;
+        /* Оптимизированный видео модал - БЕЗ черных прямоугольников */
+        .video-modal {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            z-index: 2000;
+            display: none;
+            align-items: center; 
+            justify-content: center;
+            opacity: 0; 
+            transition: opacity 0.3s ease;
         }
-        .open-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: var(--accent);
+        .video-modal.open { 
+            display: flex; 
+            opacity: 1; 
         }
 
-        .link-display {
-            display: none;
-            background: rgba(0,0,0,0.2);
+        .video-container {
+            width: 95%; 
+            max-width: 900px;
+            background: transparent;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 15px;
-            word-break: break-all;
-            font-size: 12px;
-            opacity: 0.9;
-            font-family: 'Courier New', monospace;
-            max-height: 100px;
-            overflow-y: auto;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .link-display.show {
-            display: block;
+
+        video { 
+            width: 100%; 
+            height: 100%; 
+            display: block; 
+            object-fit: contain; 
+            background: transparent;
+        }
+
+        .close-modal {
+            position: absolute; 
+            top: 15px; 
+            right: 15px;
+            background: rgba(0,0,0,0.4);
+            border: none; 
+            color: white;
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%;
+            font-size: 24px; 
+            cursor: pointer;
+            z-index: 10;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .close-modal:hover { 
+            background: var(--accent); 
+            color: var(--text-dark); 
         }
 
         .status-msg {
@@ -245,34 +366,43 @@
             text-align: center; 
             min-height: 18px;
         }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
+        
+        /* Легкий спиннер БЕЗ наложения */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent);
-            color: var(--text-dark);
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-weight: 700;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top: 4px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
             opacity: 0;
             transition: opacity 0.3s;
-            z-index: 1000;
+            pointer-events: none;
+            z-index: 6;
         }
-        .toast.show {
+        .loading-spinner.show {
             opacity: 1;
+        }
+        @keyframes spin { 
+            to { transform: translate(-50%, -50%) rotate(360deg); } 
         }
 
     </style>
 </head>
 <body>
 
+    <button class="layout-toggle" onclick="toggleLayout()" title="Переключить вид">
+        <span id="layoutIcon">🖥️</span>
+    </button>
+
     <div class="app-wrapper">
         
-        <div class="panel">
-            <h1>BTV</h1>
-            <p class="subtitle">Генератор ссылок на трансляции</p>
+        <div class="left-panel panel">
+            <h1>BTV Channels</h1>
             
             <input type="text" id="searchInput" placeholder="Поиск (название или №)..." oninput="filterChannels()">
             
@@ -282,12 +412,16 @@
                 </div>
             </div>
 
+            <div class="status-msg" id="statusMsg">Выберите канал</div>
+        </div>
+
+        <div class="right-panel panel">
+            
             <div class="controls-area">
                 <div class="mode-switch">
                     <button class="mode-btn active" onclick="setMode('live')">Live</button>
                     <button class="mode-btn" onclick="setMode('archive')">Архив</button>
                 </div>
-                
                 <div class="archive-inputs" id="archiveInputs">
                     <label style="font-size: 11px; opacity: 0.8;">Начало (UTC+3):</label>
                     <input type="datetime-local" id="startTime">
@@ -295,22 +429,21 @@
                     <input type="datetime-local" id="endTime">
                 </div>
 
-                <div style="display: flex; gap: 10px;">
-                    <button class="copy-btn" id="copyBtn" onclick="copyLink()" disabled style="flex: 1;">
-                        Скопировать ссылку
-                    </button>
-                    <button class="open-btn" id="openBtn" onclick="openLink()" disabled style="flex: 0.5;">
-                        Открыть
-                    </button>
-                </div>
-
-                <div class="link-display" id="linkDisplay"></div>
-                <div class="status-msg" id="statusMsg">Выберите канал</div>
+                <button class="play-btn" id="playBtn" onclick="handlePlay()" disabled>
+                    Смотреть
+                </button>
             </div>
+
+            <div class="video-modal" id="videoModal">
+                <div class="video-container">
+                    <button class="close-modal" onclick="closePlayer()">×</button>
+                    <div class="loading-spinner" id="loader"></div>
+                    <video id="videoPlayer" controls playsinline></video>
+                </div>
+            </div>
+
         </div>
     </div>
-
-    <div class="toast" id="toast"></div>
 
 <script>
     const rawPlaylist = `#EXTM3U
@@ -487,7 +620,7 @@ http://mfe.svc.ott.zala.by/hls/CH_VGOSTYAH_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="CTC Kids" group-title="Детские",CTC Kids
 http://mfe.svc.ott.zala.by/hls/CH_CTCKIDS_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Мульт" group-title="Детские",Мульт
-http://mfe.svc.ott.зала.by/hls/5MWF7XUWZI_HLS/variant.m3u8
+http://mfe.svc.ott.zala.by/hls/5MWF7XUWZI_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Уникум" group-title="Детские",Уникум
 http://mfe.svc.ott.zala.by/hls/CH_UNIKUM_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Умка" group-title="Детские",Умка
@@ -564,7 +697,8 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
     let channels = [];
     let currentChannel = null;
     let currentMode = 'live';
-    let currentLink = '';
+    let hlsInstance = null;
+    let isDesktopMode = false;
 
     function init() {
         const lines = rawPlaylist.split('\n');
@@ -638,10 +772,26 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         if(element) element.classList.add('active');
         
         document.getElementById('statusMsg').textContent = `Выбран: ${channel.name} (#${channel.index})`;
-        document.getElementById('copyBtn').disabled = false;
-        document.getElementById('openBtn').disabled = false;
+        document.getElementById('playBtn').disabled = false;
+
+        if(isDesktopMode) {
+            openPlayer(true); 
+        }
+    }
+
+    function toggleLayout() {
+        isDesktopMode = !isDesktopMode;
+        document.body.classList.toggle('desktop-mode');
         
-        updateLink();
+        const btnIcon = document.getElementById('layoutIcon');
+        
+        if (isDesktopMode) {
+            btnIcon.textContent = "📱";
+            if(currentChannel) openPlayer(true);
+        } else {
+            btnIcon.textContent = "🖥️";
+            closePlayer(); 
+        }
     }
 
     function setMode(mode) {
@@ -655,8 +805,6 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         } else {
             archiveInputs.classList.remove('show');
         }
-        
-        updateLink();
     }
 
     function generateUrl() {
@@ -666,7 +814,7 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         if (currentMode === 'archive') {
             const startStr = document.getElementById('startTime').value;
             const endStr = document.getElementById('endTime').value;
-            if (!startStr || !endStr) return null;
+            if (!startStr || !endStr) { alert("Укажите время"); return null; }
             
             const startDate = new Date(startStr);
             const endDate = new Date(endStr);
@@ -674,46 +822,108 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
             const startTs = Math.floor(startDate.getTime() / 1000);
             const endTs = Math.floor(endDate.getTime() / 1000);
             
-            if (endTs <= startTs) return null;
+            if (endTs <= startTs) { alert("Время окончания должно быть позже"); return null; }
             
             url += (url.includes('?') ? '&' : '?') + `utcstart=${startTs}&utcend=${endTs}`;
         }
         return url;
     }
 
-    function updateLink() {
-        currentLink = generateUrl();
-        const linkDisplay = document.getElementById('linkDisplay');
-        
-        if (currentLink) {
-            linkDisplay.textContent = currentLink;
-            linkDisplay.classList.add('show');
+    function handlePlay() {
+        if(isDesktopMode) {
+            openPlayer(true);
         } else {
-            linkDisplay.classList.remove('show');
+            openPlayer(false);
         }
     }
 
-    function copyLink() {
-        if (!currentLink) return;
+    function openPlayer(embedded = false) {
+        const url = generateUrl();
+        if (!url) return;
+
+        const modal = document.getElementById('videoModal');
+        const video = document.getElementById('videoPlayer');
+        const loader = document.getElementById('loader');
         
-        navigator.clipboard.writeText(currentLink).then(() => {
-            showToast('Ссылка скопирована! ✓');
-        });
+        if (!embedded) {
+            modal.classList.add('open');
+        } else {
+            modal.style.display = 'block';
+            modal.style.opacity = '1';
+        }
+
+        loader.classList.add('show');
+
+        if (Hls.isSupported()) {
+            if (hlsInstance) hlsInstance.destroy();
+            
+            hlsInstance = new Hls({
+                debug: false,
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 30,
+                maxBufferLength: 20,
+                maxMaxBufferLength: 40,
+                startLevel: -1,
+                manifestLoadingTimeOut: 10000,
+                manifestLoadingMaxRetry: 3,
+                levelLoadingTimeOut: 8000,
+                levelLoadingMaxRetry: 3,
+                fragLoadingTimeOut: 15000,
+                fragLoadingMaxRetry: 4
+            });
+            
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(video);
+            
+            hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                loader.classList.remove('show');
+                video.play().catch(e => console.log("Autoplay prevented", e));
+            });
+            
+            hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    switch (data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            hlsInstance.startLoad();
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            hlsInstance.recoverMediaError();
+                            break;
+                        default:
+                            hlsInstance.destroy();
+                            loader.textContent = "Ошибка загрузки";
+                            break;
+                    }
+                }
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
+            video.addEventListener('loadedmetadata', () => {
+                loader.classList.remove('show');
+                video.play();
+            });
+            video.addEventListener('error', () => {
+                loader.textContent = "Ошибка воспроизведения";
+            });
+        }
     }
 
-    function openLink() {
-        if (!currentLink) return;
-        window.open(currentLink, '_blank');
-    }
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.classList.add('show');
+    function closePlayer() {
+        const modal = document.getElementById('videoModal');
+        const video = document.getElementById('videoPlayer');
         
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2000);
+        if (isDesktopMode) {
+            video.pause();
+        } else {
+            modal.classList.remove('open');
+            video.pause();
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+            video.src = "";
+        }
     }
 
     init();
