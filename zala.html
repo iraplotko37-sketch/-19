@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BTV Liquid Player</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&display=swap" rel="stylesheet">
-    <!-- Подключаем HLS.js -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root {
@@ -16,7 +15,13 @@
             --text-dark: #2c3e50;
             --bg-gradient: radial-gradient(circle at center, #91b3f2 0%, #7DA1ED 100%);
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+        }
 
         body {
             background: var(--bg-gradient);
@@ -32,7 +37,6 @@
             transition: all 0.3s ease;
         }
 
-        /* --- Маленький переключатель режимов --- */
         .layout-toggle {
             position: fixed;
             top: 15px;
@@ -42,29 +46,33 @@
             backdrop-filter: blur(5px);
             border: 1px solid var(--glass-border);
             color: white;
-            width: 40px; height: 40px;
+            width: 40px; 
+            height: 40px;
             border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;            font-size: 18px;
+            justify-content: center;
+            font-size: 18px;
             transition: 0.3s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .layout-toggle:hover { background: var(--accent); color: var(--text-dark); transform: scale(1.05); }
+        .layout-toggle:hover { 
+            background: var(--accent); 
+            color: var(--text-dark); 
+            transform: scale(1.05); 
+        }
         
-        /* Main Container Wrapper */
         .app-wrapper {
             width: 100%;
-            max-width: 450px; /* Mobile Default */
+            max-width: 450px;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            margin-top: 40px; /* Отступ под кнопку */
+            margin-top: 40px;
             transition: max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* DESKTOP MODE STYLES */
         body.desktop-mode {
             justify-content: center;
             height: 100vh;
@@ -94,9 +102,11 @@
             flex-grow: 1;
             height: auto;
         }
-        /* В десктопе плеер встроенный */
+        
         body.desktop-mode .video-modal {
-            position: relative;             top: auto; left: auto;
+            position: relative;
+            top: auto; 
+            left: auto;
             width: 100%;
             height: 100%;
             background: transparent;
@@ -113,14 +123,15 @@
             width: 100%;
             height: 100%;
             border-radius: 30px;
-            background: transparent; /* Убрали черный фон */
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        body.desktop-mode .close-modal { display: none; }
+        body.desktop-mode .close-modal { 
+            display: none; 
+        }
 
-        /* --- Components --- */
         .panel {
             background: var(--glass);
             backdrop-filter: blur(20px);
@@ -135,17 +146,20 @@
         }
 
         h1 {
-            font-size: 22px; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px;
-            text-align: center; margin-bottom: 5px;
+            font-size: 22px; 
+            font-weight: 800;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            text-align: center; 
+            margin-bottom: 5px;
             text-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        /* Search & List Combined */
         .channel-list-container {
             background: rgba(0,0,0,0.1);
             border-radius: 20px;
-            height: 400px; /* Fixed height for mobile */            overflow-y: auto;
+            height: 400px;
+            overflow-y: auto;
             padding: 10px;
             border: 1px solid rgba(255,255,255,0.05);
             position: relative;
@@ -163,7 +177,9 @@
             outline: none;
             margin-bottom: 10px;
         }
-        input::placeholder { color: rgba(255,255,255,0.7); }
+        input::placeholder { 
+            color: rgba(255,255,255,0.7); 
+        }
 
         .channel-item {
             padding: 12px 15px;
@@ -172,10 +188,15 @@
             border-radius: 12px;
             cursor: pointer;
             transition: 0.2s;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
             font-size: 14px;
         }
-        .channel-item:hover { background: rgba(255,255,255,0.15); transform: translateX(5px); }
+        .channel-item:hover { 
+            background: rgba(255,255,255,0.15); 
+            transform: translateX(5px); 
+        }
         .channel-item.active {
             background: var(--accent);
             color: var(--text-dark);
@@ -191,68 +212,112 @@
             border-radius: 4px;
         }
 
-        /* Controls Area */
         .controls-area {
-            display: flex; flex-direction: column; gap: 10px;
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px;
         }
         .mode-switch {
-            display: flex; background: rgba(0,0,0,0.2);
-            border-radius: 15px; padding: 4px;
+            display: flex; 
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px; 
+            padding: 4px;
         }
         .mode-btn {
-            flex: 1; padding: 10px;
-            border: none; background: transparent;
+            flex: 1; 
+            padding: 10px;
+            border: none; 
+            background: transparent;
             color: rgba(255,255,255,0.7);
-            font-weight: 600; cursor: pointer;
-            border-radius: 12px; transition: 0.3s;
+            font-weight: 600; 
+            cursor: pointer;
+            border-radius: 12px; 
+            transition: 0.3s;
             font-size: 14px;
         }
-        .mode-btn.active { background: var(--glass); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .mode-btn.active { 
+            background: var(--glass); 
+            color: white; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
 
         .archive-inputs {
-            display: none; gap: 10px; flex-direction: column;
+            display: none; 
+            gap: 10px; 
+            flex-direction: column;
             animation: fadeIn 0.3s ease;
         }
-        .archive-inputs.show { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .archive-inputs.show { 
+            display: flex; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(-5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
 
         input[type="datetime-local"] {
-            width: 100%; padding: 10px;
-            border-radius: 10px; border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.1); color: white;
-            font-family: inherit; outline: none;
+            width: 100%; 
+            padding: 10px;
+            border-radius: 10px; 
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.1); 
+            color: white;
+            font-family: inherit; 
+            outline: none;
         }
-        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        ::-webkit-calendar-picker-indicator { 
+            filter: invert(1); 
+            cursor: pointer; 
+        }
 
         .play-btn {
             padding: 15px;
-            font-size: 16px; font-weight: 800;
+            font-size: 16px; 
+            font-weight: 800;
             color: var(--text-dark);
             background: var(--accent);
-            border: none; border-radius: 15px;
-            cursor: pointer; text-transform: uppercase;
+            border: none; 
+            border-radius: 15px;
+            cursor: pointer; 
+            text-transform: uppercase;
             box-shadow: 0 5px 15px rgba(253, 224, 71, 0.4);
             transition: transform 0.1s;
             margin-top: 5px;
         }
-        .play-btn:active { transform: scale(0.96); }
-        .play-btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+        .play-btn:active { 
+            transform: scale(0.96); 
+        }
+        .play-btn:disabled { 
+            opacity: 0.5; 
+            filter: grayscale(1); 
+            cursor: not-allowed; 
+        }
 
-        /* Video Modal (Mobile Overlay) */
+        /* Оптимизированный видео модал - БЕЗ черных прямоугольников */
         .video-modal {
             position: fixed; 
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); /* Темный фон поверх всего */
-            backdrop-filter: blur(15px);            z-index: 2000; /* Поверх всего */
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            z-index: 2000;
             display: none;
-            align-items: center; justify-content: center; /* Центрирование */
-            opacity: 0; transition: opacity 0.3s;
+            align-items: center; 
+            justify-content: center;
+            opacity: 0; 
+            transition: opacity 0.3s ease;
         }
-        .video-modal.open { display: flex; opacity: 1; }
+        .video-modal.open { 
+            display: flex; 
+            opacity: 1; 
+        }
 
         .video-container {
-            width: 95%; max-width: 900px;
-            background: transparent; /* Убрали черный фон */
+            width: 95%; 
+            max-width: 900px;
+            background: transparent;
             border-radius: 20px;
             overflow: hidden;
             position: relative;
@@ -269,56 +334,73 @@
             height: 100%; 
             display: block; 
             object-fit: contain; 
-            background: transparent; /* Важно: убирает черный фон самого видео элемента */
+            background: transparent;
         }
 
         .close-modal {
-            position: absolute; top: 15px; right: 15px;
-            background: rgba(255,255,255,0.2);
-            border: none; color: white;
-            width: 40px; height: 40px; border-radius: 50%;
-            font-size: 20px; cursor: pointer;
+            position: absolute; 
+            top: 15px; 
+            right: 15px;
+            background: rgba(0,0,0,0.4);
+            border: none; 
+            color: white;
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%;
+            font-size: 24px; 
+            cursor: pointer;
             z-index: 10;
-            display: flex; align-items: center; justify-content: center;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            transition: 0.2s;
         }
-        .close-modal:hover { background: var(--accent); color: var(--text-dark); }
+        .close-modal:hover { 
+            background: var(--accent); 
+            color: var(--text-dark); 
+        }
 
         .status-msg {
-            font-size: 12px; color: rgba(255,255,255,0.6);
-            text-align: center; min-height: 18px;
+            font-size: 12px; 
+            color: rgba(255,255,255,0.6);
+            text-align: center; 
+            min-height: 18px;
         }
         
-        .loading-overlay {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            color: var(--accent); font-weight: bold;            z-index: 5;
-            display: none;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .loading-overlay.active { display: flex; }
-        .spinner {
-            width: 40px; height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top-color: var(--accent);
+        /* Легкий спиннер БЕЗ наложения */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.2);
+            border-top: 4px solid var(--accent);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 6;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-spinner.show {
+            opacity: 1;
+        }
+        @keyframes spin { 
+            to { transform: translate(-50%, -50%) rotate(360deg); } 
+        }
 
     </style>
 </head>
 <body>
 
-    <!-- Маленький переключатель -->
     <button class="layout-toggle" onclick="toggleLayout()" title="Переключить вид">
         <span id="layoutIcon">🖥️</span>
     </button>
 
     <div class="app-wrapper">
         
-        <!-- LEFT PANEL: Channels & Search -->
         <div class="left-panel panel">
             <h1>BTV Channels</h1>
             
@@ -333,10 +415,8 @@
             <div class="status-msg" id="statusMsg">Выберите канал</div>
         </div>
 
-        <!-- RIGHT PANEL: Controls & Player -->
         <div class="right-panel panel">
             
-            <!-- Controls -->
             <div class="controls-area">
                 <div class="mode-switch">
                     <button class="mode-btn active" onclick="setMode('live')">Live</button>
@@ -354,14 +434,10 @@
                 </button>
             </div>
 
-            <!-- Video Player Area -->
             <div class="video-modal" id="videoModal">
                 <div class="video-container">
                     <button class="close-modal" onclick="closePlayer()">×</button>
-                    <div class="loading-overlay" id="loader">
-                        <div class="spinner"></div>
-                        <span>Загрузка...</span>
-                    </div>
+                    <div class="loading-spinner" id="loader"></div>
                     <video id="videoPlayer" controls playsinline></video>
                 </div>
             </div>
@@ -370,7 +446,6 @@
     </div>
 
 <script>
-    // --- DATA ---
     const rawPlaylist = `#EXTM3U
 #EXTINF:-1 tvg-name="Беларусь-1" group-title="Федеральные",Беларусь-1
 http://mfe.svc.ott.zala.by/hls/M52YG9EVYD_HLS/variant.m3u8
@@ -390,7 +465,8 @@ http://mfe.svc.ott.zala.by/hls/DYJ5GH8HOK_HLS/variant.m3u8
 http://mfe.svc.ott.zala.by/hls/TSNEW37RPC_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Беларусь-2" group-title="Федеральные",Беларусь-2
 http://mfe.svc.ott.zala.by/hls/GCKYZGGFEJ_HLS/variant.m3u8
-#EXTINF:-1 tvg-name="ЯСНАе TV" group-title="Общественные",ЯСНАе TVhttp://mfe.svc.ott.zala.by/hls/CH_MINSKTV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ЯСНАе TV" group-title="Общественные",ЯСНАе TV
+http://mfe.svc.ott.zala.by/hls/CH_MINSKTV_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="ТНТ Интернэшнл" group-title="Общественные",ТНТ Интернэшнл
 http://mfe.svc.ott.zala.by/hls/MVNP5DA4U9_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="ТВ-3 Беларусь" group-title="Общественные",ТВ-3 Беларусь
@@ -439,7 +515,8 @@ http://mfe.svc.ott.zala.by/hls/CH_NTVSERIAL_HLS/variant.m3u8
 http://mfe.svc.ott.zala.by/hls/CH_KINOSVIDANIE_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Мосфильм. Золотая коллекция" group-title="Кино и сериалы",Мосфильм. Золотая коллекция
 http://mfe.svc.ott.zala.by/hls/CH_MOSFILM_HLS/variant.m3u8
-#EXTINF:-1 tvg-name="viju TV1000 новелла" group-title="Кино и сериалы",viju TV1000 новеллаhttp://mfe.svc.ott.zala.by/hls/CH_TV1000NOVELLA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 новелла" group-title="Кино и сериалы",viju TV1000 новелла
+http://mfe.svc.ott.zala.by/hls/CH_TV1000NOVELLA_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Иллюзион+" group-title="Кино и сериалы",Иллюзион+
 http://mfe.svc.ott.zala.by/hls/CH_ILLUZPLUS_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Тех лет ТВ" group-title="Кино и сериалы",Тех лет ТВ
@@ -488,7 +565,8 @@ http://mfe.svc.ott.zala.by/hls/CH_TV1000PREMIUM_HLS/variant.m3u8
 http://mfe.svc.ott.zala.by/hls/CH_TV1000MEGAHIT_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="viju+ Comedy" group-title="Кино и сериалы",viju+ Comedy
 http://mfe.svc.ott.zala.by/hls/CH_TV1000COMEDY_HLS/variant.m3u8
-#EXTINF:-1 tvg-name="viju+ Serial" group-title="Кино и сериалы",viju+ Serialhttp://mfe.svc.ott.zala.by/hls/CH_VIPSERIAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Serial" group-title="Кино и сериалы",viju+ Serial
+http://mfe.svc.ott.zala.by/hls/CH_VIPSERIAL_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Мир 24" group-title="Познавательные",Мир 24
 http://mfe.svc.ott.zala.by/hls/CH_MIR24HD_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Наука" group-title="Познавательные",Наука
@@ -537,7 +615,8 @@ http://mfe.svc.ott.zala.by/hls/CH_VIASATNATUREHD_HLS/variant.m3u8
 http://mfe.svc.ott.zala.by/hls/9F67L3DGIF_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Лёва" group-title="Детские",Лёва
 http://mfe.svc.ott.zala.by/hls/CH_LEVA_HLS/variant.m3u8
-#EXTINF:-1 tvg-name="В гостях у сказки" group-title="Детские",В гостях у сказкиhttp://mfe.svc.ott.zala.by/hls/CH_VGOSTYAH_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="В гостях у сказки" group-title="Детские",В гостях у сказки
+http://mfe.svc.ott.zala.by/hls/CH_VGOSTYAH_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="CTC Kids" group-title="Детские",CTC Kids
 http://mfe.svc.ott.zala.by/hls/CH_CTCKIDS_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Мульт" group-title="Детские",Мульт
@@ -586,7 +665,8 @@ http://mfe.svc.ott.zala.by/hls/3K2MEWVSDF_HLS/variant.m3u8
 http://mfe.svc.ott.zala.by/hls/CH_LMC_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Усадьба" group-title="Хобби",Усадьба
 http://mfe.svc.ott.zala.by/hls/XMC4NSRVN9_HLS/variant.m3u8
-#EXTINF:-1 tvg-name="Охота и рыбалка" group-title="Хобби",Охота и рыбалкаhttp://mfe.svc.ott.zala.by/hls/CH_RYBALKAIOHOTA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Охота и рыбалка" group-title="Хобби",Охота и рыбалка
+http://mfe.svc.ott.zala.by/hls/CH_RYBALKAIOHOTA_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Бобёр" group-title="Хобби",Бобёр
 http://mfe.svc.ott.zala.by/hls/CH_BOBER_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="НТВ Стиль" group-title="Хобби",НТВ Стиль
@@ -620,7 +700,6 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
     let hlsInstance = null;
     let isDesktopMode = false;
 
-    // --- INITIALIZATION ---
     function init() {
         const lines = rawPlaylist.split('\n');
         let currentName = '';
@@ -635,12 +714,12 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
                 if (currentName) {
                     channels.push({ name: currentName, url: line, index: index++ });
                     currentName = '';
-                }            }
+                }
+            }
         }
         
         renderList(channels);
         
-        // Set default times
         const now = new Date();
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
@@ -653,7 +732,6 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         return (new Date(date - offset)).toISOString().slice(0, 16);
     }
 
-    // --- RENDERING ---
     function renderList(list) {
         const container = document.getElementById('channelList');
         const fragment = document.createDocumentFragment();
@@ -668,7 +746,6 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
             list.forEach((ch) => {
                 const div = document.createElement('div');
                 div.className = 'channel-item';
-                // Добавляем номер канала
                 div.innerHTML = `<span class="channel-num">#${ch.index}</span> ${ch.name}`;
                 div.onclick = () => selectChannel(ch, div);
                 fragment.appendChild(div);
@@ -679,12 +756,12 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         container.appendChild(fragment);
     }
 
-    // --- SEARCH BY NAME OR NUMBER ---
     function filterChannels() {
         const term = document.getElementById('searchInput').value.toLowerCase();
         const filtered = channels.filter(c => 
             c.name.toLowerCase().includes(term) || 
-            c.index.toString().includes(term)        );
+            c.index.toString().includes(term)
+        );
         renderList(filtered);
     }
 
@@ -698,11 +775,10 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         document.getElementById('playBtn').disabled = false;
 
         if(isDesktopMode) {
-             openPlayer(true); 
+            openPlayer(true); 
         }
     }
 
-    // --- LAYOUT TOGGLE ---
     function toggleLayout() {
         isDesktopMode = !isDesktopMode;
         document.body.classList.toggle('desktop-mode');
@@ -710,15 +786,14 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         const btnIcon = document.getElementById('layoutIcon');
         
         if (isDesktopMode) {
-            btnIcon.textContent = "📱"; // Icon for switching back to mobile
+            btnIcon.textContent = "📱";
             if(currentChannel) openPlayer(true);
         } else {
-            btnIcon.textContent = "🖥️"; // Icon for switching to desktop
+            btnIcon.textContent = "🖥️";
             closePlayer(); 
         }
     }
 
-    // --- CONTROLS ---
     function setMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
@@ -733,15 +808,14 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
     }
 
     function generateUrl() {
-        if (!currentChannel) return null;        let url = currentChannel.url;
+        if (!currentChannel) return null;
+        let url = currentChannel.url;
         
         if (currentMode === 'archive') {
             const startStr = document.getElementById('startTime').value;
             const endStr = document.getElementById('endTime').value;
             if (!startStr || !endStr) { alert("Укажите время"); return null; }
             
-            // Исправление: Конвертируем локальное время в timestamp, учитывая смещение
-            // Сервер ожидает UTC timestamp.
             const startDate = new Date(startStr);
             const endDate = new Date(endStr);
             
@@ -763,7 +837,6 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         }
     }
 
-    // --- PLAYER LOGIC (OPTIMIZED FOR SPEED & ARCHIVE FIX) ---
     function openPlayer(embedded = false) {
         const url = generateUrl();
         if (!url) return;
@@ -779,32 +852,32 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
             modal.style.opacity = '1';
         }
 
-        loader.classList.add('active'); // Show loading
+        loader.classList.add('show');
 
         if (Hls.isSupported()) {
-            if (hlsInstance) hlsInstance.destroy();            
-            // Оптимизированные настройки для быстрого старта и стабильности
+            if (hlsInstance) hlsInstance.destroy();
+            
             hlsInstance = new Hls({
                 debug: false,
                 enableWorker: true,
-                lowLatencyMode: true, // Быстрый старт
-                backBufferLength: 90,
-                maxBufferLength: 30,
-                maxMaxBufferLength: 60,
-                startLevel: -1, // Авто-выбор качества для быстрого старта
+                lowLatencyMode: true,
+                backBufferLength: 30,
+                maxBufferLength: 20,
+                maxMaxBufferLength: 40,
+                startLevel: -1,
                 manifestLoadingTimeOut: 10000,
-                manifestLoadingMaxRetry: 4,
-                levelLoadingTimeOut: 10000,
-                levelLoadingMaxRetry: 4,
-                fragLoadingTimeOut: 20000,
-                fragLoadingMaxRetry: 6
+                manifestLoadingMaxRetry: 3,
+                levelLoadingTimeOut: 8000,
+                levelLoadingMaxRetry: 3,
+                fragLoadingTimeOut: 15000,
+                fragLoadingMaxRetry: 4
             });
             
             hlsInstance.loadSource(url);
             hlsInstance.attachMedia(video);
             
             hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                loader.classList.remove('active');
+                loader.classList.remove('show');
                 video.play().catch(e => console.log("Autoplay prevented", e));
             });
             
@@ -827,11 +900,12 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = url;
             video.addEventListener('loadedmetadata', () => {
-                loader.classList.remove('active');
+                loader.classList.remove('show');
                 video.play();
             });
             video.addEventListener('error', () => {
-                 loader.textContent = "Ошибка воспроизведения";            });
+                loader.textContent = "Ошибка воспроизведения";
+            });
         }
     }
 
@@ -852,7 +926,6 @@ http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
         }
     }
 
-    // Start
     init();
 
 </script>
