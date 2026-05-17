@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BTV Liquid Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            --primary: #7DA1ED;
+            --accent: #FDE047;
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --text-dark: #2c3e50;
+            --bg-gradient: radial-gradient(circle at center, #91b3f2 0%, #7DA1ED 100%);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        body {
+            background: var(--bg-gradient);
+            font-family: 'Manrope', sans-serif;
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Changed for mobile flow */
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* --- Layout Switcher Logic --- */
+        .layout-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;            transition: 0.3s;
+        }
+        .layout-toggle:hover { background: var(--accent); color: var(--text-dark); }
+        
+        /* Main Container Wrapper */
+        .app-wrapper {
+            width: 100%;
+            max-width: 450px; /* Mobile Default */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: max-width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* DESKTOP MODE STYLES (Applied via JS class) */
+        body.desktop-mode {
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden; /* Prevent scroll on desktop if possible */
+        }
+        body.desktop-mode .app-wrapper {
+            max-width: 1200px;
+            flex-direction: row;
+            align-items: stretch;
+            height: 90vh;
+        }
+        body.desktop-mode .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        body.desktop-mode .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+        body.desktop-mode .channel-list-container {
+            flex-grow: 1;
+            height: auto; /* Fill remaining space */
+        }
+        body.desktop-mode .video-modal {
+            position: relative; /* Embed directly in desktop view */
+            top: auto; left: auto;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            backdrop-filter: none;            display: block !important; /* Always visible in desktop mode if channel selected */
+            opacity: 1;
+            pointer-events: auto;
+            border-radius: 30px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        body.desktop-mode .video-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 30px;
+            background: black;
+        }
+        body.desktop-mode .close-modal { display: none; } /* No close button in desktop embed */
+        body.desktop-mode .play-btn-desktop-hint { display: none; }
+
+        /* --- Components --- */
+        .panel {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 22px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            text-align: center; margin-bottom: 5px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Search & List Combined */
+        .channel-list-container {
+            background: rgba(0,0,0,0.1);
+            border-radius: 20px;
+            height: 400px; /* Fixed height for mobile */
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        input[type="text"] {            width: 100%;
+            padding: 12px 15px;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-family: 'Manrope', sans-serif;
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        input::placeholder { color: rgba(255,255,255,0.7); }
+
+        .channel-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 14px;
+        }
+        .channel-item:hover { background: rgba(255,255,255,0.15); transform: translateX(5px); }
+        .channel-item.active {
+            background: var(--accent);
+            color: var(--text-dark);
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(253, 224, 71, 0.3);
+        }
+
+        /* Controls Area */
+        .controls-area {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .mode-switch {
+            display: flex; background: rgba(0,0,0,0.2);
+            border-radius: 15px; padding: 4px;
+        }
+        .mode-btn {
+            flex: 1; padding: 10px;
+            border: none; background: transparent;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600; cursor: pointer;
+            border-radius: 12px; transition: 0.3s;
+            font-size: 14px;
+        }
+        .mode-btn.active { background: var(--glass); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .archive-inputs {
+            display: none; gap: 10px; flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+        .archive-inputs.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        input[type="datetime-local"] {
+            width: 100%; padding: 10px;
+            border-radius: 10px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.1); color: white;
+            font-family: inherit; outline: none;
+        }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+        .play-btn {
+            padding: 15px;
+            font-size: 16px; font-weight: 800;
+            color: var(--text-dark);
+            background: var(--accent);
+            border: none; border-radius: 15px;
+            cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(253, 224, 71, 0.4);
+            transition: transform 0.1s;
+            margin-top: 5px;
+        }
+        .play-btn:active { transform: scale(0.96); }
+        .play-btn:disabled { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
+
+        /* Video Modal (Mobile Popup) */
+        .video-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .video-modal.open { display: flex; opacity: 1; }
+
+        .video-container {
+            width: 95%; max-width: 900px;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid var(--glass-border);
+            aspect-ratio: 16/9;        }
+
+        video { width: 100%; height: 100%; display: block; object-fit: contain; }
+
+        .close-modal {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none; color: white;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-size: 20px; cursor: pointer;
+            z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .close-modal:hover { background: var(--accent); color: var(--text-dark); }
+
+        .status-msg {
+            font-size: 12px; color: rgba(255,255,255,0.6);
+            text-align: center; min-height: 18px;
+        }
+        
+        .loading-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.7);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-weight: bold;
+            z-index: 5;
+            display: none;
+        }
+        .loading-overlay.active { display: flex; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Toggle Button -->
+    <button class="layout-toggle" onclick="toggleLayout()">
+        <span id="layoutIcon">🖥️</span> <span id="layoutText">Desktop Mode</span>
+    </button>
+
+    <div class="app-wrapper">
+        
+        <!-- LEFT PANEL: Channels & Search -->
+        <div class="left-panel panel">
+            <h1>BTV Channels</h1>
+            
+            <input type="text" id="searchInput" placeholder="Поиск канала..." oninput="filterChannels()">
+            
+            <div class="channel-list-container" id="channelListContainer">
+                <div id="channelList">
+                    <!-- Channels injected here -->                </div>
+            </div>
+
+            <div class="status-msg" id="statusMsg">Выберите канал</div>
+        </div>
+
+        <!-- RIGHT PANEL: Controls & Player (Mobile: Bottom / Desktop: Right) -->
+        <div class="right-panel panel">
+            
+            <!-- Controls -->
+            <div class="controls-area">
+                <div class="mode-switch">
+                    <button class="mode-btn active" onclick="setMode('live')">Live</button>
+                    <button class="mode-btn" onclick="setMode('archive')">Архив</button>
+                </div>
+
+                <div class="archive-inputs" id="archiveInputs">
+                    <label style="font-size: 11px; opacity: 0.8;">Начало (UTC+3):</label>
+                    <input type="datetime-local" id="startTime">
+                    <label style="font-size: 11px; opacity: 0.8;">Конец (UTC+3):</label>
+                    <input type="datetime-local" id="endTime">
+                </div>
+
+                <button class="play-btn" id="playBtn" onclick="handlePlay()" disabled>
+                    Смотреть
+                </button>
+            </div>
+
+            <!-- Video Player Area -->
+            <div class="video-modal" id="videoModal">
+                <div class="video-container">
+                    <button class="close-modal" onclick="closePlayer()">×</button>
+                    <div class="loading-overlay" id="loader">Загрузка...</div>
+                    <video id="videoPlayer" controls playsinline></video>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    // --- DATA ---
+    const rawPlaylist = `#EXTM3U
+#EXTINF:-1 tvg-name="Беларусь-1" group-title="Федеральные",Беларусь-1
+http://mfe.svc.ott.zala.by/hls/M52YG9EVYD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ОНТ" group-title="Федеральные",ОНТ
+http://mfe.svc.ott.zala.by/hls/NCLEFHVZGR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="СТВ" group-title="Федеральные",СТВ
+http://mfe.svc.ott.zala.by/hls/RZEQ3BLSTY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мир" group-title="Федеральные",Мирhttp://mfe.svc.ott.zala.by/hls/M4K3ZYBPWQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Первый информационный" group-title="Федеральные",Первый информационный
+http://mfe.svc.ott.zala.by/hls/CH_1INFORM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="РТР Беларусь" group-title="Федеральные",РТР Беларусь
+http://mfe.svc.ott.zala.by/hls/7MQSYYGHFE_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Беларусь" group-title="Федеральные",НТВ Беларусь
+http://mfe.svc.ott.zala.by/hls/DYJ5GH8HOK_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-3" group-title="Федеральные",Беларусь-3
+http://mfe.svc.ott.zala.by/hls/TSNEW37RPC_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-2" group-title="Федеральные",Беларусь-2
+http://mfe.svc.ott.zala.by/hls/GCKYZGGFEJ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ЯСНАе TV" group-title="Общественные",ЯСНАе TV
+http://mfe.svc.ott.zala.by/hls/CH_MINSKTV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ТНТ Интернэшнл" group-title="Общественные",ТНТ Интернэшнл
+http://mfe.svc.ott.zala.by/hls/MVNP5DA4U9_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ТВ-3 Беларусь" group-title="Общественные",ТВ-3 Беларусь
+http://mfe.svc.ott.zala.by/hls/KLQQ9ECGSQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="8 Канал Беларусь" group-title="Общественные",8 Канал Беларусь
+http://mfe.svc.ott.zala.by/hls/ZXUZZKCA6P_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="+TV" group-title="Общественные",+TV
+http://mfe.svc.ott.zala.by/hls/CH_PLUSTV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="БелРос" group-title="Общественные",БелРос
+http://mfe.svc.ott.zala.by/hls/CH_TRO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Ретро" group-title="Общественные",Ретро
+http://mfe.svc.ott.zala.by/hls/CH_RETRO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ЗВЕЗДА" group-title="Российские",ЗВЕЗДА
+http://mfe.svc.ott.zala.by/hls/CH_ZVEZDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Домашний International" group-title="Развлекательные",Домашний International
+http://mfe.svc.ott.zala.by/hls/CH_DOMINT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Перец International" group-title="Развлекательные",Перец International
+http://mfe.svc.ott.zala.by/hls/CH_PEREZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Сарафан" group-title="Развлекательные",Сарафан
+http://mfe.svc.ott.zala.by/hls/Y9GP8UFTZO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Анекдот ТВ" group-title="Развлекательные",Анекдот ТВ
+http://mfe.svc.ott.zala.by/hls/CH_ANEKDOT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киномикс" group-title="Кино и сериалы",Киномикс
+http://mfe.svc.ott.zala.by/hls/VVG76MWUGX_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Любимое кино" group-title="Кино и сериалы",Любимое кино
+http://mfe.svc.ott.zala.by/hls/CH_NASHEKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000" group-title="Кино и сериалы",viju TV1000
+http://mfe.svc.ott.zala.by/hls/6WMZMUEWGN_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мужское кино" group-title="Кино и сериалы",Мужское кино
+http://mfe.svc.ott.zala.by/hls/W7LNWHFGTB_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Русский Иллюзион" group-title="Кино и сериалы",Русский Иллюзион
+http://mfe.svc.ott.zala.by/hls/CMV4SNACFQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 русское" group-title="Кино и сериалы",viju TV1000 русское
+http://mfe.svc.ott.zala.by/hls/PWIKICZUYF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="5 International" group-title="Кино и сериалы",5 International
+http://mfe.svc.ott.zala.by/hls/CH_5INTERNAT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кинокомедия" group-title="Кино и сериалы",Кинокомедияhttp://mfe.svc.ott.zala.by/hls/CH_KINOCOMED_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Синема" group-title="Кино и сериалы",Синема
+http://mfe.svc.ott.zala.by/hls/CH_CINEMA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Дом Кино PREMIUM" group-title="Кино и сериалы",Дом Кино PREMIUM
+http://mfe.svc.ott.zala.by/hls/CH_DOMPREMIUM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Сериал" group-title="Кино и сериалы",НТВ Сериал
+http://mfe.svc.ott.zala.by/hls/CH_NTVSERIAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киносвидание" group-title="Кино и сериалы",Киносвидание
+http://mfe.svc.ott.zala.by/hls/CH_KINOSVIDANIE_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мосфильм. Золотая коллекция" group-title="Кино и сериалы",Мосфильм. Золотая коллекция
+http://mfe.svc.ott.zala.by/hls/CH_MOSFILM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 новелла" group-title="Кино и сериалы",viju TV1000 новелла
+http://mfe.svc.ott.zala.by/hls/CH_TV1000NOVELLA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Иллюзион+" group-title="Кино и сериалы",Иллюзион+
+http://mfe.svc.ott.zala.by/hls/CH_ILLUZPLUS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Тех лет ТВ" group-title="Кино и сериалы",Тех лет ТВ
+http://mfe.svc.ott.zala.by/hls/CH_TEHLET_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киносерия" group-title="Кино и сериалы",Киносерия
+http://mfe.svc.ott.zala.by/hls/CH_KINOSERIA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 драма" group-title="Кино и сериалы",viju TV1000 драма
+http://mfe.svc.ott.zala.by/hls/CH_TV1000DRAMA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Индия" group-title="Кино и сериалы",Индия
+http://mfe.svc.ott.zala.by/hls/CH_INDIYA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="NovellaTV" group-title="Кино и сериалы",NovellaTV
+http://mfe.svc.ott.zala.by/hls/CH_NOVELLATV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ПОБЕДА" group-title="Кино и сериалы",ПОБЕДА
+http://mfe.svc.ott.zala.by/hls/CH_POBEDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Зал 13" group-title="Кино и сериалы",Зал 13
+http://mfe.svc.ott.zala.by/hls/CH_ZAL13_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Еврокино" group-title="Кино и сериалы",Еврокино
+http://mfe.svc.ott.zala.by/hls/CH_EVROKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мир сериала" group-title="Кино и сериалы",Мир сериала
+http://mfe.svc.ott.zala.by/hls/CH_MIRSERIALA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киноман" group-title="Кино и сериалы",Киноман
+http://mfe.svc.ott.zala.by/hls/CH_KINOMAN_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Родное кино" group-title="Кино и сериалы",Родное кино
+http://mfe.svc.ott.zala.by/hls/CH_NTVPLUSNASHEKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киносемья" group-title="Кино и сериалы",Киносемья
+http://mfe.svc.ott.zala.by/hls/FEDXG8XPOR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кинопремьера" group-title="Кино и сериалы",Кинопремьера
+http://mfe.svc.ott.zala.by/hls/CH_KINOPREMERA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Муви ТВ" group-title="Кино и сериалы",Муви ТВ
+http://mfe.svc.ott.zala.by/hls/CH_MUVI_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кинохит" group-title="Кино и сериалы",Кинохит
+http://mfe.svc.ott.zala.by/hls/HDOHSSZQCP_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Дом кино" group-title="Кино и сериалы",Дом кино
+http://mfe.svc.ott.zala.by/hls/CH_DOMKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НСТ" group-title="Кино и сериалы",НСТ
+http://mfe.svc.ott.zala.by/hls/NEZVX5TVZX_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 action" group-title="Кино и сериалы",viju TV1000 actionhttp://mfe.svc.ott.zala.by/hls/9X9NUEEKGW_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Феникс плюс кино" group-title="Кино и сериалы",Феникс плюс кино
+http://mfe.svc.ott.zala.by/hls/CH_FENIKS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="VHS" group-title="Кино и сериалы",VHS
+http://mfe.svc.ott.zala.by/hls/CH_VHS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Premiere" group-title="Кино и сериалы",viju+ Premiere
+http://mfe.svc.ott.zala.by/hls/CH_TV1000PREMIUM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Megahit" group-title="Кино и сериалы",viju+ Megahit
+http://mfe.svc.ott.zala.by/hls/CH_TV1000MEGAHIT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Comedy" group-title="Кино и сериалы",viju+ Comedy
+http://mfe.svc.ott.zala.by/hls/CH_TV1000COMEDY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Serial" group-title="Кино и сериалы",viju+ Serial
+http://mfe.svc.ott.zala.by/hls/CH_VIPSERIAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мир 24" group-title="Познавательные",Мир 24
+http://mfe.svc.ott.zala.by/hls/CH_MIR24HD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Наука" group-title="Познавательные",Наука
+http://mfe.svc.ott.zala.by/hls/LWWBCKZAPZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Хистори" group-title="Познавательные",Виасат Хистори
+http://mfe.svc.ott.zala.by/hls/CH_VIASATHISTORY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Моя планета" group-title="Познавательные",Моя планета
+http://mfe.svc.ott.zala.by/hls/FV47BRVQW4_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Эксплор" group-title="Познавательные",Виасат Эксплор
+http://mfe.svc.ott.zala.by/hls/JQQ83OBHTQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Нэйчер" group-title="Познавательные",Виасат Нэйчер
+http://mfe.svc.ott.zala.by/hls/BN3FTDY3T8_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Вопросы и ответы" group-title="Познавательные",Вопросы и ответы
+http://mfe.svc.ott.zala.by/hls/CH_VOPROSY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Арсенал" group-title="Познавательные",Арсенал
+http://mfe.svc.ott.zala.by/hls/CH_ARSENAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Право" group-title="Познавательные",НТВ Право
+http://mfe.svc.ott.zala.by/hls/CH_NTVPRAVO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Совершенно секретно" group-title="Познавательные",Совершенно секретно
+http://mfe.svc.ott.zala.by/hls/CH_SOVSEKRET_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Zooпарк" group-title="Познавательные",Zooпарк
+http://mfe.svc.ott.zala.by/hls/CH_ZOOPARK_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Зал суда" group-title="Познавательные",Зал суда
+http://mfe.svc.ott.zala.by/hls/CH_ZALSUDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Nano HD" group-title="Познавательные",Nano HD
+http://mfe.svc.ott.zala.by/hls/CH_NANOHD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Живая природа" group-title="Познавательные",Живая природа
+http://mfe.svc.ott.zala.by/hls/CH_ZHIVPRIRODA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Лапки LIVE" group-title="Познавательные",Лапки LIVE
+http://mfe.svc.ott.zala.by/hls/CH_LAPKI_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Россия-Культура" group-title="Познавательные",Россия-Культура
+http://mfe.svc.ott.zala.by/hls/9XJGVFFAWZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Техно 24" group-title="Познавательные",Техно 24
+http://mfe.svc.ott.zala.by/hls/ZIVFRAFR2I_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Оружие" group-title="Познавательные",Оружие
+http://mfe.svc.ott.zala.by/hls/EWEXU8FWAZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Galaxy" group-title="Познавательные",Galaxyhttp://mfe.svc.ott.zala.by/hls/CH_GALAXY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Глазами туриста" group-title="Познавательные",Глазами туриста
+http://mfe.svc.ott.zala.by/hls/CH_GLAZTUR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Время" group-title="Познавательные",Время
+http://mfe.svc.ott.zala.by/hls/CH_VREMYA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Нэйчер/Хистори HD" group-title="Познавательные",Виасат Нэйчер/Хистори HD
+http://mfe.svc.ott.zala.by/hls/CH_VIASATNATUREHD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Детский мир" group-title="Детские",Детский мир
+http://mfe.svc.ott.zala.by/hls/9F67L3DGIF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Лёва" group-title="Детские",Лёва
+http://mfe.svc.ott.zala.by/hls/CH_LEVA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="В гостях у сказки" group-title="Детские",В гостях у сказки
+http://mfe.svc.ott.zala.by/hls/CH_VGOSTYAH_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="CTC Kids" group-title="Детские",CTC Kids
+http://mfe.svc.ott.zala.by/hls/CH_CTCKIDS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мульт" group-title="Детские",Мульт
+http://mfe.svc.ott.zala.by/hls/5MWF7XUWZI_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Уникум" group-title="Детские",Уникум
+http://mfe.svc.ott.zala.by/hls/CH_UNIKUM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Умка" group-title="Детские",Умка
+http://mfe.svc.ott.zala.by/hls/CH_UMKA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Карусель International" group-title="Детские",Карусель International
+http://mfe.svc.ott.zala.by/hls/CH_KARUSEL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Рыжий" group-title="Детские",Рыжий
+http://mfe.svc.ott.zala.by/hls/CH_RYZHIY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="О!" group-title="Детские",О!
+http://mfe.svc.ott.zala.by/hls/CH_O_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мультиландия" group-title="Детские",Мультиландия
+http://mfe.svc.ott.zala.by/hls/CH_MULTIMANIYA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Советские мультфильмы" group-title="Детские",Советские мультфильмы
+http://mfe.svc.ott.zala.by/hls/CH_SOVMULT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-5" group-title="Спорт",Беларусь-5
+http://mfe.svc.ott.zala.by/hls/JRKVSUPCP8_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="KHL Prime" group-title="Спорт",KHL Prime
+http://mfe.svc.ott.zala.by/hls/CH_KHLPRIME_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="MMA-TV.COM" group-title="Спорт",MMA-TV.COM
+http://mfe.svc.ott.zala.by/hls/CH_M1_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Russian Extreme" group-title="Спорт",Russian Extreme
+http://mfe.svc.ott.zala.by/hls/CH_EXTREME_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Футбол" group-title="Спорт",Футбол
+http://mfe.svc.ott.zala.by/hls/CH_FOOTBALL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Матч! Планета" group-title="Спорт",Матч! Планета
+http://mfe.svc.ott.zala.by/hls/CH_MATCHPLANETA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="KHL" group-title="Спорт",KHL
+http://mfe.svc.ott.zala.by/hls/36H3IDE2WF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Точка отрыва" group-title="Спорт",Точка отрыва
+http://mfe.svc.ott.zala.by/hls/CH_TOCHKAOTRIVA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Спорт" group-title="Спорт",Виасат Спорт
+http://mfe.svc.ott.zala.by/hls/CH_VIASPORT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="RU.TV" group-title="Музыка",RU.TVhttp://mfe.svc.ott.zala.by/hls/XW6AGFSZJ8_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Europa Plus TV" group-title="Музыка",Europa Plus TV
+http://mfe.svc.ott.zala.by/hls/BHH8EKRXPO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="БелМУЗ-ТВ" group-title="Музыка",БелМУЗ-ТВ
+http://mfe.svc.ott.zala.by/hls/CH_BELMUZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Шансон ТВ" group-title="Музыка",Шансон ТВ
+http://mfe.svc.ott.zala.by/hls/3K2MEWVSDF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Live Music Channel" group-title="Музыка",Live Music Channel
+http://mfe.svc.ott.zala.by/hls/CH_LMC_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Усадьба" group-title="Хобби",Усадьба
+http://mfe.svc.ott.zala.by/hls/XMC4NSRVN9_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Охота и рыбалка" group-title="Хобби",Охота и рыбалка
+http://mfe.svc.ott.zala.by/hls/CH_RYBALKAIOHOTA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Бобёр" group-title="Хобби",Бобёр
+http://mfe.svc.ott.zala.by/hls/CH_BOBER_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Стиль" group-title="Хобби",НТВ Стиль
+http://mfe.svc.ott.zala.by/hls/CH_NTVSTIL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Дикая рыбалка" group-title="Хобби",Дикая рыбалка
+http://mfe.svc.ott.zala.by/hls/CH_DIKAYARIBALKA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Luxury HD" group-title="Хобби",Luxury HD
+http://mfe.svc.ott.zala.by/hls/CH_LUXURYHD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Ключ" group-title="Хобби",Ключ
+http://mfe.svc.ott.zala.by/hls/CH_KEY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кухня ТВ" group-title="Хобби",Кухня ТВ
+http://mfe.svc.ott.zala.by/hls/EPX2UEHLPK_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Телекафе" group-title="Хобби",Телекафе
+http://mfe.svc.ott.zala.by/hls/CH_TELEKAFE_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Охотник и рыболов HD" group-title="Хобби",Охотник и рыболов HD
+http://mfe.svc.ott.zala.by/hls/4FDNBEDGFV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Еда Премиум Международный" group-title="Хобби",Еда Премиум Международный
+http://mfe.svc.ott.zala.by/hls/BCPKKUK5NT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Союз" group-title="Религиозные",Союз
+http://mfe.svc.ott.zala.by/hls/CH_SOYUZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="МузСоюз" group-title="Религиозные",МузСоюз
+http://mfe.svc.ott.zala.by/hls/CH_MUZSOYUZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Red Lips" group-title="18+",Red Lips
+http://mfe.svc.ott.zala.by/hls/CH_REDLIPS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Русская ночь" group-title="18+",Русская ночь
+http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
+
+    let channels = [];
+    let currentChannel = null;
+    let currentMode = 'live';
+    let hlsInstance = null;
+    let isDesktopMode = false;
+
+    // --- INITIALIZATION ---
+    function init() {
+        // Fast parsing without heavy DOM manipulation initially
+        const lines = rawPlaylist.split('\n');        let currentName = '';
+        
+        for (let line of lines) {
+            line = line.trim();
+            if (line.startsWith('#EXTINF:')) {
+                const parts = line.split(',');
+                if (parts.length > 1) currentName = parts[parts.length - 1].trim();
+            } else if (line.startsWith('http')) {
+                if (currentName) {
+                    channels.push({ name: currentName, url: line });
+                    currentName = '';
+                }
+            }
+        }
+        
+        renderList(channels);
+        
+        // Set default times
+        const now = new Date();
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        document.getElementById('endTime').value = toLocalISO(now);
+        document.getElementById('startTime').value = toLocalISO(yesterday);
+    }
+
+    function toLocalISO(date) {
+        const offset = date.getTimezoneOffset() * 60000;
+        return (new Date(date - offset)).toISOString().slice(0, 16);
+    }
+
+    // --- RENDERING ---
+    function renderList(list) {
+        const container = document.getElementById('channelList');
+        // Use DocumentFragment for faster rendering
+        const fragment = document.createDocumentFragment();
+        
+        if (list.length === 0) {
+            const div = document.createElement('div');
+            div.style.padding = '20px';
+            div.style.opacity = '0.7';
+            div.textContent = 'Ничего не найдено';
+            fragment.appendChild(div);
+        } else {
+            list.forEach((ch) => {
+                const div = document.createElement('div');
+                div.className = 'channel-item';
+                div.textContent = ch.name;
+                div.onclick = () => selectChannel(ch, div);
+                fragment.appendChild(div);
+            });        }
+        
+        container.innerHTML = '';
+        container.appendChild(fragment);
+    }
+
+    function filterChannels() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = channels.filter(c => c.name.toLowerCase().includes(term));
+        renderList(filtered);
+    }
+
+    function selectChannel(channel, element) {
+        currentChannel = channel;
+        
+        document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+        
+        document.getElementById('statusMsg').textContent = `Выбран: ${channel.name}`;
+        document.getElementById('playBtn').disabled = false;
+
+        // In desktop mode, auto-play or show player area immediately? 
+        // Let's keep manual play button for consistency, but enable it.
+        if(isDesktopMode) {
+             openPlayer(true); // true = silent/embedded mode
+        }
+    }
+
+    // --- LAYOUT TOGGLE ---
+    function toggleLayout() {
+        isDesktopMode = !isDesktopMode;
+        document.body.classList.toggle('desktop-mode');
+        
+        const btnText = document.getElementById('layoutText');
+        const btnIcon = document.getElementById('layoutIcon');
+        
+        if (isDesktopMode) {
+            btnText.textContent = "Mobile Mode";
+            btnIcon.textContent = "📱";
+            // If channel selected, ensure player is visible in desktop layout
+            if(currentChannel) openPlayer(true);
+        } else {
+            btnText.textContent = "Desktop Mode";
+            btnIcon.textContent = "🖥️";
+            closePlayer(); // Reset to modal behavior
+        }
+    }
+
+    // --- CONTROLS ---
+    function setMode(mode) {        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        const archiveInputs = document.getElementById('archiveInputs');
+        if (mode === 'archive') {
+            archiveInputs.classList.add('show');
+        } else {
+            archiveInputs.classList.remove('show');
+        }
+    }
+
+    function generateUrl() {
+        if (!currentChannel) return null;
+        let url = currentChannel.url;
+        
+        if (currentMode === 'archive') {
+            const startStr = document.getElementById('startTime').value;
+            const endStr = document.getElementById('endTime').value;
+            if (!startStr || !endStr) { alert("Укажите время"); return null; }
+            
+            const startTs = Math.floor(new Date(startStr).getTime() / 1000);
+            const endTs = Math.floor(new Date(endStr).getTime() / 1000);
+            
+            if (endTs <= startTs) { alert("Время окончания должно быть позже"); return null; }
+            
+            url += (url.includes('?') ? '&' : '?') + `utcstart=${startTs}&utcend=${endTs}`;
+        }
+        return url;
+    }
+
+    function handlePlay() {
+        if(isDesktopMode) {
+            openPlayer(true);
+        } else {
+            openPlayer(false);
+        }
+    }
+
+    // --- PLAYER LOGIC ---
+    function openPlayer(embedded = false) {
+        const url = generateUrl();
+        if (!url) return;
+
+        const modal = document.getElementById('videoModal');
+        const video = document.getElementById('videoPlayer');
+        const loader = document.getElementById('loader');
+        
+        if (!embedded) {
+            modal.classList.add('open');        } else {
+            // Ensure it's visible in desktop layout
+            modal.style.display = 'block';
+            modal.style.opacity = '1';
+        }
+
+        loader.classList.add('active'); // Show loading
+
+        if (Hls.isSupported()) {
+            if (hlsInstance) hlsInstance.destroy();
+            hlsInstance = new Hls({
+                debug: false,
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 90
+            });
+            
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(video);
+            
+            hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                loader.classList.remove('active');
+                video.play().catch(e => console.log("Autoplay prevented", e));
+            });
+            
+            hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                    loader.textContent = "Ошибка загрузки потока";
+                    switch (data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            hlsInstance.startLoad();
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            hlsInstance.recoverMediaError();
+                            break;
+                        default:
+                            hlsInstance.destroy();
+                            break;
+                    }
+                }
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = url;
+            video.addEventListener('loadedmetadata', () => {
+                loader.classList.remove('active');
+                video.play();
+            });
+        }
+    }
+    function closePlayer() {
+        const modal = document.getElementById('videoModal');
+        const video = document.getElementById('videoPlayer');
+        
+        if (isDesktopMode) {
+            // In desktop mode, we don't really "close" the modal overlay, 
+            // we just stop playback if needed, or hide it if we want strict behavior.
+            // But usually desktop mode keeps player visible.
+            // Let's just pause.
+            video.pause();
+        } else {
+            modal.classList.remove('open');
+            video.pause();
+            if (hlsInstance) {
+                hlsInstance.destroy();
+                hlsInstance = null;
+            }
+            video.src = "";
+        }
+    }
+
+    // Start
+    init();
+
+</script>
+</body>
+</html>
