@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -29,26 +30,33 @@ body{
     background: radial-gradient(circle at top, #97b6f1 0%, #7DA1ED 50%, #688de0 100%);
     overflow:hidden;
     color:white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .container{
     display:flex;
     gap:20px;
     width:100%;
-    height:100vh;
+    max-width: 1400px;   /* ограничиваем максимальную ширину на больших экранах */
+    height:90vh;         /* чуть меньше высоты вьюпорта для аккуратного вида */
     padding:20px;
+    margin: auto;
 }
 
 .sidebar{
-    width:340px;
+    width:300px;         /* немного уменьшил ширину для компьютеров */
     background:var(--glass);
     backdrop-filter:blur(24px);
     border:1px solid var(--glass-border);
     border-radius:35px;
     padding:20px;
     overflow:hidden;
-    display:flex;    flex-direction:column;
+    display:flex;
+    flex-direction:column;
     box-shadow:0 20px 60px rgba(0,0,0,.2);
+    flex-shrink: 0;      /* не даём сайдбару сжиматься */
 }
 
 .logo{
@@ -123,9 +131,8 @@ body{
     border-radius:12px;
     background:white;
     padding:5px;
-    /* Оптимизация: плавное появление */
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity 0.2s;
 }
 .channel img.loaded {
     opacity: 1;
@@ -154,12 +161,13 @@ body{
     flex-direction:column;
     gap:20px;
     justify-content: center;
+    min-width: 0;  /* чтобы flex-элемент мог сжиматься */
 }
 
 .player-box{
     flex:none;
-    /* ИЗМЕНЕНО: Уменьшена высота плитки */
-    height: 50vh; 
+    height: 50vh;
+    max-height: 70vh;   /* чтобы не выходило за экран на ноутбуках */
     background:var(--glass);
     border:1px solid var(--glass-border);
     backdrop-filter:blur(24px);
@@ -167,6 +175,8 @@ body{
     overflow:hidden;
     position:relative;
     box-shadow:0 20px 60px rgba(0,0,0,.2);
+    aspect-ratio: 16/9; /* сохраняем пропорции на всех экранах */
+    width: 100%;
 }
 
 video{
@@ -249,6 +259,8 @@ video{
     .container{
         flex-direction:column;
         height:auto;
+        max-width: 100%;
+        padding: 10px;
     }
 
     .sidebar{
@@ -285,7 +297,7 @@ video{
                 <div class="current-group" id="currentGroup">IPTV Player</div>
             </div>
 
-            <video id="video" controls autoplay playsinline></video>
+            <video id="video" controls autoplay playsinline muted></video>
         </div>
 
         <div class="bottom-panel">
@@ -308,7 +320,7 @@ const statusEl = document.getElementById('status');
 let channels = [];
 let hls;
 
-// Полный список каналов из btv.py
+// Полный список каналов (playlist)
 const playlist = `#EXTM3U
 #EXTINF:-1 tvg-name="Беларусь-1" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Belarus_1_logo.svg/3840px-Belarus_1_logo.svg.png" group-title="Федеральные",Беларусь-1
 http://mfe.svc.ott.zala.by/hls/M52YG9EVYD_HLS/variant.m3u8
@@ -333,4 +345,422 @@ http://mfe.svc.ott.zala.by/hls/CH_MINSKTV_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="ТНТ Интернэшнл" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/c/cf/TNT_Int._2022.png" group-title="Общественные",ТНТ Интернэшнл
 http://mfe.svc.ott.zala.by/hls/MVNP5DA4U9_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="ТВ-3 Беларусь" tvg-logo="https://static.wikitide.net/telehistwiki/5/50/%D0%A2%D0%923%D0%91%D0%B5%D0%BB_01.01.2013.png" group-title="Общественные",ТВ-3 Беларусь
-http://mfe.svc.ott.zala.by/hls/KLQQ9ECGSQ_HLS/
+http://mfe.svc.ott.zala.by/hls/KLQQ9ECGSQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="8 Канал Беларусь" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/3/33/8channeltv.png" group-title="Общественные",8 Канал Беларусь
+http://mfe.svc.ott.zala.by/hls/ZXUZZKCA6P_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="+TV" tvg-logo="http://tv.beln.by/upload/000/u1/5/7/57db3eba.png" group-title="Общественные",+TV
+http://mfe.svc.ott.zala.by/hls/CH_PLUSTV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="БелРос" tvg-logo="https://static.wikia.nocookie.net/televizionnofutbolnaya-viki/images/9/96/%D0%91%D0%B5%D0%BB%D0%A0%D0%BE%D1%81.png/revision/latest?path-prefix=ru" group-title="Общественные",БелРос
+http://mfe.svc.ott.zala.by/hls/CH_TRO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Ретро" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3b/%D0%A7%D0%B5%D1%82%D0%B2%D0%B5%D1%80%D1%82%D1%8B%D0%B9_%D0%BB%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%A0%D0%B5%D1%82%D1%80%D0%BE_%28%D1%81_10_%D0%BD%D0%BE%D1%8F%D0%B1%D1%80%D1%8F_2025_%D0%B3%D0%BE%D0%B4%D0%B0_%D0%B4%D0%BE_%D0%BD%D0%B0%D1%81%D1%82%D0%BE%D1%8F%D1%89%D0%B5%D0%B5_%D0%B2%D1%80%D0%B5%D0%BC%D1%8F%29_%28%D0%98%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D1%83%D0%B5%D1%82%D1%81%D1%8F_%D0%B2_%D1%8D%D1%84%D0%B8%D1%80%D0%B5%29.png/revision/latest?path-prefix=ru" group-title="Общественные",Ретро
+http://mfe.svc.ott.zala.by/hls/CH_RETRO_HLS/variant.m3u8#EXTINF:-1 tvg-name="Первый информационный Брест" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Брест
+http://mfe.svc.ott.zala.by/hls/CH_1INFORMBREST_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Первый информационный Витебск" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Витебск
+http://mfe.svc.ott.zala.by/hls/CH_1INFORMVIT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Первый информационный Гомель" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Гомель
+http://mfe.svc.ott.zala.by/hls/CH_1INFORMGOMEL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Первый информационный Гродно" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Гродно
+http://mfe.svc.ott.zala.by/hls/CH_1INFORMGRODNO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Первый информационный Могилёв" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Могилёв
+http://mfe.svc.ott.zala.by/hls/CH_1INFORMMOGILEV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-4 Брест" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Belarus_4_logo.svg/3840px-Belarus_4_logo.svg.png" group-title="Региональные",Беларусь-4 Брест
+http://mfe.svc.ott.zala.by/hls/CH_BELARUS4BR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-4 Витебск" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Belarus_4_logo.svg/3840px-Belarus_4_logo.svg.png" group-title="Региональные",Беларусь-4 Витебск
+http://mfe.svc.ott.zala.by/hls/CH_BELARUS4VIT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-4 Гомель" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Belarus_4_logo.svg/3840px-Belarus_4_logo.svg.png" group-title="Региональные",Беларусь-4 Гомель
+http://mfe.svc.ott.zala.by/hls/CH_BELARUS4GOM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-4 Гродно" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Belarus_4_logo.svg/3840px-Belarus_4_logo.svg.png" group-title="Региональные",Беларусь-4 Гродно
+http://mfe.svc.ott.zala.by/hls/CH_BELARUS4GR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-4 Могилёв" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Belarus_4_logo.svg/3840px-Belarus_4_logo.svg.png" group-title="Региональные",Беларусь-4 Могилёв
+http://mfe.svc.ott.zala.by/hls/CH_BELARUS4MOG_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Вектор ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/b/bb/%D0%92%D0%B5%D0%BA%D1%82%D0%BE%D1%80_%28%D0%9D%D0%BE%D0%B2%D0%BE%D0%BF%D0%BE%D0%BB%D0%BE%D1%86%D0%BA%29.png/revision/latest?path-prefix=ru" group-title="Региональные",Вектор ТВ
+http://mfe.svc.ott.zala.by/hls/CH_VECTOR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Гомель ТВ" tvg-logo="" group-title="Региональные",Гомель ТВ
+http://mfe.svc.ott.zala.by/hls/CH_GOMEL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Гродно+" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/4b/%D0%93%D1%80%D0%BE%D0%B4%D0%BD%D0%BE_%D0%BF%D0%BB%D1%8E%D1%81_%28%D0%BB%D0%BE%D0%B3%D0%BE%2C_%D1%81_2018%29.png/revision/latest?path-prefix=ru" group-title="Региональные",Гродно+
+http://mfe.svc.ott.zala.by/hls/CH_GRODNO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Интекс" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/f0/%D0%98%D0%BD%D1%82%D0%B5%D0%BA%D1%81.png/revision/latest?path-prefix=ru" group-title="Региональные",Интекс
+http://mfe.svc.ott.zala.by/hls/CH_INTEX_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="2-й городской канал" tvg-logo="" group-title="Региональные",2-й городской канал
+http://mfe.svc.ott.zala.by/hls/CH_TV2_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Буг ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/5/5f/%D0%91%D1%83%D0%B3_%D0%A2%D0%92.png/revision/latest?path-prefix=ru" group-title="Региональные",Буг ТВ
+http://mfe.svc.ott.zala.by/hls/CH_BUGTV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Лида-ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/e/e9/%D0%9B%D0%B8%D0%B4%D1%81%D0%BA%D0%BE%D0%B5_%D1%82%D0%B5%D0%BB%D0%B5%D0%B2%D0%B8%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5.png/revision/latest?path-prefix=ru" group-title="Региональные",Лида-ТВ
+http://mfe.svc.ott.zala.by/hls/CH_LIDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Лагуна ТВ" tvg-logo="" group-title="Региональные",Лагуна ТВ
+http://mfe.svc.ott.zala.by/hls/CH_LAGUNA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Пинск" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/c/c9/%D0%9F%D0%B8%D0%BD%D1%81%D0%BA_%28%D0%B2_%D1%8D%D1%84%D0%B8%D1%80%D0%B5%29.png/revision/latest?path-prefix=ru" group-title="Региональные",Пинск
+http://mfe.svc.ott.zala.by/hls/CH_PINSK_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ЗВЕЗДА" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Zvezda_logo.svg/3840px-Zvezda_logo.svg.png" group-title="Российские",ЗВЕЗДА
+http://mfe.svc.ott.zala.by/hls/CH_ZVEZDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Домашний International" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/c/c4/%D0%94%D0%BE%D0%BC%D0%B0%D1%88%D0%BD%D0%B8%D0%B9_%282014%2C_%D1%80%D0%BE%D0%B7%D0%BE%D0%B2%D1%8B%D0%B9_%D1%84%D0%BE%D0%BD%2C_%D0%AF%D0%BD%D0%B4%D0%B5%D0%BA%D1%81-%D0%A2%D0%B5%D0%BB%D0%B5%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B0%29.png/revision/latest?path-prefix=ru" group-title="Развлекательные",Домашний International
+http://mfe.svc.ott.zala.by/hls/CH_DOMINT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Перец International" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/9/99/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%9F%D0%B5%D1%80%D0%B5%D1%86_International_%282025-%D0%BD.%D0%B2%29_%28%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Развлекательные",Перец International
+http://mfe.svc.ott.zala.by/hls/CH_PEREZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Сарафан" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/9/9f/%D0%A1%D0%B0%D1%80%D0%B0%D1%84%D0%B0%D0%BD_%282012%2C_2%29.png/revision/latest?path-prefix=ru" group-title="Развлекательные",Сарафан
+http://mfe.svc.ott.zala.by/hls/Y9GP8UFTZO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Анекдот ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/d/da/%D0%90%D0%BD%D0%B5%D0%BA%D0%B4%D0%BE%D1%82_%D0%A2%D0%92_%28%D1%81_2016%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Развлекательные",Анекдот ТВ
+http://mfe.svc.ott.zala.by/hls/CH_ANEKDOT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киномикс" tvg-logo="https://static.wikitide.net/telehistwiki/3/3e/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BC%D0%B8%D0%BA%D1%81_15.08.2016.png" group-title="Кино и сериалы",Киномикс
+http://mfe.svc.ott.zala.by/hls/VVG76MWUGX_HLS/variant.m3u8#EXTINF:-1 tvg-name="Любимое кино" tvg-logo="https://static.wikitide.net/telehistwiki/9/93/%D0%9D%D0%B0%D1%88%D0%B5%D0%9A%D0%B8%D0%BD%D0%BE_30.10.2017.png" group-title="Кино и сериалы",Любимое кино
+http://mfe.svc.ott.zala.by/hls/CH_NASHEKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Viju_TV1000_logo.svg/3840px-Viju_TV1000_logo.svg.png" group-title="Кино и сериалы",viju TV1000
+http://mfe.svc.ott.zala.by/hls/6WMZMUEWGN_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мужское кино" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/b/b8/%D0%9C%D1%83%D0%B6%D1%81%D0%BA%D0%BE%D0%B5_%D0%BA%D0%B8%D0%BD%D0%BE_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Мужское кино
+http://mfe.svc.ott.zala.by/hls/W7LNWHFGTB_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Русский Иллюзион" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/f3/Picsart_24-09-04_21-14-34-579.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Русский Иллюзион
+http://mfe.svc.ott.zala.by/hls/CMV4SNACFQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 русское" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Viju_TV1000_%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%BE%D0%B5.svg/3840px-Viju_TV1000_%D1%80%D1%83%D1%81%D1%81%D0%BA%D0%BE%D0%B5.svg.png" group-title="Кино и сериалы",viju TV1000 русское
+http://mfe.svc.ott.zala.by/hls/PWIKICZUYF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="5 International" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/5-tv_logo_%282023%29.svg/3840px-5-tv_logo_%282023%29.svg.png" group-title="Кино и сериалы",5 International
+http://mfe.svc.ott.zala.by/hls/CH_5INTERNAT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кинокомедия" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/2/25/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BA%D0%BE%D0%BC%D0%B5%D0%B4%D0%B8%D1%8F_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Кинокомедия
+http://mfe.svc.ott.zala.by/hls/CH_KINOCOMED_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Синема" tvg-logo="" group-title="Кино и сериалы",Синема
+http://mfe.svc.ott.zala.by/hls/CH_CINEMA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Дом Кино PREMIUM" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/5/53/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB%D0%B0_%D0%94%D0%BE%D0%BC_%D0%9A%D0%B8%D0%BD%D0%BE.png" group-title="Кино и сериалы",Дом Кино PREMIUM
+http://mfe.svc.ott.zala.by/hls/CH_DOMPREMIUM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Сериал" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/43/%D0%9D%D0%A2%D0%92_%28%D0%B3%D0%BE%D0%BB%D1%83%D0%B1%D0%BE%D0%B9_%D0%BA%D1%80%D1%83%D0%B3%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",НТВ Сериал
+http://mfe.svc.ott.zala.by/hls/CH_NTVSERIAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киносвидание" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3f/%D0%9A%D0%B8%D0%BD%D0%BE%D1%81%D0%B2%D0%B8%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Киносвидание
+http://mfe.svc.ott.zala.by/hls/CH_KINOSVIDANIE_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мосфильм. Золотая коллекция" tvg-logo="https://ct.brandex.pro/wp-content/uploads/2022/04/1-768x269.png" group-title="Кино и сериалы",Мосфильм. Золотая коллекция
+http://mfe.svc.ott.zala.by/hls/CH_MOSFILM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 новелла" tvg-logo="https://static.wikitide.net/telehistwiki/8/8e/Viju_TV1000_%D0%9D%D0%BE%D0%B2%D0%B5%D0%BB%D0%BB%D0%B0_27.11.2023.png" group-title="Кино и сериалы",viju TV1000 новелла
+http://mfe.svc.ott.zala.by/hls/CH_TV1000NOVELLA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Иллюзион+" tvg-logo="https://alllogos.ru/images/logotip-illyuzion.png" group-title="Кино и сериалы",Иллюзион+
+http://mfe.svc.ott.zala.by/hls/CH_ILLUZPLUS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Тех лет ТВ" tvg-logo="https://beltelecom.by/sites/default/files/styles/200200/public/tv-channels/2025-10/img-tv-channel-logo-teh-let-tv_0.jpg" group-title="Кино и сериалы",Тех лет ТВ
+http://mfe.svc.ott.zala.by/hls/CH_TEHLET_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киносерия" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/d/da/%D0%9A%D0%B8%D0%BD%D0%BE%D1%81%D0%B5%D1%80%D0%B8%D1%8F_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Киносерия
+http://mfe.svc.ott.zala.by/hls/CH_KINOSERIA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 драма" tvg-logo="" group-title="Кино и сериалы",viju TV1000 драма
+http://mfe.svc.ott.zala.by/hls/CH_TV1000DRAMA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Индия" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/e/eb/%D0%98%D0%BD%D0%B4%D0%B8%D1%8F.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Индия
+http://mfe.svc.ott.zala.by/hls/CH_INDIYA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="NovellaTV" tvg-logo="https://static.wikitide.net/telehistwiki/f/f5/NovellaTV_start.png" group-title="Кино и сериалы",NovellaTV
+http://mfe.svc.ott.zala.by/hls/CH_NOVELLATV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="ПОБЕДА" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/2/21/%D0%9F%D0%BE%D0%B1%D0%B5%D0%B4%D0%B0_%28%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",ПОБЕДА
+http://mfe.svc.ott.zala.by/hls/CH_POBEDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Зал 13" tvg-logo="" group-title="Кино и сериалы",Зал 13
+http://mfe.svc.ott.zala.by/hls/CH_ZAL13_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Еврокино" tvg-logo="https://static.wikitide.net/telehistwiki/a/a3/%D0%95%D0%B2%D1%80%D0%BE%D0%BA%D0%B8%D0%BD%D0%BE_01.12.2010.png" group-title="Кино и сериалы",Еврокино
+http://mfe.svc.ott.zala.by/hls/CH_EVROKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мир сериала" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/8/80/%D0%9C%D0%B8%D1%80_%D1%81%D0%B5%D1%80%D0%B8%D0%B0%D0%BB%D0%B0_%282023%29_.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Мир сериала
+http://mfe.svc.ott.zala.by/hls/CH_MIRSERIALA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киноман" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/5/5d/Kinoman_RU_2023.png/revision/latest" group-title="Кино и сериалы",Киноман
+http://mfe.svc.ott.zala.by/hls/CH_KINOMAN_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Родное кино" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/4/4f/Rodnoekino_logo.png" group-title="Кино и сериалы",Родное кино
+http://mfe.svc.ott.zala.by/hls/CH_NTVPLUSNASHEKINO_HLS/variant.m3u8#EXTINF:-1 tvg-name="Киносемья" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/fc/%D0%9A%D0%B8%D0%BD%D0%BE%D1%81%D0%B5%D0%BC%D1%8C%D1%8F_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Киносемья
+http://mfe.svc.ott.zala.by/hls/FEDXG8XPOR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кинопремьера" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/7/7a/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BF%D1%80%D0%B5%D0%BC%D1%8C%D0%B5%D1%80%D0%B0_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Кинопремьера
+http://mfe.svc.ott.zala.by/hls/CH_KINOPREMERA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Муви ТВ" tvg-logo="https://static.wikitide.net/telehistwiki/6/64/%D0%9C%D1%83%D0%B2%D0%B8_%D0%A2%D0%92.png" group-title="Кино и сериалы",Муви ТВ
+http://mfe.svc.ott.zala.by/hls/CH_MUVI_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кинохит" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/9/97/%D0%9A%D0%B8%D0%BD%D0%BE%D1%85%D0%B8%D1%82_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Кинохит
+http://mfe.svc.ott.zala.by/hls/HDOHSSZQCP_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Дом кино" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/5/53/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB%D0%B0_%D0%94%D0%BE%D0%BC_%D0%9A%D0%B8%D0%BD%D0%BE.png" group-title="Кино и сериалы",Дом кино
+http://mfe.svc.ott.zala.by/hls/CH_DOMKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НСТ" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/1/1b/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%9D%D0%A1%D0%A2_%28%D1%81_2011%29.jpg" group-title="Кино и сериалы",НСТ
+http://mfe.svc.ott.zala.by/hls/NEZVX5TVZX_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju TV1000 action" tvg-logo="" group-title="Кино и сериалы",viju TV1000 action
+http://mfe.svc.ott.zala.by/hls/9X9NUEEKGW_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Феникс плюс кино" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/b/b4/%D0%A4%D0%B5%D0%BD%D0%B8%D0%BA%D1%81_3_%28%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B4%D0%BF%D0%B8%D1%81%D0%B8%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Феникс плюс кино
+http://mfe.svc.ott.zala.by/hls/CH_FENIKS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="VHS" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/VHS_logo.svg/3840px-VHS_logo.svg.png" group-title="Кино и сериалы",VHS
+http://mfe.svc.ott.zala.by/hls/CH_VHS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Premiere" tvg-logo="" group-title="Кино и сериалы",viju+ Premiere
+http://mfe.svc.ott.zala.by/hls/CH_TV1000PREMIUM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Megahit" tvg-logo="" group-title="Кино и сериалы",viju+ Megahit
+http://mfe.svc.ott.zala.by/hls/CH_TV1000MEGAHIT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Comedy" tvg-logo="https://www.cableman.ru/sites/default/files/viju_comedy_color_rgb_02_1.png" group-title="Кино и сериалы",viju+ Comedy
+http://mfe.svc.ott.zala.by/hls/CH_TV1000COMEDY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="viju+ Serial" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/7/74/Viju%2B_Serial_%28%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",viju+ Serial
+http://mfe.svc.ott.zala.by/hls/CH_VIPSERIAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мир 24" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/%D0%9C%D0%B8%D1%80_%D0%A2%D0%92_logo.svg/3840px-%D0%9C%D0%B8%D1%80_%D0%A2%D0%92_logo.svg.png" group-title="Познавательные",Мир 24
+http://mfe.svc.ott.zala.by/hls/CH_MIR24HD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Наука" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/e/e2/TV_Nauka.jpg" group-title="Познавательные",Наука
+http://mfe.svc.ott.zala.by/hls/LWWBCKZAPZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Хистори" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Viasat_History-logo.svg/1920px-Viasat_History-logo.svg.png" group-title="Познавательные",Виасат Хистори
+http://mfe.svc.ott.zala.by/hls/CH_VIASATHISTORY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Моя планета" tvg-logo="https://upload.wikimedia.org/wikipedia/ru/9/9f/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D1%82%D0%B5%D0%BB%D0%B5%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB%D0%B0_%D0%9C%D0%BE%D1%8F_%D0%9F%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0.png" group-title="Познавательные",Моя планета
+http://mfe.svc.ott.zala.by/hls/FV47BRVQW4_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Эксплор" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Viasat_Explore-logo.svg/1920px-Viasat_Explore-logo.svg.png" group-title="Познавательные",Виасат Эксплор
+http://mfe.svc.ott.zala.by/hls/JQQ83OBHTQ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Нэйчер" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Viasat_History-logo.svg/1920px-Viasat_History-logo.svg.png" group-title="Познавательные",Виасат Нэйчер
+http://mfe.svc.ott.zala.by/hls/BN3FTDY3T8_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Вопросы и ответы" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/0/08/%D0%92%D0%BE%D0%BF%D1%80%D0%BE%D1%81%D1%8B_%D0%B8_%D0%BE%D1%82%D0%B2%D0%B5%D1%82%D1%8B_%282019%29.png/revision/latest?path-prefix=ru" group-title="Познавательные",Вопросы и ответы
+http://mfe.svc.ott.zala.by/hls/CH_VOPROSY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Арсенал" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/2/24/%D0%90%D1%80%D1%81%D0%B5%D0%BD%D0%B0%D0%BB_%28%D1%81_2020%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Познавательные",Арсенал
+http://mfe.svc.ott.zala.by/hls/CH_ARSENAL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Право" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/43/%D0%9D%D0%A2%D0%92_%28%D0%B3%D0%BE%D0%BB%D1%83%D0%B1%D0%BE%D0%B9_%D0%BA%D1%80%D1%83%D0%B3%29.png/revision/latest?path-prefix=ru" group-title="Познавательные",НТВ Право
+http://mfe.svc.ott.zala.by/hls/CH_NTVPRAVO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Совершенно секретно" tvg-logo="" group-title="Познавательные",Совершенно секретно
+http://mfe.svc.ott.zala.by/hls/CH_SOVSEKRET_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Zooпарк" tvg-logo="https://static.wikitide.net/telehistwiki/a/a1/Zoo%D0%BF%D0%B0%D1%80%D0%BA.png" group-title="Познавательные",Zooпарк
+http://mfe.svc.ott.zala.by/hls/CH_ZOOPARK_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Зал суда" tvg-logo="broadcastChannel1752218016388.jpg" group-title="Познавательные",Зал суда
+http://mfe.svc.ott.zala.by/hls/CH_ZALSUDA_HLS/variant.m3u8#EXTINF:-1 tvg-name="Nano HD" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3a/Nano_HD.png/revision/latest?path-prefix=ru" group-title="Познавательные",Nano HD
+http://mfe.svc.ott.zala.by/hls/CH_NANOHD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Живая природа" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/fb/%D0%96%D0%B8%D0%B2%D0%B0%D1%8F_%D0%BF%D1%80%D0%B8%D1%80%D0%BE%D0%B4%D0%B0.png/revision/latest?path-prefix=ru" group-title="Познавательные",Живая природа
+http://mfe.svc.ott.zala.by/hls/CH_ZHIVPRIRODA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Лапки LIVE" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/a/aa/%D0%9B%D0%B0%D0%BF%D0%BA%D0%B8_Live_%28%D1%81_2023%29.png/revision/latest?path-prefix=ru" group-title="Познавательные",Лапки LIVE
+http://mfe.svc.ott.zala.by/hls/CH_LAPKI_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Россия-Культура" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/6a/%D0%A0%D0%BE%D1%81%D1%81%D0%B8%D1%8F-%D0%9A%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D0%B0_HD_%28%D1%81_2020%2C_%D1%81_%D0%B1%D0%BB%D0%B8%D0%BA%D0%BE%D0%BC%29.png/revision/latest?path-prefix=ru" group-title="Познавательные",Россия-Культура
+http://mfe.svc.ott.zala.by/hls/9XJGVFFAWZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Техно 24" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3f/8_logodis.png/revision/latest?path-prefix=ru" group-title="Познавательные",Техно 24
+http://mfe.svc.ott.zala.by/hls/ZIVFRAFR2I_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Оружие" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/1/14/%D0%9E%D1%80%D1%83%D0%B6%D0%B8%D0%B5.png/revision/latest?path-prefix=ru" group-title="Познавательные",Оружие
+http://mfe.svc.ott.zala.by/hls/EWEXU8FWAZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Galaxy" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/8/82/Galaxy_TV_2.png/revision/latest?path-prefix=ru" group-title="Познавательные",Galaxy
+http://mfe.svc.ott.zala.by/hls/CH_GALAXY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Глазами туриста" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/b/bf/Picsart_24-08-19_21-29-30-525.png/revision/latest?path-prefix=ru" group-title="Познавательные",Глазами туриста
+http://mfe.svc.ott.zala.by/hls/CH_GLAZTUR_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Время" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/0/0f/Vremya-TV_%282%29.png/revision/latest?path-prefix=ru" group-title="Познавательные",Время
+http://mfe.svc.ott.zala.by/hls/CH_VREMYA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Нэйчер/Хистори HD" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Viasat_History-logo.svg/1920px-Viasat_History-logo.svg.png" group-title="Познавательные",Виасат Нэйчер/Хистори HD
+http://mfe.svc.ott.zala.by/hls/CH_VIASATNATUREHD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Детский мир" tvg-logo="https://static.wikitide.net/telehistwiki/0/03/%D0%94%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9%D0%9C%D0%B8%D1%80_15.01.2013.png" group-title="Детские",Детский мир
+http://mfe.svc.ott.zala.by/hls/9F67L3DGIF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Лёва" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/a/ab/%D0%9B%D1%91%D0%B2%D0%B0_%282022%29.png/revision/latest?path-prefix=ru" group-title="Детские",Лёва
+http://mfe.svc.ott.zala.by/hls/CH_LEVA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="В гостях у сказки" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/f3/%D0%92_%D0%B3%D0%BE%D1%81%D1%82%D1%8F%D1%85_%D1%83_%D0%A1%D0%BA%D0%B0%D0%B7%D0%BA%D0%B8_%28%D1%81_2022%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Детские",В гостях у сказки
+http://mfe.svc.ott.zala.by/hls/CH_VGOSTYAH_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="CTC Kids" tvg-logo="https://logo-teka.com/wp-content/uploads/2025/09/sts-kids-logo.png" group-title="Детские",CTC Kids
+http://mfe.svc.ott.zala.by/hls/CH_CTCKIDS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мульт" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/4f/%D0%9C%D1%83%D0%BB%D1%8C%D1%82.png/revision/latest?path-prefix=ru" group-title="Детские",Мульт
+http://mfe.svc.ott.zala.by/hls/5MWF7XUWZI_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Уникум" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/f1/%D0%A3%D0%BD%D0%B8%D0%BA%D1%83%D0%BC_%282020%2C_%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Детские",Уникум
+http://mfe.svc.ott.zala.by/hls/CH_UNIKUM_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Умка" tvg-logo="" group-title="Детские",Умка
+http://mfe.svc.ott.zala.by/hls/CH_UMKA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Карусель International" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/c/c2/2020_%D0%B7%D0%B8%D0%BC%D0%B0_-_%D0%BD_%D0%B2_%D0%BF%D0%B5%D1%80%D0%B5%D0%B4_%D0%B8_%D0%BF%D0%BE%D1%81%D0%BB%D0%B5_%D0%B0%D0%BD%D0%BE%D0%BD%D1%81%D0%BE%D0%B2_3.jpg/revision/latest?path-prefix=ru" group-title="Детские",Карусель International
+http://mfe.svc.ott.zala.by/hls/CH_KARUSEL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Рыжий" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/2/27/%D0%A0%D1%8B%D0%B6%D0%B8%D0%B9_%28%D1%81_2023%2C_%D1%8D%D1%84%D0%B8%D1%80%29.png/revision/latest?path-prefix=ru" group-title="Детские",Рыжий
+http://mfe.svc.ott.zala.by/hls/CH_RYZHIY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="О!" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/f9/%D0%9E%21_%282019%29.png/revision/latest?path-prefix=ru" group-title="Детские",О!
+http://mfe.svc.ott.zala.by/hls/CH_O_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Мультиландия" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/e/e9/%D0%9C%D1%83%D0%BB%D1%8C%D1%82%D0%B8%D0%BB%D0%B0%D0%BD%D0%B4%D0%B8%D1%8F_%28%D1%81_23.11.2022%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Детские",Мультиландия
+http://mfe.svc.ott.zala.by/hls/CH_MULTIMANIYA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Советские мультфильмы" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/c/c1/%D0%A1%D0%BE%D0%B2%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B5_%D0%BC%D1%83%D0%BB%D1%8C%D1%82%D1%84%D0%B8%D0%BB%D1%8C%D0%BC%D1%8B.png/revision/latest?path-prefix=ru" group-title="Детские",Советские мультфильмы
+http://mfe.svc.ott.zala.by/hls/CH_SOVMULT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Беларусь-5" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Belarus_5_logo.svg/3840px-Belarus_5_logo.svg.png" group-title="Спорт",Беларусь-5
+http://mfe.svc.ott.zala.by/hls/JRKVSUPCP8_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="KHL Prime" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/6c/%D0%9A%D0%A5%D0%9B_Prime_%282021%29.png/revision/latest?path-prefix=ru" group-title="Спорт",KHL Prime
+http://mfe.svc.ott.zala.by/hls/CH_KHLPRIME_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="MMA-TV.COM" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/62/M-1_Global_%282021%2C_%D1%81_%D0%BD%D0%B0%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E_MMA-TV%29.png/revision/latest?path-prefix=ru" group-title="Спорт",MMA-TV.COM
+http://mfe.svc.ott.zala.by/hls/CH_M1_HLS/variant.m3u8#EXTINF:-1 tvg-name="Russian Extreme" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/49/Russian_Extreme_%282019%2C_%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9_%D1%84%D0%BE%D0%BD%2C_SD%2BHD%29.png/revision/latest?path-prefix=ru" group-title="Спорт",Russian Extreme
+http://mfe.svc.ott.zala.by/hls/CH_EXTREME_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Футбол" tvg-logo="https://static.wikitide.net/telehistwiki/8/8e/%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB_2020.png" group-title="Спорт",Футбол
+http://mfe.svc.ott.zala.by/hls/CH_FOOTBALL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Матч! Планета" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/9/93/%D0%9C%D0%B0%D1%82%D1%87%21_%D0%9F%D0%BB%D0%B0%D0%BD%D0%B5%D1%82%D0%B0_%28%D0%BC%D0%BE%D0%BD%D0%BE-%D1%86%D0%B2%D0%B5%D1%82%D0%B0%29.png/revision/latest?path-prefix=ru" group-title="Спорт",Матч! Планета
+http://mfe.svc.ott.zala.by/hls/CH_MATCHPLANETA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="KHL" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/4b/%D0%9A%D0%A5%D0%9B_%28%D1%81_2021%2C_3D%29.png/revision/latest?path-prefix=ru" group-title="Спорт",KHL
+http://mfe.svc.ott.zala.by/hls/36H3IDE2WF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Точка отрыва" tvg-logo="https://static.wikitide.net/telehistwiki/2/2a/%D0%A2%D0%BE%D1%87%D0%BA%D0%B0_%D0%BE%D1%82%D1%80%D1%8B%D0%B2%D0%B0_01.09.2024.png" group-title="Спорт",Точка отрыва
+http://mfe.svc.ott.zala.by/hls/CH_TOCHKAOTRIVA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Виасат Спорт" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Viasat_logo.svg/3840px-Viasat_logo.svg.png" group-title="Спорт",Виасат Спорт
+http://mfe.svc.ott.zala.by/hls/CH_VIASPORT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="RU.TV" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/d/d2/Ru_tv_%D0%BB%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF.png" group-title="Музыка",RU.TV
+http://mfe.svc.ott.zala.by/hls/XW6AGFSZJ8_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Europa Plus TV" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/9/90/Europa_Plus_TV_%28%D1%81_%D0%BD%D0%B0%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E_HIT_NON_STOP%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Музыка",Europa Plus TV
+http://mfe.svc.ott.zala.by/hls/BHH8EKRXPO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="БелМУЗ-ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/1/17/%D0%91%D0%B5%D0%BB%D0%9C%D0%A3%D0%97-%D0%A2%D0%92_%D0%9B%D0%BE%D0%B3%D0%BE_2019.png/revision/latest?path-prefix=ru" group-title="Музыка",БелМУЗ-ТВ
+http://mfe.svc.ott.zala.by/hls/CH_BELMUZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Шансон ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/9/91/%D0%A8%D0%B0%D0%BD%D1%81%D0%BE%D0%BD_1.png/revision/latest?path-prefix=ru" group-title="Музыка",Шансон ТВ
+http://mfe.svc.ott.zala.by/hls/3K2MEWVSDF_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Live Music Channel" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/36/Live_Music_Channel.png/revision/latest?path-prefix=ru" group-title="Музыка",Live Music Channel
+http://mfe.svc.ott.zala.by/hls/CH_LMC_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Усадьба" tvg-logo="" group-title="Хобби",Усадьба
+http://mfe.svc.ott.zala.by/hls/XMC4NSRVN9_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Охота и рыбалка" tvg-logo="https://upload.wikimedia.org/wikipedia/ru/thumb/1/1f/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D1%82%D0%B5%D0%BB%D0%B5%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB%D0%B0_%C2%AB%D0%9E%D1%85%D0%BE%D1%82%D0%B0_%D0%B8_%D1%80%D1%8B%D0%B1%D0%B0%D0%BB%D0%BA%D0%B0%C2%BB.svg/3840px-%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D1%82%D0%B5%D0%BB%D0%B5%D0%BA%D0%B0%D0%BD%D0%B0%D0%BB%D0%B0_%C2%AB%D0%9E%D1%85%D0%BE%D1%82%D0%B0_%D0%B8_%D1%80%D1%8B%D0%B1%D0%B0%D0%BB%D0%BA%D0%B0%C2%BB.svg.png" group-title="Хобби",Охота и рыбалка
+http://mfe.svc.ott.zala.by/hls/CH_RYBALKAIOHOTA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Бобёр" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/a/ad/%D0%91%D0%BE%D0%B1%D1%91%D1%80_%28%D1%81_2017%2C_%D1%8D%D1%84%D0%B8%D1%80%29.png/revision/latest?path-prefix=ru" group-title="Хобби",Бобёр
+http://mfe.svc.ott.zala.by/hls/CH_BOBER_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="НТВ Стиль" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/43/%D0%9D%D0%A2%D0%92_%28%D0%B3%D0%BE%D0%BB%D1%83%D0%B1%D0%BE%D0%B9_%D0%BA%D1%80%D1%83%D0%B3%29.png/revision/latest?path-prefix=ru" group-title="Хобби",НТВ Стиль
+http://mfe.svc.ott.zala.by/hls/CH_NTVSTIL_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Дикая рыбалка" tvg-logo="https://static.wikitide.net/telehistwiki/0/0c/%D0%94%D0%B8%D0%BA%D0%B0%D1%8F_%D1%80%D1%8B%D0%B1%D0%B0%D0%BB%D0%BA%D0%B0.png" group-title="Хобби",Дикая рыбалка
+http://mfe.svc.ott.zala.by/hls/CH_DIKAYARIBALKA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Luxury HD" tvg-logo="" group-title="Хобби",Luxury HD
+http://mfe.svc.ott.zala.by/hls/CH_LUXURYHD_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Ключ" tvg-logo="" group-title="Хобби",Ключ
+http://mfe.svc.ott.zala.by/hls/CH_KEY_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Кухня ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/b/b8/Kuhnya-color-500x126.png/revision/latest?path-prefix=ru" group-title="Хобби",Кухня ТВ
+http://mfe.svc.ott.zala.by/hls/EPX2UEHLPK_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Телекафе" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/e/ed/%D0%A2%D0%B5%D0%BB%D0%B5%D0%BA%D0%B0%D1%84%D0%B5_%28%D1%81_2021%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29_%286%29.png/revision/latest?path-prefix=ru" group-title="Хобби",Телекафе
+http://mfe.svc.ott.zala.by/hls/CH_TELEKAFE_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Охотник и рыболов HD" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/c/ce/%D0%9E%D1%85%D0%BE%D1%82%D0%BD%D0%B8%D0%BA_%D0%B8_%D1%80%D1%8B%D0%B1%D0%BE%D0%BB%D0%BE%D0%B2_%28%D0%B1%D0%B5%D0%B7_%D0%BD%D0%B0%D0%B4%D0%BF%D0%B8%D1%81%D0%B8%29.png/revision/latest?path-prefix=ru" group-title="Хобби",Охотник и рыболов HD
+http://mfe.svc.ott.zala.by/hls/4FDNBEDGFV_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Еда Премиум Международный" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/7/7a/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BF%D1%80%D0%B5%D0%BC%D1%8C%D0%B5%D1%80%D0%B0_%282016%29.png/revision/latest?path-prefix=ru" group-title="Хобби",Еда Премиум Международный
+http://mfe.svc.ott.zala.by/hls/BCPKKUK5NT_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Союз" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/69/%D0%A1%D0%BE%D1%8E%D0%B7_3.png/revision/latest?path-prefix=ru" group-title="Религиозные",Союз
+http://mfe.svc.ott.zala.by/hls/CH_SOYUZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="МузСоюз" tvg-logo="https://static.wikitide.net/telepediawiki/c/c7/%D0%9C%D1%83%D0%B7%D0%A1%D0%BE%D1%8E%D0%B7_%28%D0%BB%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF%2C_%D1%81_2015%29.png" group-title="Религиозные",МузСоюз
+http://mfe.svc.ott.zala.by/hls/CH_MUZSOYUZ_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Red Lips" tvg-logo="broadcastChannel1692357284918.jpg" group-title="18+",Red Lips
+http://mfe.svc.ott.zala.by/hls/CH_REDLIPS_HLS/variant.m3u8#EXTINF:-1 tvg-name="Русская ночь" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/67/20221013223011.png/revision/latest?path-prefix=ru" group-title="18+",Русская ночь
+http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
+
+function parseM3U(data){
+    const lines = data.split('\n');
+    const result = [];
+
+    for(let i=0;i<lines.length;i++){
+        const line = lines[i].trim();
+
+        if(line.startsWith('#EXTINF')){
+            const nameMatch = line.match(/,(.*)$/);
+            const logoMatch = line.match(/tvg-logo="(.*?)"/);
+            const groupMatch = line.match(/group-title="(.*?)"/);
+
+            const url = lines[i+1]?.trim();
+
+            if(url && url.startsWith('http')){
+                result.push({
+                    number: result.length + 1,
+                    name: nameMatch ? nameMatch[1] : 'Unknown',
+                    logo: logoMatch ? logoMatch[1] : '',
+                    group: groupMatch ? groupMatch[1] : 'Без категории',
+                    url
+                });
+            }
+        }
+    }
+
+    return result;
+}
+
+function renderChannels(list){
+    const fragment = document.createDocumentFragment();
+    channelList.innerHTML = '';
+
+    list.forEach((channel,index)=>{
+        const div = document.createElement('div');
+        div.className = 'channel';
+
+        const imgTag = `<img src="${channel.logo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`;
+
+        div.innerHTML = `
+            ${imgTag}
+            <div class="channel-info">
+                <div class="channel-name">${channel.number}. ${channel.name}</div>
+                <div class="channel-group">${channel.group}</div>
+            </div>        `;
+
+        div.onclick = ()=>{
+            document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
+            div.classList.add('active');
+            playChannel(channel);
+        };
+
+        fragment.appendChild(div);
+    });
+   
+    channelList.appendChild(fragment);
+}
+
+function playChannel(channel){
+    currentTitle.textContent = channel.name;
+    currentGroup.textContent = channel.group;
+
+    statusEl.textContent = 'Подключение...';
+
+    if(hls){
+        hls.destroy();
+    }
+
+    if(Hls.isSupported()){
+        // Оптимизированные настройки для быстрого старта
+        hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: false,     // выключаем, т.к. это увеличивает задержку на старте
+            liveSyncDurationCount: 2,  // минимальный буфер для live
+            maxBufferLength: 10,       // маленький буфер – быстрее старт
+            maxMaxBufferLength: 20,
+            startFragPrefetch: true,   // предзагрузка первого фрагмента
+            testBandwidth: false,      // не тратим время на тест скорости
+            progressive: true,
+            backBufferLength: 30
+        });
+        hls.loadSource(channel.url);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED,function(){
+            video.play().catch(e => console.log('autoplay prevented'));
+            statusEl.textContent = 'В эфире';
+        });
+
+        hls.on(Hls.Events.ERROR,function(event, data){
+            if (data.fatal) {
+                switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                    hls.startLoad();
+                    break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                    hls.recoverMediaError();
+                    break;
+                default:
+                    hls.destroy();
+                    break;                }
+            }
+        });
+
+    } else if(video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = channel.url;
+        video.play();
+    }
+}
+
+async function loadPlaylistFromUrl(){
+    const url = document.getElementById('playlistUrl').value.trim();
+
+    if(!url){
+        alert('Вставь ссылку на m3u');
+        return;
+    }
+
+    try{
+        statusEl.textContent = 'Загрузка playlist...';
+
+        const response = await fetch(url);
+        const text = await response.text();
+
+        channels = parseM3U(text);
+        renderChannels(channels);
+
+        statusEl.textContent = 'Playlist загружен';
+
+    }catch(e){
+        console.error(e);
+        statusEl.textContent = 'Ошибка загрузки';
+    }
+}
+
+function toggleFullscreen(){
+    if(video.requestFullscreen){
+        video.requestFullscreen();
+    }
+}
+
+searchInput.addEventListener('input',e=>{
+    const value = e.target.value.toLowerCase();
+
+    const filtered = channels.filter(c=>
+        c.name.toLowerCase().includes(value) ||
+        c.group.toLowerCase().includes(value) ||
+        String(c.number).includes(value)
+    );
+    renderChannels(filtered);
+});
+
+// Инициализация
+channels = parseM3U(playlist);
+renderChannels(channels);
+
+if(channels.length){
+    playChannel(channels[0]);
+}
+</script>
+
+</body>
+</html>
