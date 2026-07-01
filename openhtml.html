@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Glass HTML Runner Mobile</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            --glass-bg: rgba(255, 255, 255, 0.35);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shine: inset 1px 1px 2px rgba(255, 255, 255, 0.6), inset -1px -1px 2px rgba(0, 0, 0, 0.05);
+            --text-color: #0369a1;
+            --accent-color: #0284c7;
+            --shadow: 0 8px 32px 0 rgba(14, 165, 233, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            color: var(--text-color);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+            font-size: 1.5rem;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex: 1;
+        }
+
+        /* Панель управления */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow), var(--glass-shine);
+            border-radius: 20px;
+            padding: 15px;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(2, 132, 199, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #0f172a;
+            resize: none;
+            outline: none;
+        }
+
+        /* Кнопка запуска в стиле Liquid Glass */
+        .btn-fullscreen {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.7), rgba(14, 165, 233, 0.7));
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3), inset 1px 1px 2px rgba(255,255,255,0.4);
+            transition: transform 0.1s ease, background 0.3s ease;
+        }
+
+        .btn-fullscreen:active {
+            transform: scale(0.98);
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.9), rgba(14, 165, 233, 0.9));
+        }
+
+        /* Превью-контейнер */
+        .preview-wrapper {
+            position: relative;
+            flex: 1;
+            min-height: 250px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow), var(--glass-shine);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        /* Окно iframe и его контейнер */
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            flex: 1;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #ffffff;
+            display: block;
+        }
+
+        /* Кнопка закрытия внутри полноэкранного режима */
+        .btn-close-fullscreen {
+            display: none;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 999999;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #0369a1;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+
+        /* Стили для десктопов (планшетов в горизонтальном режиме) */
+        @media (min-width: 768px) {
+            body { padding: 20px; overflow: hidden; }
+            h1 { font-size: 2rem; }
+            .main-container { flex-direction: row; height: calc(100vh - 100px); }
+            .control-panel { flex: 1; }
+            textarea { flex: 1; height: auto; }
+            .preview-wrapper { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Liquid Mobile Runner</h1>
+    </header>
+
+    <div class="main-container">
+        <div class="control-panel">
+            <div class="drop-zone" id="dropZone">
+                <p>Нажмите для загрузки .html или перетащите файл</p>
+                <input type="file" id="fileInput" accept=".html" style="display: none;">
+            </div>
+            
+            <textarea id="codeEditor" placeholder="Вставьте HTML код сюда..."></textarea>
+            
+            <button class="btn-fullscreen" id="runFullscreenBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                Запустить во весь экран
+            </button>
+        </div>
+
+        <div class="preview-wrapper">
+            <div class="preview-header">Предварительный просмотр (миниатюра)</div>
+            <div class="iframe-container" id="iframeContainer">
+                <iframe id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+                <button class="btn-close-fullscreen" id="closeFullscreenBtn">✕ Выйти из полноэкранного режима</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const codeEditor = document.getElementById('codeEditor');
+        const previewFrame = document.getElementById('previewFrame');
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const runFullscreenBtn = document.getElementById('runFullscreenBtn');
+        const closeFullscreenBtn = document.getElementById('closeFullscreenBtn');
+        const iframeContainer = document.getElementById('iframeContainer');
+
+        // Обновление iframe
+        function updatePreview(code) {
+            const previewDocument = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            previewDocument.open();
+            previewDocument.write(code);
+            previewDocument.close();
+        }
+
+        // Автозапуск
+        let timeout;
+        codeEditor.addEventListener('input', () => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                updatePreview(codeEditor.value);
+            }, 300);
+        });
+
+        // Работа с файлами
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (file && (file.type === "text/html" || file.name.endsWith('.html'))) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    codeEditor.value = e.target.result;
+                    updatePreview(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // --- ЛОГИКА ПОЛНОГО ЭКРАНА ---
+
+        // Запуск во весь экран
+        runFullscreenBtn.addEventListener('click', () => {
+            // Принудительно обновляем превью перед запуском
+            updatePreview(codeEditor.value);
+
+            const elem = iframeContainer;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari / iOS */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        });
+
+        // Следим за изменением состояния экрана (чтобы показать/скрыть кнопку закрытия)
+        function onFullscreenChange() {
+            if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+                closeFullscreenBtn.style.display = 'block';
+            } else {
+                closeFullscreenBtn.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+        // Ручной выход по кнопке "✕"
+        closeFullscreenBtn.addEventListener('click', () => {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        });
+
+        // Стартовый шаблон
+        const defaultCode = `<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; background: #e0f2fe; font-family: sans-serif; text-align: center;
+        }
+        .box { padding: 25px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 80%; max-width: 300px;}
+        h2 { color: #0284c7; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>📱 Успешно!</h2>
+        <p>Код работает. Нажмите кнопку закрытия сверху, чтобы вернуться назад.</p>
+    </div>
+</body>
+</html>`;
+
+        codeEditor.value = defaultCode;
+        updatePreview(defaultCode);
+    </script>
+</body>
+</html>
