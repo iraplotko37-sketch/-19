@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>С днём рождения, BlankHtmlPage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7DA1ED;
+            --accent: #FDE047;
+            --glass: rgba(255, 255, 255, 0.14);
+            --glass-border: rgba(255, 255, 255, 0.28);
+            --text: #2c2a4a;
+            --light-text: #fff8ec;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 30% 20%, #9bb7f0 0%, #7DA1ED 100%);
+            font-family: 'Manrope', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.4;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.15, 0.85, 0.3, 1.05), transform 0.7s cubic-bezier(0.15, 0.85, 0.3, 1.05);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            padding: 24px 16px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            z-index: 2;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 44px;
+            padding: 28px 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: #fff8e7;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-bottom: 6px;
+        }
+
+        .friend-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(255, 255, 240, 0.15);
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 40px;
+            backdrop-filter: blur(8px);
+            margin: 10px 0 6px;
+        }
+
+        .sub-heading {
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 240, 0.85);
+            margin-top: 6px;
+        }
+
+        /* Колесо */
+        .wheel-box {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin: 10px 0 5px;
+        }
+        canvas {
+            width: min(260px, 65vw);
+            height: min(260px, 65vw);
+            border-radius: 50%;
+            border: 4px solid rgba(255, 245, 180, 0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25), 0 0 20px rgba(253,224,71,0.3);
+        }
+        .pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 26px;
+            background: #fbb034;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 5;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.4));
+        }
+        .spin-btn {
+            margin-top: 18px;
+            padding: 14px 32px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #2c2a4a;
+            background: #FDE047;
+            border: none;
+            border-radius: 36px;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(253,224,71,0.45);
+            transition: 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .spin-btn:active { transform: scale(0.95); }
+        .spin-btn:disabled { opacity: 0.5; filter: grayscale(0.15); }
+        #wheel-result {
+            margin-top: 14px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff3c9;
+            min-height: 32px;
+        }
+
+        /* Свечи */
+        .candles-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 24px;
+            margin: 20px 0 10px;
+            flex-wrap: wrap;
+        }
+        .candle-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .candle-body {
+            width: 18px;
+            height: 64px;
+            background: #fcd685;
+            border-radius: 8px 8px 2px 2px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+            position: relative;
+        }
+        .candle-body::after {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 8px;
+            background: #333;
+            border-radius: 1px;
+        }
+        .flame {
+            width: 18px;
+            height: 24px;
+            background: radial-gradient(circle, #FDE047, #FFB703);
+            border-radius: 50% 50% 20% 20%;
+            margin-bottom: -4px;
+            cursor: pointer;
+            box-shadow: 0 0 12px #ffae00;
+            animation: flicker 0.8s infinite alternate;
+            transition: opacity 0.2s;
+        }
+        .flame.blown {
+            opacity: 0;
+            pointer-events: none;
+            animation: none;
+        }
+        @keyframes flicker {
+            0% { transform: scale(1, 0.9); }
+            100% { transform: scale(0.9, 1.1); }
+        }
+        .candles-message {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fff5d6;
+            min-height: 24px;
+            margin-top: 8px;
+        }
+
+        /* Открытка */
+        .greeting-card {
+            background: rgba(255, 250, 240, 0.12);
+            backdrop-filter: blur(16px);
+            border-radius: 28px;
+            padding: 20px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,240,0.3);
+            cursor: pointer;
+            transition: background 0.2s;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .greeting-card:hover {
+            background: rgba(255, 255, 250, 0.2);
+        }
+        .greeting-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff7e0;
+            margin-bottom: 8px;
+        }
+        .greeting-message {
+            font-weight: 600;
+            color: #ffefc0;
+            font-size: 1rem;
+            transition: opacity 0.3s;
+        }
+
+        /* Конфетти */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -20px;
+            z-index: 999;
+            pointer-events: none;
+            border-radius: 3px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .music-btn {
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            width: 46px;
+            height: 46px;
+            background: rgba(255,255,250,0.2);
+            backdrop-filter: blur(14px);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #FDE047;
+            border: 1px solid rgba(255,255,220,0.45);
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        footer {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            color: #fff5e7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Аудио с новой ссылкой -->
+    <audio id="birthdayAudio" loop preload="auto" style="display:none;">
+        <source src="https://plotko.qzz.io/suno-97227962-3356-47da-9f62-aed539078184.mp3" type="audio/mpeg">
+    </audio>
+    <div class="music-btn" id="musicToggle" title="Музыка">&#9835;</div>
+
+    <div class="container">
+        <!-- Hero -->
+        <div class="glass-card reveal">
+            <h1>С днём рождения</h1>
+            <div class="friend-name">BlankHtmlPage</div>
+            <div class="sub-heading">Пусть этот день сияет</div>
+        </div>
+
+        <!-- Колесо -->
+        <div class="glass-card reveal">
+            <div class="wheel-box">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="520" height="520"></canvas>
+            </div>
+            <div id="wheel-result"></div>
+            <button class="spin-btn" id="spinWheelBtn">Крутить колесо</button>
+        </div>
+
+        <!-- Свечи -->
+        <div class="glass-card reveal">
+            <div class="candles-row" id="candlesRow">
+                <!-- свечи добавятся через JS -->
+            </div>
+            <div class="candles-message" id="candlesMessage">Коснитесь пламени, чтобы задуть</div>
+        </div>
+
+        <!-- Открытка -->
+        <div class="glass-card reveal">
+            <div class="greeting-card" id="greetingCard">
+                <div class="greeting-text">Открытка</div>
+                <div class="greeting-message" id="greetingMessage">Нажми, чтобы открыть</div>
+            </div>
+        </div>
+
+        <!-- Конфетти -->
+        <div class="glass-card reveal" style="padding: 20px;">
+            <button class="spin-btn" id="confettiButton" style="background:transparent; border:1px solid var(--glass-border); color:#fff3cd; box-shadow:none;">Много конфетти!</button>
+        </div>
+
+        <footer class="reveal">создано с заботой</footer>
+    </div>
+
+    <script>
+        (function() {
+            // Музыка
+            const audio = document.getElementById('birthdayAudio');
+            const musicToggle = document.getElementById('musicToggle');
+            let musicPlaying = false;
+            function playMusic() {
+                audio.play().then(() => { musicPlaying = true; musicToggle.textContent = '♫'; }).catch(()=>{});
+            }
+            function pauseMusic() {
+                audio.pause(); musicPlaying = false; musicToggle.textContent = '♩';
+            }
+            musicToggle.addEventListener('click', ()=> musicPlaying ? pauseMusic() : playMusic());
+            document.body.addEventListener('click', function once(){ if(!musicPlaying) playMusic(); }, {once:true});
+
+            // Reveal
+            const revealEls = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+            }, {threshold:0.2});
+            revealEls.forEach(el => observer.observe(el));
+            setTimeout(()=> revealEls.forEach(el=>el.classList.add('visible')), 100);
+
+            // Колесо
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const spinBtn = document.getElementById('spinWheelBtn');
+            const wheelResult = document.getElementById('wheel-result');
+            const segments = ['Счастье','Успех','Радость','Богатство','Праздник','Здоровье','Приключения','Любовь'];
+            const colors = ['#b983ff','#f9d56e','#ff9f9f','#e6b3ff','#ffdb7c','#c792ea','#ffb677','#d4a5ff'];
+            let angle = 0, spinning = false;
+            function drawWheel() {
+                const size = canvas.width, center = size/2, radius = size/2-12;
+                const arc = (Math.PI*2)/segments.length;
+                ctx.clearRect(0,0,size,size);
+                segments.forEach((txt,i)=>{
+                    const start = angle + i*arc;
+                    ctx.beginPath();
+                    ctx.fillStyle = colors[i%colors.length];
+                    ctx.moveTo(center,center);
+                    ctx.arc(center,center,radius,start,start+arc);
+                    ctx.fill();
+                    ctx.strokeStyle='rgba(255,255,250,0.35)'; ctx.stroke();
+                    ctx.save(); ctx.translate(center,center); ctx.rotate(start+arc/2);
+                    ctx.textAlign='right'; ctx.fillStyle='#1f1a2e'; ctx.font="600 26px 'Manrope'";
+                    ctx.fillText(txt, radius-30, 10);
+                    ctx.restore();
+                });
+            }
+            function spinWheelAction() {
+                if(spinning) return;
+                spinning=true; spinBtn.disabled=true; wheelResult.textContent='...';
+                let vel=0.45+Math.random()*0.4;
+                const friction=0.955;
+                function anim(){
+                    angle+=vel; vel*=friction; drawWheel();
+                    if(vel>0.0022) requestAnimationFrame(anim);
+                    else {
+                        spinning=false; spinBtn.disabled=false;
+                        const norm=(angle%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+                        const idx = segments.length-1-Math.floor(((norm+Math.PI/2)%(Math.PI*2))/((Math.PI*2)/segments.length));
+                        wheelResult.textContent = `${segments[(idx+segments.length)%segments.length]} для BlankHtmlPage`;
+                        launchConfetti(30);
+                    }
+                }
+                anim();
+            }
+            spinBtn.addEventListener('click', spinWheelAction);
+            drawWheel();
+
+            // Свечи
+            const candlesRow = document.getElementById('candlesRow');
+            const candlesMessage = document.getElementById('candlesMessage');
+            const totalCandles = 5;
+            let blownCount = 0;
+            for (let i = 0; i < totalCandles; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'candle-wrapper';
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                flame.addEventListener('click', function(e) {
+                    if (this.classList.contains('blown')) return;
+                    this.classList.add('blown');
+                    blownCount++;
+                    if (blownCount === totalCandles) {
+                        candlesMessage.textContent = 'С днём рождения, BlankHtmlPage!';
+                        if (!musicPlaying) playMusic();
+                        launchConfetti(70);
+                    } else {
+                        candlesMessage.textContent = `Осталось задуть ${totalCandles - blownCount}`;
+                    }
+                });
+                const body = document.createElement('div');
+                body.className = 'candle-body';
+                wrapper.appendChild(flame);
+                wrapper.appendChild(body);
+                candlesRow.appendChild(wrapper);
+            }
+
+            // Открытка
+            const greetingCard = document.getElementById('greetingCard');
+            const greetingMessage = document.getElementById('greetingMessage');
+            const messages = [
+                'Ты — невероятный человек.',
+                'Пусть каждый день приносит радость.',
+                'Спасибо, что ты есть.',
+                'Желаю тебе больших свершений!',
+                'Оставайся таким же замечательным.',
+                'Мечты сбываются!',
+                'С днём рождения!'
+            ];
+            let msgIndex = 0;
+            greetingCard.addEventListener('click', () => {
+                greetingMessage.textContent = messages[msgIndex % messages.length];
+                msgIndex++;
+                greetingMessage.style.opacity = '0';
+                setTimeout(() => { greetingMessage.style.opacity = '1'; }, 50);
+            });
+
+            // Конфетти
+            function launchConfetti(count = 50) {
+                const colorsArr = ['#FDE047', '#ff9f9f', '#c77dff', '#ffffff', '#fbb034', '#b983ff', '#ffb677'];
+                for (let i = 0; i < count; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-piece';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colorsArr[Math.floor(Math.random() * colorsArr.length)];
+                    confetti.style.width = (6 + Math.random() * 10) + 'px';
+                    confetti.style.height = (6 + Math.random() * 10) + 'px';
+                    confetti.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 2800);
+                }
+            }
+            document.getElementById('confettiButton').addEventListener('click', () => launchConfetti(80));
+        })();
+    </script>
+</body>
+</html>
