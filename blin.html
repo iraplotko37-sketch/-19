@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Блинная студия — быстрый эстетичный симулятор блинов</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.transparenttextures.com">
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="preconnect" href="https://commons.wikimedia.org">
+  <link rel="preconnect" href="https://upload.wikimedia.org">
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Comfortaa:wght@400;600;700&family=Marck+Script&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --cream: #fff9f1;
+      --beige: #f4e8d8;
+      --latte: #e8d3ba;
+      --caramel: #c98a4b;
+      --rose: #d98b7c;
+      --brown: #5c4330;
+      --ink: #4b382a;
+      --muted: #8b715c;
+      --white: #fffdf9;
+      --shadow: 0 18px 50px rgba(84, 56, 32, .14);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+    *, *::before, *::after { -webkit-tap-highlight-color: transparent; }
+
+    html, body { margin: 0; }
+
+    body {
+      font-family: 'Comfortaa', system-ui, sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      background-color: #f8efe3;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(255, 236, 214, .65), transparent 32%),
+        radial-gradient(circle at 88% 8%, rgba(247, 214, 203, .5), transparent 28%),
+        url('https://www.transparenttextures.com/patterns/cream-paper.png');
+      background-size: auto, auto, 220px auto;
+      background-repeat: no-repeat, no-repeat, repeat;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    button:focus { outline: none; }
+    button:focus-visible {
+      outline: 3px solid rgba(217, 139, 98, .5);
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .42;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .app {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border-radius: 36px;
+      padding: 42px 24px 34px;
+      text-align: center;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 244, 228, .92), transparent 42%),
+        radial-gradient(circle at 80% 30%, rgba(248, 214, 196, .72), transparent 36%),
+        linear-gradient(135deg, rgba(255, 251, 244, .96), rgba(247, 233, 216, .96));
+      border: 1px solid rgba(201, 154, 108, .24);
+      box-shadow: var(--shadow);
+      margin-bottom: 24px;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: auto -10% -52px -10%;
+      height: 100px;
+      background: radial-gradient(ellipse at center, rgba(201, 138, 75, .18), transparent 70%);
+      pointer-events: none;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      letter-spacing: .045em;
+      font-size: clamp(2.4rem, 6vw, 4.4rem);
+      color: #563e2b;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, .45);
+    }
+
+    .script {
+      font-family: 'Marck Script', cursive;
+      font-size: clamp(1.35rem, 3vw, 2.1rem);
+      color: #c46f4d;
+      margin: 10px 0 0;
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 14px auto 0;
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel,
+    .stage-card {
+      background: rgba(255, 252, 246, .88);
+      border: 1px solid rgba(196, 158, 115, .22);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .panel {
+      padding: 20px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .panel h2,
+    .stage-card h2 {
+      margin: 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      color: #5a4130;
+    }
+
+    .panel .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.5;
+    }
+
+    .tabs,
+    .steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0 14px;
+    }
+
+    .tab-btn,
+    .step-btn {
+      border: 1px solid rgba(190, 145, 95, .35);
+      background: rgba(255, 255, 255, .72);
+      color: #7b5b42;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: .86rem;
+      font-weight: 700;
+      transition: .25s;
+      min-height: 40px;
+    }
+
+    .tab-btn:hover,
+    .step-btn:hover {
+      transform: translateY(-2px);
+      background: #fff;
+    }
+
+    .tab-btn.active,
+    .step-btn.active {
+      background: linear-gradient(135deg, #e29a6b, #c46f4d);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 10px 22px rgba(196, 111, 77, .25);
+    }
+
+    .ingredient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+      gap: 10px;
+      max-height: 520px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .ingredient-grid.static {
+      max-height: none;
+      overflow: visible;
+    }
+
+    .ingredient-grid::-webkit-scrollbar { width: 8px; }
+    .ingredient-grid::-webkit-scrollbar-thumb {
+      background: rgba(190, 145, 95, .35);
+      border-radius: 999px;
+    }
+
+    .ingredient {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 12px 8px;
+      border-radius: 20px;
+      border: 1px solid rgba(196, 158, 115, .24);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .95), rgba(255, 250, 241, .95));
+      transition: .22s;
+      text-align: center;
+      min-height: 92px;
+    }
+
+    .ingredient:hover:not(:disabled) {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 14px 26px rgba(126, 84, 48, .16);
+      border-color: rgba(196, 111, 77, .4);
+    }
+
+    .ingredient:active:not(:disabled) {
+      transform: scale(.98);
+    }
+
+    .ingredient.selected {
+      outline: 2px solid #d98b62;
+      outline-offset: 2px;
+      background: linear-gradient(180deg, #fff6ea, #ffedda);
+    }
+
+    .ingredient .emoji {
+      font-size: 30px;
+      line-height: 1;
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 6px 8px rgba(87, 52, 20, .18));
+    }
+
+    .ingredient .name {
+      font-size: .88rem;
+      line-height: 1.12;
+      color: #6d523c;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .stage {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .steps {
+      margin: 0;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+      animation: fadeIn .35s ease;
+    }
+
+    .stage-card {
+      padding: 22px;
+    }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 24px;
+      align-items: center;
+    }
+
+    .step-info h2.script,
+    .plate-header h2.script {
+      font-family: 'Marck Script', cursive;
+      font-weight: 400;
+      font-size: 2rem;
+      color: #c46f4d;
+      margin: 0;
+    }
+
+    .muted {
+      margin: 8px 0 14px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: .95rem;
+    }
+
+    .dough-ingredients {
+      margin: 14px 0;
+    }
+
+    .bowl-zone,
+    .pan-zone {
+      display: grid;
+      place-items: center;
+    }
+
+    .bowl {
+      width: 230px;
+      height: 230px;
+      position: relative;
+      filter: drop-shadow(0 22px 28px rgba(84, 49, 17, .2));
+    }
+
+    .bowl::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 25%, #fffdf9, #f0e2cf 45%, #d9c1a3 72%, #c8a982 100%);
+      box-shadow:
+        inset 0 14px 24px rgba(255, 255, 255, .55),
+        inset 0 -18px 28px rgba(146, 101, 57, .24);
+    }
+
+    .bowl-inner {
+      position: absolute;
+      inset: 17px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 60%, #fff8ec, #f3e5cf);
+      box-shadow:
+        inset 0 12px 22px rgba(255, 255, 255, .45),
+        inset 0 -16px 26px rgba(146, 101, 57, .2);
+    }
+
+    .bowl-fill {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 0%;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 22%),
+        radial-gradient(circle at 50% 30%, #f6e7c8, #e8cf9f);
+      transition: height .45s ease, background .3s ease;
+    }
+
+    .bowl-fill::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 5%;
+      width: 90%;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .35);
+      filter: blur(1px);
+    }
+
+    .bowl-swirl {
+      position: absolute;
+      inset: 18%;
+      border-radius: 50%;
+      opacity: 0;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0 18%,
+        rgba(255, 255, 255, .55) 30%,
+        transparent 42%,
+        rgba(190, 130, 60, .28) 58%,
+        transparent 72%
+      );
+      filter: blur(1px);
+      pointer-events: none;
+    }
+
+    .bowl.mixing .bowl-swirl {
+      opacity: .85;
+      animation: swirl 1s linear infinite;
+    }
+
+    @keyframes swirl {
+      to { transform: rotate(360deg); }
+    }
+
+    .pan {
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      position: relative;
+      background: radial-gradient(circle at 32% 28%, #56524d, #24211e 58%, #131110 100%);
+      box-shadow:
+        inset 0 12px 26px rgba(255, 255, 255, .08),
+        inset 0 -18px 30px rgba(0, 0, 0, .42),
+        0 22px 38px rgba(59, 39, 22, .24);
+    }
+
+    .pan::after {
+      content: '';
+      position: absolute;
+      right: -88px;
+      top: 50%;
+      width: 104px;
+      height: 21px;
+      border-radius: 999px;
+      transform: translateY(-50%) rotate(7deg);
+      background: linear-gradient(90deg, #7c5a3d, #5b3d27);
+      box-shadow: 0 10px 18px rgba(59, 39, 22, .22);
+    }
+
+    .pan-surface {
+      position: absolute;
+      inset: 17px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: radial-gradient(circle at 38% 32%, #413d39, #1d1b19 62%, #12100f 100%);
+      box-shadow:
+        inset 0 10px 22px rgba(255, 255, 255, .05),
+        inset 0 -14px 24px rgba(0, 0, 0, .38);
+    }
+
+    #panBatter {
+      position: absolute;
+      inset: 15%;
+      border-radius: 50%;
+      opacity: 0;
+      transform: scale(.65);
+      transition:
+        opacity .35s,
+        transform .45s cubic-bezier(.2, .9, .3, 1.2);
+      box-shadow:
+        inset 0 8px 18px rgba(255, 255, 255, .22),
+        inset 0 -10px 18px rgba(87, 48, 15, .24),
+        0 10px 18px rgba(0, 0, 0, .18);
+    }
+
+    #panBatter.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #panBatter.ready {
+      box-shadow:
+        0 0 0 5px rgba(255, 216, 145, .28),
+        inset 0 8px 18px rgba(255, 255, 255, .26),
+        inset 0 -10px 18px rgba(87, 48, 15, .28);
+    }
+
+    #panBatter.over {
+      box-shadow:
+        0 0 0 5px rgba(214, 116, 70, .3),
+        inset 0 8px 18px rgba(255, 255, 255, .16),
+        inset 0 -10px 18px rgba(60, 25, 4, .35);
+    }
+
+    #panBatter.burnt {
+      filter: brightness(.58) saturate(.55) sepia(.35) !important;
+    }
+
+    #panBatter::before {
+      content: '';
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      opacity: 0;
+      transition: .3s;
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, .55) 0 2px, transparent 3px),
+        radial-gradient(circle, rgba(255, 255, 255, .35) 0 3px, transparent 4px);
+      background-size: 34px 34px, 52px 52px;
+      background-position: 0 0, 17px 19px;
+      mix-blend-mode: screen;
+    }
+
+    #panBatter.ready::before { opacity: .55; }
+
+    #panBatter.flip {
+      animation: flipAnim .55s ease;
+    }
+
+    @keyframes flipAnim {
+      0% { transform: scale(1) translateY(0) rotate(0); }
+      45% { transform: scale(.72) translateY(-28px) rotate(170deg); }
+      100% { transform: scale(1) translateY(0) rotate(360deg); }
+    }
+
+    .progress {
+      height: 15px;
+      border-radius: 999px;
+      background: #eadfd0;
+      overflow: hidden;
+      border: 1px solid rgba(190, 145, 95, .25);
+      box-shadow: inset 0 2px 6px rgba(122, 80, 44, .12);
+      margin-top: 12px;
+    }
+
+    .progress i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #f4d598, #e0a458, #c97d3e);
+      transition: width .12s linear;
+    }
+
+    .cook-status {
+      min-height: 1.8em;
+      margin: 12px 0 4px;
+      font-family: 'Marck Script', cursive;
+      font-size: 1.35rem;
+      color: #b46a4a;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 11px 17px;
+      font-size: .88rem;
+      font-weight: 700;
+      transition: .22s;
+      letter-spacing: .02em;
+      min-height: 44px;
+      white-space: normal;
+      text-align: center;
+      flex: 0 1 auto;
+      max-width: 100%;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #df9a6d, #bf6d45);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(191, 109, 69, .26);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 28px rgba(191, 109, 69, .32);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, .9);
+      color: #7b5233;
+      border: 1px solid rgba(190, 145, 95, .4);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #fff;
+      box-shadow: 0 12px 22px rgba(126, 84, 48, .14);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #a34a38, #7e3325);
+      color: #fff;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 24px rgba(126, 51, 37, .25);
+    }
+
+    .btn.active {
+      background: linear-gradient(135deg, #e29a6b, #c46f4d);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 12px 24px rgba(191, 109, 69, .24);
+    }
+
+    .plate-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .plate-wrap {
+      display: grid;
+      place-items: center;
+      padding: 18px 8px 8px;
+    }
+
+    .plate {
+      --pancake-color: #e7b765;
+      --pancake-color-dark: #b9853d;
+      --pancake-filter: none;
+      --pancake-texture: none;
+
+      width: min(640px, 94%);
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      background-color: #fffaf2;
+      background-image:
+        url('https://www.transparenttextures.com/patterns/soft-wallpaper.png'),
+        radial-gradient(circle at 50% 42%, #fffdf8 0%, #f7ecdd 52%, #ead9c2 70%, #f9f2e6 76%, #e2cfb5 100%);
+      background-size: 180px auto, cover;
+      background-repeat: repeat, no-repeat;
+      background-blend-mode: multiply, normal;
+      box-shadow:
+        inset 0 12px 28px rgba(255, 255, 255, .65),
+        inset 0 -20px 38px rgba(166, 124, 79, .22),
+        0 26px 50px rgba(93, 62, 35, .18);
+      border: 1px solid rgba(206, 168, 123, .32);
+    }
+
+    .plate::before {
+      content: '';
+      position: absolute;
+      inset: 7.5%;
+      border-radius: 50%;
+      border: 2px solid rgba(198, 156, 106, .28);
+      box-shadow: inset 0 8px 22px rgba(166, 124, 79, .12);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .plate::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 22%, rgba(255, 255, 255, .42), transparent 26%);
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    .empty-plate {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(139, 113, 92, .75);
+      font-size: 1.4rem;
+      pointer-events: none;
+      z-index: 5;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .flat-pancake {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 10;
+    }
+
+    .pancake-base {
+      width: 84%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      filter: var(--pancake-filter);
+      background:
+        radial-gradient(circle at 32% 26%, rgba(255, 255, 255, .34), transparent 30%),
+        radial-gradient(circle at 68% 72%, rgba(120, 60, 15, .18), transparent 34%),
+        radial-gradient(circle at 50% 50%, var(--pancake-color), var(--pancake-color-dark));
+      box-shadow:
+        inset 0 12px 26px rgba(255, 255, 255, .24),
+        inset 0 -18px 30px rgba(96, 52, 14, .28),
+        0 22px 38px rgba(84, 49, 17, .22);
+    }
+
+    .texture {
+      position: absolute;
+      inset: 0;
+      background-image: var(--pancake-texture);
+      background-size: cover;
+      background-position: center;
+      opacity: .32;
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+    }
+
+    .pancake-shine {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, .34), transparent 22%),
+        radial-gradient(circle at 70% 76%, rgba(255, 255, 255, .12), transparent 18%);
+      pointer-events: none;
+    }
+
+    .layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    #fillingsLayer { z-index: 20; }
+    #saucesLayer { z-index: 30; }
+    #toppingsLayer { z-index: 40; }
+    #sugarLayer { z-index: 50; }
+
+    .filling-blob {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      opacity: .92;
+      filter: blur(.4px);
+      box-shadow: 0 10px 18px rgba(77, 42, 14, .18);
+    }
+
+    .sauce {
+      position: absolute;
+      inset: 8%;
+      width: 84%;
+      height: 84%;
+      overflow: visible;
+      pointer-events: none;
+      filter: drop-shadow(0 5px 5px rgba(70, 38, 10, .16));
+      animation: fadeIn .45s ease;
+    }
+
+    .topping {
+      position: absolute;
+      transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+      cursor: grab;
+      pointer-events: auto;
+      touch-action: none;
+      user-select: none;
+      line-height: 1;
+      filter: drop-shadow(0 6px 6px rgba(72, 41, 15, .24));
+      transition: filter .2s;
+      will-change: left, top;
+    }
+
+    .topping:hover {
+      filter: drop-shadow(0 10px 12px rgba(72, 41, 15, .3)) brightness(1.03);
+    }
+
+    .topping.dragging {
+      cursor: grabbing;
+      transform: translate(-50%, -50%) rotate(var(--rot, 0deg)) scale(1.12);
+      filter: drop-shadow(0 16px 18px rgba(72, 41, 15, .35));
+    }
+
+    .sugar-dot {
+      position: absolute;
+      background: #fffdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 7px rgba(255, 255, 255, .9);
+      animation: sugarFall .8s ease-out both;
+      pointer-events: none;
+    }
+
+    @keyframes sugarFall {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: var(--o, .9);
+      }
+    }
+
+    .folded-wrap {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      z-index: 70;
+    }
+
+    .rolled {
+      width: 74%;
+      height: 28%;
+      position: relative;
+      transform: rotate(-7deg);
+      filter: drop-shadow(0 22px 28px rgba(84, 49, 17, .25));
+    }
+
+    .roll-body {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      overflow: hidden;
+      filter: var(--pancake-filter);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(88, 45, 10, .22)),
+        radial-gradient(circle at 50% 35%, var(--pancake-color), var(--pancake-color-dark));
+      box-shadow:
+        inset 0 10px 18px rgba(255, 255, 255, .22),
+        inset 0 -14px 22px rgba(76, 39, 8, .28);
+    }
+
+    .roll-body .texture { border-radius: inherit; }
+
+    .roll-filling {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 15%;
+      height: 18%;
+      border-radius: 999px;
+      filter: blur(1px);
+      opacity: .92;
+      box-shadow: 0 6px 12px rgba(70, 35, 5, .18);
+      z-index: 2;
+    }
+
+    .roll-end {
+      position: absolute;
+      top: 6%;
+      width: 17%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      overflow: hidden;
+      filter: var(--pancake-filter);
+      background:
+        radial-gradient(circle at 38% 32%, rgba(255, 255, 255, .4), transparent 30%),
+        repeating-radial-gradient(circle at 50% 50%, rgba(255, 243, 219, .42) 0 3px, rgba(122, 66, 19, .25) 3px 7px),
+        radial-gradient(circle at 50% 50%, var(--pancake-color), var(--pancake-color-dark));
+      box-shadow:
+        inset 0 6px 12px rgba(255, 255, 255, .24),
+        inset 0 -8px 14px rgba(76, 39, 8, .3),
+        0 10px 16px rgba(84, 49, 17, .18);
+      z-index: 3;
+    }
+
+    .roll-end.left { left: -2.5%; }
+    .roll-end.right { right: -2.5%; }
+    .roll-end .texture { border-radius: inherit; }
+
+    .envelope {
+      width: 54%;
+      aspect-ratio: 1 / 1;
+      position: relative;
+      transform: rotate(3deg);
+      filter: drop-shadow(0 22px 28px rgba(84, 49, 17, .25));
+    }
+
+    .env-base {
+      position: absolute;
+      inset: 0;
+      border-radius: 26px;
+      overflow: hidden;
+      filter: var(--pancake-filter);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .3), rgba(88, 45, 10, .18)),
+        radial-gradient(circle at 50% 45%, var(--pancake-color), var(--pancake-color-dark));
+      box-shadow:
+        inset 0 10px 18px rgba(255, 255, 255, .22),
+        inset 0 -14px 24px rgba(76, 39, 8, .24);
+    }
+
+    .env-base .texture { border-radius: inherit; }
+
+    .env-filling {
+      position: absolute;
+      inset: 26%;
+      border-radius: 24px;
+      filter: blur(2px);
+      opacity: .9;
+      z-index: 2;
+    }
+
+    .env-flap {
+      position: absolute;
+      inset: 0;
+      opacity: .94;
+      z-index: 3;
+    }
+
+    .env-flap.top {
+      clip-path: polygon(0 0, 100% 0, 50% 52%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .34), rgba(88, 45, 10, .16));
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      box-shadow: inset 0 -8px 14px rgba(76, 39, 8, .12);
+    }
+
+    .env-flap.right {
+      clip-path: polygon(100% 0, 100% 100%, 50% 52%);
+      background: linear-gradient(270deg, rgba(255, 255, 255, .22), rgba(88, 45, 10, .2));
+    }
+
+    .env-flap.bottom {
+      clip-path: polygon(0 100%, 100% 100%, 50% 52%);
+      background: linear-gradient(0deg, rgba(255, 255, 255, .16), rgba(88, 45, 10, .26));
+    }
+
+    .env-flap.left {
+      clip-path: polygon(0 0, 0 100%, 50% 52%);
+      background: linear-gradient(90deg, rgba(255, 255, 255, .22), rgba(88, 45, 10, .2));
+    }
+
+    .triangle {
+      width: 58%;
+      aspect-ratio: 1 / 1;
+      position: relative;
+      transform: rotate(-3deg);
+      filter: drop-shadow(0 22px 28px rgba(84, 49, 17, .25));
+    }
+
+    .tri-base {
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(50% 5%, 97% 93%, 3% 93%);
+      overflow: hidden;
+      filter: var(--pancake-filter);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(88, 45, 10, .2)),
+        radial-gradient(circle at 50% 65%, var(--pancake-color), var(--pancake-color-dark));
+    }
+
+    .tri-base .texture { clip-path: inherit; }
+
+    .tri-filling {
+      position: absolute;
+      left: 28%;
+      right: 28%;
+      bottom: 14%;
+      height: 16%;
+      border-radius: 999px;
+      filter: blur(2px);
+      opacity: .92;
+      z-index: 2;
+    }
+
+    .tri-fold {
+      position: absolute;
+      inset: 0;
+      clip-path: polygon(50% 26%, 82% 88%, 18% 88%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .24), rgba(88, 45, 10, .18));
+      opacity: .8;
+      z-index: 3;
+    }
+
+    .hint {
+      margin: 14px 8px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.55;
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%) translateY(18px);
+      background: rgba(64, 44, 28, .9);
+      color: #fff4e7;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-size: .88rem;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: .3s;
+      z-index: 9999;
+      box-shadow: 0 18px 34px rgba(43, 28, 16, .28);
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .footer {
+      margin: 26px 8px 8px;
+      text-align: center;
+      color: #a48a72;
+      font-size: .9rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { position: relative; top: 0; }
+      .ingredient-grid { max-height: 320px; }
+    }
+
+    @media (max-width: 720px) {
+      .step-grid {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+      }
+
+      .controls { justify-content: center; }
+      .pan::after { display: none; }
+      .plate-header { justify-content: center; text-align: center; }
+      .stage-card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <h1>Блинная студия</h1>
+      <div class="script">тесто · сковорода · подача</div>
+      <p>
+        Приготовьте тесто, испеките блин, украсьте его начинками и топпингами,
+        а затем сверните трубочкой, конвертиком или треугольником.
+      </p>
+    </header>
+
+    <main class="layout">
+      <aside class="panel">
+        <h2>Подача</h2>
+        <p class="sub">Когда блин на тарелке, добавляйте начинки, топпинги и соусы.</p>
+        <div class="tabs" id="tabs"></div>
+        <div class="ingredient-grid" id="ingredientGrid"></div>
+      </aside>
+
+      <section class="stage">
+        <div class="steps">
+          <button type="button" class="step-btn active" data-step="dough">1. Тесто</button>
+          <button type="button" class="step-btn" data-step="cook">2. Жарка</button>
+          <button type="button" class="step-btn" data-step="serve">3. Подача</button>
+        </div>
+
+        <section id="step-dough" class="step active stage-card">
+          <div class="step-grid">
+            <div class="bowl-zone">
+              <div class="bowl" id="bowl">
+                <div class="bowl-inner">
+                  <div class="bowl-fill" id="bowlFill"></div>
+                  <div class="bowl-swirl"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-info">
+              <h2 class="script">Приготовление теста</h2>
+              <p class="muted">
+                Добавьте муку, молоко, яйца, сахар, соль и масло.
+                Можно добавить какао, матч или ягодное пюре для вкуса.
+              </p>
+
+              <div class="ingredient-grid static dough-ingredients" id="doughIngredients"></div>
+
+              <div class="progress"><i id="mixProgress"></i></div>
+              <div class="cook-status" id="doughStatus">Добавьте ингредиенты...</div>
+
+              <div class="controls">
+                <button type="button" id="mixBtn" class="btn btn-primary" disabled>Замесить тесто</button>
+                <button type="button" id="resetDoughBtn" class="btn btn-secondary">Сбросить</button>
+                <button type="button" id="instantDoughBtn" class="btn btn-secondary">Готовое тесто</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="step-cook" class="step stage-card">
+          <div class="step-grid">
+            <div class="pan-zone">
+              <div class="pan" aria-label="Сковорода">
+                <div class="pan-surface">
+                  <div id="panBatter"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-info">
+              <h2 class="script">Жарка</h2>
+              <p class="muted">
+                Налейте тесто, дождитесь золотистого момента, переверните
+                и переложите блин на тарелку.
+              </p>
+
+              <div class="progress"><i id="cookProgress"></i></div>
+              <div class="cook-status" id="cookStatus">Сначала приготовьте тесто.</div>
+
+              <div class="controls">
+                <button type="button" id="pourBtn" class="btn btn-primary" disabled>Налить тесто</button>
+                <button type="button" id="flipBtn" class="btn btn-secondary" disabled>Перевернуть</button>
+                <button type="button" id="plateBtn" class="btn btn-secondary" disabled>На тарелку</button>
+                <button type="button" id="stopBtn" class="btn btn-danger" disabled>Снять</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="step-serve" class="step stage-card">
+          <div class="plate-header">
+            <h2 class="script">Подача</h2>
+            <div class="controls" style="margin:0">
+              <button type="button" id="unfoldBtn" class="btn btn-secondary" disabled>Развернуть</button>
+              <button type="button" id="rollBtn" class="btn btn-secondary" disabled>Трубочкой</button>
+              <button type="button" id="envelopeBtn" class="btn btn-secondary" disabled>Конвертиком</button>
+              <button type="button" id="triangleBtn" class="btn btn-secondary" disabled>Треугольником</button>
+              <button type="button" id="newPancakeBtn" class="btn btn-primary">Быстрый блин</button>
+              <button type="button" id="clearPlateBtn" class="btn btn-secondary">Очистить</button>
+            </div>
+          </div>
+
+          <div class="plate-wrap">
+            <div class="plate" id="plate">
+              <div id="emptyPlate" class="empty-plate">
+                <span class="script">Здесь появится блин</span>
+              </div>
+
+              <div id="flatPancake" class="flat-pancake hidden">
+                <div class="pancake-base" id="pancakeBase">
+                  <div class="texture"></div>
+                  <div class="pancake-shine"></div>
+                </div>
+
+                <div id="fillingsLayer" class="layer"></div>
+                <div id="saucesLayer" class="layer"></div>
+                <div id="toppingsLayer" class="layer"></div>
+                <div id="sugarLayer" class="layer"></div>
+              </div>
+
+              <div id="rolledWrap" class="folded-wrap hidden">
+                <div class="rolled">
+                  <div class="roll-body"><div class="texture"></div></div>
+                  <div class="roll-filling" id="rollFilling"></div>
+                  <div class="roll-end left"><div class="texture"></div></div>
+                  <div class="roll-end right"><div class="texture"></div></div>
+                </div>
+              </div>
+
+              <div id="envelopeWrap" class="folded-wrap hidden">
+                <div class="envelope">
+                  <div class="env-base"><div class="texture"></div></div>
+                  <div class="env-filling" id="envFilling"></div>
+                  <div class="env-flap top"></div>
+                  <div class="env-flap right"></div>
+                  <div class="env-flap bottom"></div>
+                  <div class="env-flap left"></div>
+                </div>
+              </div>
+
+              <div id="triangleWrap" class="folded-wrap hidden">
+                <div class="triangle">
+                  <div class="tri-base"><div class="texture"></div></div>
+                  <div class="tri-filling" id="triFilling"></div>
+                  <div class="tri-fold"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="hint">
+            Клик по ингредиенту слева — добавить. Топпинги можно перетаскивать.
+            Двойной клик — убрать топпинг.
+          </p>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer">
+      Шрифты: Google Fonts · Текстуры: Transparent Textures · Текстура блина: Unsplash / Wikimedia
+    </footer>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+
+      const plate = $('plate');
+      const flatPancake = $('flatPancake');
+      const emptyPlate = $('emptyPlate');
+      const fillingsLayer = $('fillingsLayer');
+      const saucesLayer = $('saucesLayer');
+      const toppingsLayer = $('toppingsLayer');
+      const sugarLayer = $('sugarLayer');
+
+      const rolledWrap = $('rolledWrap');
+      const envelopeWrap = $('envelopeWrap');
+      const triangleWrap = $('triangleWrap');
+
+      const rollFilling = $('rollFilling');
+      const envFilling = $('envFilling');
+      const triFilling = $('triFilling');
+
+      const panBatter = $('panBatter');
+      const cookStatus = $('cookStatus');
+      const toastEl = $('toast');
+
+      const bowl = $('bowl');
+      const bowlFill = $('bowlFill');
+      const doughStatus = $('doughStatus');
+      const doughGrid = $('doughIngredients');
+
+      const TEXTURE_CANDIDATES = [
+        'https://images.unsplash.com/photo-1519676867240-f03562e64548?auto=format&fit=crop&w=800&q=45',
+        'https://commons.wikimedia.org/wiki/Special:FilePath/Pancakes%20-%20Flickr%20-%20stuart_spivack.jpg?width=800',
+        'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=800&q=45',
+        'https://www.transparenttextures.com/patterns/rice-paper.png'
+      ];
+
+      const DOUGH_INGREDIENTS = [
+        { id: 'flour', name: 'Мука', emoji: '🌾', required: true },
+        { id: 'milk', name: 'Молоко', emoji: '🥛', required: true },
+        { id: 'eggs', name: 'Яйца', emoji: '🥚', required: true },
+        { id: 'sugar', name: 'Сахар', emoji: '🍬', required: true },
+        { id: 'salt', name: 'Соль', emoji: '🧂', required: true },
+        { id: 'butter', name: 'Масло', emoji: '🧈', required: true },
+        { id: 'vanilla', name: 'Ваниль', emoji: '🌼', required: false },
+        { id: 'cocoa', name: 'Какао', emoji: '🍫', required: false, flavor: { name: 'Шоколадное', color: '#8a5637' } },
+        { id: 'matcha', name: 'Матча', emoji: '🍵', required: false, flavor: { name: 'Матча', color: '#a9c483' } },
+        { id: 'berry', name: 'Ягодное пюре', emoji: '🍓', required: false, flavor: { name: 'Ягодное', color: '#d67d8c' } }
+      ];
+
+      const SERVE_DATA = {
+        fillings: [
+          { id: 'cream', name: 'Творожный крем', emoji: '🥛', color: '#fff4de' },
+          { id: 'choc', name: 'Шоколад', emoji: '🍫', color: '#6d432b' },
+          { id: 'caramel', name: 'Карамель', emoji: '🍮', color: '#c98a3d' },
+          { id: 'berry', name: 'Ягодный конфитюр', emoji: '🍓', color: '#bf435d' },
+          { id: 'honey', name: 'Мёд', emoji: '🍯', color: '#e6ab3c' },
+          { id: 'pistachio', name: 'Фисташка', emoji: '🥜', color: '#9db56c' },
+          { id: 'cheese', name: 'Сыр', emoji: '🧀', color: '#f6c86f' },
+          { id: 'salmon', name: 'Лосось', emoji: '🐟', color: '#f19a7e' },
+          { id: 'avocado', name: 'Авокадо', emoji: '🥑', color: '#97b56d' },
+          { id: 'egg', name: 'Яйцо', emoji: '🥚', color: '#f8e7bb' }
+        ],
+        toppings: [
+          { id: 'strawberry', name: 'Клубника', emoji: '🍓' },
+          { id: 'blueberry', name: 'Голубика', emoji: '🫐' },
+          { id: 'banana', name: 'Банан', emoji: '🍌' },
+          { id: 'choco', name: 'Шоколад', emoji: '🍫' },
+          { id: 'butter', name: 'Масло', emoji: '🧈' },
+          { id: 'cream', name: 'Крем', emoji: '🍦' },
+          { id: 'kiwi', name: 'Киви', emoji: '🥝' },
+          { id: 'mango', name: 'Манго', emoji: '🥭' },
+          { id: 'cherry', name: 'Черешня', emoji: '🍒' },
+          { id: 'mint', name: 'Мята', emoji: '🌿' },
+          { id: 'sugar', name: 'Пудра', emoji: '✨', special: 'sugar' },
+          { id: 'nuts', name: 'Орешки', emoji: '🥜' },
+          { id: 'lemon', name: 'Лимон', emoji: '🍋' },
+          { id: 'orange', name: 'Апельсин', emoji: '🍊' },
+          { id: 'peach', name: 'Персик', emoji: '🍑' },
+          { id: 'grapes', name: 'Виноград', emoji: '🍇' },
+          { id: 'coconut', name: 'Кокос', emoji: '🥥' },
+          { id: 'icecream', name: 'Мороженое', emoji: '🍨' }
+        ],
+        sauces: [
+          { id: 'honey', name: 'Мёд', emoji: '🍯', color: '#e6ab3c' },
+          { id: 'choco', name: 'Шоколад', emoji: '🍫', color: '#6d432b' },
+          { id: 'caramel', name: 'Карамель', emoji: '🍮', color: '#c98a3d' },
+          { id: 'berry', name: 'Ягоды', emoji: '🍓', color: '#bf435d' },
+          { id: 'matcha', name: 'Матча', emoji: '🍵', color: '#8fae6a' },
+          { id: 'milk', name: 'Сгущёнка', emoji: '🥛', color: '#fff1cf' },
+          { id: 'lemon', name: 'Лимон', emoji: '🍋', color: '#f2d06b' },
+          { id: 'peanut', name: 'Орех', emoji: '🥜', color: '#c88d55' }
+        ]
+      };
+
+      const categories = [
+        { key: 'fillings', label: 'Начинки' },
+        { key: 'toppings', label: 'Топпинги' },
+        { key: 'sauces', label: 'Соусы' }
+      ];
+
+      let activeTab = 'toppings';
+
+      let currentBatter = { name: 'Классическое', color: '#e7b765' };
+      let batterReady = false;
+      let mixing = false;
+      let mixTimer = null;
+
+      let cookState = null;
+      let cookTimer = null;
+
+      let hasPancake = false;
+      let foldMode = 'flat';
+      let fillingColors = [];
+      let sauceColors = [];
+      let zTopping = 100;
+
+      let doughAdded = new Set();
+      let toastTimer = null;
+
+      let textureLoaded = false;
+      let textureLoading = false;
+
+      function rand(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function randInt(min, max) {
+        return Math.floor(rand(min, max + 1));
+      }
+
+      function pick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function toast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+      }
+
+      function normalizeHex(hex) {
+        hex = hex.replace('#', '');
+        if (hex.length === 3) hex = hex.split('').map((c) => c + c).join('');
+        return hex;
+      }
+
+      function shade(hex, percent) {
+        const h = normalizeHex(hex);
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        const amt = percent / 100;
+
+        const adjust = (v) => {
+          const next = amt < 0 ? v * (1 + amt) : v + (255 - v) * amt;
+          return Math.max(0, Math.min(255, Math.round(next)));
+        };
+
+        return `rgb(${adjust(r)}, ${adjust(g)}, ${adjust(b)})`;
+      }
+
+      function hexToRgba(hex, alpha = 1) {
+        const h = normalizeHex(hex);
+        const r = parseInt(h.slice(0, 2), 16);
+        const g = parseInt(h.slice(2, 4), 16);
+        const b = parseInt(h.slice(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+
+      function batterBackground(color) {
+        return `radial-gradient(circle at 35% 28%, rgba(255,255,255,.34), transparent 30%), radial-gradient(circle at 50% 55%, ${color}, ${shade(color, -24)})`;
+      }
+
+      function batterBowlBackground(color) {
+        return `linear-gradient(180deg, rgba(255,255,255,.35), transparent 22%), radial-gradient(circle at 50% 30%, ${color}, ${shade(color, -18)})`;
+      }
+
+      function loadPancakeTexture() {
+        if (textureLoaded || textureLoading) return;
+        textureLoading = true;
+        tryTexture(0);
+      }
+
+      function tryTexture(index) {
+        if (index >= TEXTURE_CANDIDATES.length) {
+          textureLoading = false;
+          return;
+        }
+
+        const img = new Image();
+        img.decoding = 'async';
+        img.referrerPolicy = 'no-referrer';
+
+        if ('fetchPriority' in img) {
+          img.fetchPriority = 'low';
+        }
+
+        img.onload = () => {
+          textureLoaded = true;
+          textureLoading = false;
+          plate.style.setProperty('--pancake-texture', `url('${TEXTURE_CANDIDATES[index]}')`);
+        };
+
+        img.onerror = () => tryTexture(index + 1);
+        img.src = TEXTURE_CANDIDATES[index];
+      }
+
+      function showStep(name) {
+        document.querySelectorAll('.step').forEach((el) => {
+          el.classList.toggle('active', el.id === `step-${name}`);
+        });
+
+        document.querySelectorAll('.step-btn').forEach((btn) => {
+          btn.classList.toggle('active', btn.dataset.step === name);
+        });
+
+        if (name === 'cook') setCookButtons();
+        if (name === 'serve') updateServeButtons();
+      }
+
+      document.querySelectorAll('.step-btn').forEach((btn) => {
+        btn.addEventListener('click', () => showStep(btn.dataset.step));
+      });
+
+      function renderDoughIngredients() {
+        doughGrid.innerHTML = '';
+
+        DOUGH_INGREDIENTS.forEach((item) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'ingredient';
+          btn.dataset.id = item.id;
+
+          btn.innerHTML = `
+            <span class="emoji" aria-hidden="true">${item.emoji}</span>
+            <span class="name">${item.name}</span>
+          `;
+
+          btn.addEventListener('click', () => toggleDoughIngredient(item));
+          doughGrid.appendChild(btn);
+        });
+      }
+
+      function toggleDoughIngredient(item) {
+        if (mixing) {
+          toast('Сначала закончите замешивание.');
+          return;
+        }
+
+        if (batterReady) {
+          toast('Тесто уже готово. Сбросьте его, если хотите изменить рецепт.');
+          return;
+        }
+
+        if (doughAdded.has(item.id)) {
+          doughAdded.delete(item.id);
+        } else {
+          doughAdded.add(item.id);
+        }
+
+        updateDoughUI();
+      }
+
+      function currentFlavorFromDough() {
+        let flavor = { name: 'Классическое', color: '#e7b765' };
+
+        DOUGH_INGREDIENTS.forEach((item) => {
+          if (doughAdded.has(item.id) && item.flavor) {
+            flavor = item.flavor;
+          }
+        });
+
+        return flavor;
+      }
+
+      function allRequiredAdded() {
+        return DOUGH_INGREDIENTS
+          .filter((item) => item.required)
+          .every((item) => doughAdded.has(item.id));
+      }
+
+      function updateDoughUI() {
+        doughGrid.querySelectorAll('.ingredient').forEach((btn) => {
+          btn.classList.toggle('selected', doughAdded.has(btn.dataset.id));
+          btn.disabled = mixing || batterReady;
+        });
+
+        const requiredDone = allRequiredAdded();
+
+        $('mixBtn').disabled = !requiredDone || mixing || batterReady;
+        $('instantDoughBtn').disabled = batterReady || mixing;
+
+        const flavor = currentFlavorFromDough();
+
+        let height = 8 + doughAdded.size * 10;
+        if (mixing) height = 82;
+        if (batterReady) height = 86;
+
+        bowlFill.style.height = Math.min(88, height) + '%';
+        bowlFill.style.background = batterBowlBackground(flavor.color);
+
+        if (mixing) {
+          doughStatus.textContent = 'Замешиваем тесто...';
+        } else if (batterReady) {
+          doughStatus.textContent = 'Тесто готово! Можно печь 🥞';
+        } else if (!requiredDone) {
+          const missing = DOUGH_INGREDIENTS
+            .filter((item) => item.required && !doughAdded.has(item.id))
+            .map((item) => item.name.toLowerCase());
+
+          doughStatus.textContent = `Добавьте: ${missing.join(', ')}.`;
+        } else {
+          doughStatus.textContent = 'Отлично! Можно замешивать тесто ✨';
+        }
+      }
+
+      function mixDough() {
+        if (!allRequiredAdded() || mixing || batterReady) return;
+
+        mixing = true;
+        bowl.classList.add('mixing');
+        updateDoughUI();
+        loadPancakeTexture();
+
+        let progress = 0;
+
+        mixTimer = setInterval(() => {
+          progress += rand(2.5, 5);
+
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(mixTimer);
+            finishMix();
+          }
+
+          $('mixProgress').style.width = progress + '%';
+          doughStatus.textContent = 'Замешиваем тесто...';
+        }, 60);
+      }
+
+      function finishMix() {
+        mixing = false;
+        batterReady = true;
+        currentBatter = currentFlavorFromDough();
+
+        bowl.classList.remove('mixing');
+        $('mixProgress').style.width = '100%';
+
+        updateDoughUI();
+        setCookButtons();
+        loadPancakeTexture();
+
+        toast(`Тесто готово: ${currentBatter.name.toLowerCase()} 🥣`);
+        showStep('cook');
+      }
+
+      function resetDough() {
+        clearInterval(mixTimer);
+
+        mixing = false;
+        batterReady = false;
+        doughAdded.clear();
+        currentBatter = { name: 'Классическое', color: '#e7b765' };
+
+        bowl.classList.remove('mixing');
+        $('mixProgress').style.width = '0%';
+
+        stopCooking();
+        updateDoughUI();
+        setCookButtons();
+
+        toast('Тесто сброшено.');
+      }
+
+      function instantDough() {
+        if (batterReady || mixing) return;
+
+        doughAdded = new Set(
+          DOUGH_INGREDIENTS.filter((item) => item.required).map((item) => item.id)
+        );
+
+        batterReady = true;
+        currentBatter = currentFlavorFromDough();
+
+        $('mixProgress').style.width = '100%';
+
+        updateDoughUI();
+        setCookButtons();
+        loadPancakeTexture();
+
+        toast('Тесто уже готово! Можно печь 🥞');
+        showStep('cook');
+      }
+
+      $('mixBtn').addEventListener('click', mixDough);
+      $('resetDoughBtn').addEventListener('click', resetDough);
+      $('instantDoughBtn').addEventListener('click', instantDough);
+
+      function setCookButtons() {
+        const canPour = batterReady && !cookState;
+
+        $('pourBtn').disabled = !canPour;
+        $('flipBtn').disabled = !cookState || cookState.side !== 1 || cookState.progress < 22;
+        $('plateBtn').disabled = !cookState || cookState.side !== 2 || cookState.progress < 35;
+        $('stopBtn').disabled = !cookState;
+
+        if (!batterReady) {
+          cookStatus.textContent = 'Сначала приготовьте тесто.';
+        } else if (!cookState) {
+          cookStatus.textContent = 'Сковорода прогревается...';
+        }
+      }
+
+      function startCooking() {
+        if (!batterReady) {
+          toast('Сначала приготовьте тесто.');
+          showStep('dough');
+          return;
+        }
+
+        if (cookState) return;
+
+        cookState = {
+          progress: 0,
+          side: 1,
+          firstScore: 70,
+          batter: currentBatter,
+          burnt: false
+        };
+
+        panBatter.className = 'show';
+        panBatter.style.background = batterBackground(cookState.batter.color);
+        panBatter.style.filter = 'brightness(1.12) saturate(1.05)';
+        cookStatus.textContent = 'Тесто на сковороде...';
+
+        clearInterval(cookTimer);
+        cookTimer = setInterval(cookTick, 90);
+
+        setCookButtons();
+        toast(`Тесто на сковороде: ${cookState.batter.name.toLowerCase()}`);
+      }
+
+      function cookTick() {
+        if (!cookState) return;
+
+        cookState.progress += rand(0.62, 1.55);
+        if (cookState.progress > 145) cookState.progress = 145;
+
+        updateCookVisual();
+
+        if (cookState.progress >= 132 && !cookState.burnt) {
+          cookState.burnt = true;
+          panBatter.classList.add('burnt');
+          cookStatus.textContent = 'Ой! Блин подгорел 😢';
+        }
+
+        setCookButtons();
+      }
+
+      function updateCookVisual() {
+        const p = cookState.progress;
+        $('cookProgress').style.width = Math.min(p, 100) + '%';
+
+        if (!cookState.burnt) {
+          panBatter.style.filter = `brightness(${Math.max(0.72, 1.12 - p / 300)}) saturate(${Math.max(0.72, 1.05 - p / 380)})`;
+        }
+
+        panBatter.classList.toggle('ready', p >= 60 && p <= 96 && !cookState.burnt);
+        panBatter.classList.toggle('over', p > 96 && !cookState.burnt);
+
+        if (cookState.side === 1) {
+          if (p < 32) cookStatus.textContent = 'Тесто растекается и прогревается...';
+          else if (p < 60) cookStatus.textContent = 'Края начинают золотиться...';
+          else if (p <= 96) cookStatus.textContent = 'Идеально! Пора переворачивать ✨';
+          else if (p <= 120) cookStatus.textContent = 'Слишком долго... но ещё можно спасти.';
+          else cookStatus.textContent = 'Блин горит! Снимайте скорее.';
+        } else {
+          if (p < 32) cookStatus.textContent = 'Вторая сторона только румянится...';
+          else if (p <= 96) cookStatus.textContent = 'Готово! Перекладывайте на тарелку.';
+          else if (p <= 120) cookStatus.textContent = 'Вторая сторона пересыхает...';
+          else cookStatus.textContent = 'Горит!';
+        }
+      }
+
+      function scoreFromProgress(p) {
+        if (p >= 60 && p <= 96) return 100;
+        if (p >= 42 && p < 60) return 84;
+        if (p > 96 && p <= 116) return 68;
+        if (p < 42) return 52;
+        return 34;
+      }
+
+      function flipPancake() {
+        if (!cookState || cookState.side !== 1) return;
+
+        cookState.firstScore = scoreFromProgress(cookState.progress);
+        cookState.side = 2;
+        cookState.progress = 0;
+
+        panBatter.classList.remove('ready', 'over');
+        panBatter.classList.add('flip');
+
+        setTimeout(() => {
+          panBatter.classList.remove('flip');
+        }, 600);
+
+        cookStatus.textContent = 'Вторая сторона...';
+        $('cookProgress').style.width = '0%';
+
+        setCookButtons();
+      }
+
+      function platePancake() {
+        if (!cookState || cookState.side !== 2) return;
+
+        const secondScore = scoreFromProgress(cookState.progress);
+        const score = Math.round((cookState.firstScore + secondScore) / 2);
+
+        createPancakeOnPlate(score, cookState.batter);
+        stopCooking();
+        showStep('serve');
+
+        if (score >= 90) toast('Идеальный блин! 🥞✨');
+        else if (score >= 70) toast('Очень хороший блин!');
+        else if (score >= 50) toast('Блин получился средним, но подача всё спасёт.');
+        else toast('Ну... авторский блин 😅');
+      }
+
+      function stopCooking() {
+        clearInterval(cookTimer);
+        cookState = null;
+
+        panBatter.className = '';
+        panBatter.style.filter = '';
+        panBatter.style.background = '';
+
+        $('cookProgress').style.width = '0%';
+
+        setCookButtons();
+      }
+
+      $('pourBtn').addEventListener('click', startCooking);
+      $('flipBtn').addEventListener('click', flipPancake);
+      $('plateBtn').addEventListener('click', platePancake);
+      $('stopBtn').addEventListener('click', () => {
+        stopCooking();
+        toast('Блин снят со сковороды.');
+      });
+
+      function renderTabs() {
+        const tabs = $('tabs');
+        tabs.innerHTML = '';
+
+        categories.forEach((cat) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'tab-btn' + (cat.key === activeTab ? ' active' : '');
+          btn.textContent = cat.label;
+
+          btn.addEventListener('click', () => {
+            activeTab = cat.key;
+            renderTabs();
+            renderItems();
+          });
+
+          tabs.appendChild(btn);
+        });
+      }
+
+      function renderItems() {
+        const grid = $('ingredientGrid');
+        grid.innerHTML = '';
+
+        SERVE_DATA[activeTab].forEach((item) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'ingredient';
+
+          btn.innerHTML = `
+            <span class="emoji" aria-hidden="true">${item.emoji}</span>
+            <span class="name">${item.name}</span>
+          `;
+
+          btn.addEventListener('click', () => handleServeIngredient(item));
+          grid.appendChild(btn);
+        });
+      }
+
+      function handleServeIngredient(item) {
+        if (!hasPancake) {
+          toast('Сначала испеките или добавьте блин на тарелку.');
+          showStep('serve');
+          return;
+        }
+
+        if (foldMode !== 'flat') {
+          setFold('flat');
+        }
+
+        if (activeTab === 'fillings') addFilling(item);
+        else if (activeTab === 'toppings') {
+          if (item.special === 'sugar') addSugar();
+          else addTopping(item);
+        }
+        else if (activeTab === 'sauces') addSauce(item);
+      }
+
+      function addFilling(item) {
+        const el = document.createElement('span');
+        el.className = 'filling-blob';
+
+        const angle = rand(0, Math.PI * 2);
+        const radius = Math.sqrt(Math.random()) * 24;
+
+        el.style.left = (50 + Math.cos(angle) * radius) + '%';
+        el.style.top = (50 + Math.sin(angle) * radius) + '%';
+        el.style.width = rand(16, 27) + '%';
+        el.style.background = `radial-gradient(circle at 35% 30%, rgba(255,255,255,.5), transparent 35%), ${item.color}`;
+        el.style.boxShadow = `0 10px 18px ${hexToRgba(item.color, 0.28)}`;
+
+        fillingsLayer.appendChild(el);
+        fillingColors.push(item.color);
+
+        toast(`Начинка: ${item.name}`);
+      }
+
+      function addSauce(item) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const svg = document.createElementNS(svgNS, 'svg');
+
+        svg.setAttribute('viewBox', '0 0 100 100');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.classList.add('sauce');
+
+        const path = document.createElementNS(svgNS, 'path');
+
+        let d = 'M8 55';
+        for (let x = 8; x < 84; x += 19) {
+          const y1 = rand(25, 75).toFixed(1);
+          const y2 = rand(25, 75).toFixed(1);
+          d += ` Q ${x + 9} ${y1}, ${x + 19} ${y2}`;
+        }
+
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', item.color);
+        path.setAttribute('stroke-width', rand(2.5, 4.5).toFixed(1));
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('opacity', '0.92');
+        path.setAttribute('vector-effect', 'non-scaling-stroke');
+
+        svg.appendChild(path);
+
+        for (let i = 0; i < 6; i++) {
+          const c = document.createElementNS(svgNS, 'circle');
+          c.setAttribute('cx', rand(14, 88).toFixed(1));
+          c.setAttribute('cy', rand(20, 82).toFixed(1));
+          c.setAttribute('r', rand(1.2, 2.8).toFixed(1));
+          c.setAttribute('fill', item.color);
+          c.setAttribute('opacity', rand(0.55, 0.9).toFixed(2));
+          svg.appendChild(c);
+        }
+
+        saucesLayer.appendChild(svg);
+        sauceColors.push(item.color);
+
+        toast(`Соус: ${item.name}`);
+      }
+
+      function addTopping(item) {
+        const el = document.createElement('span');
+        el.className = 'topping';
+        el.textContent = item.emoji;
+        el.setAttribute('role', 'img');
+        el.setAttribute('aria-label', item.name);
+
+        el.style.fontSize = randInt(30, 48) + 'px';
+
+        const angle = rand(0, Math.PI * 2);
+        const radius = Math.sqrt(Math.random()) * 34;
+
+        el.style.left = (50 + Math.cos(angle) * radius) + '%';
+        el.style.top = (50 + Math.sin(angle) * radius) + '%';
+        el.style.zIndex = ++zTopping;
+        el.style.setProperty('--rot', randInt(-24, 24) + 'deg');
+
+        toppingsLayer.appendChild(el);
+        makeDraggable(el);
+
+        el.addEventListener('dblclick', () => {
+          el.remove();
+          toast(`${item.name} убран`);
+        });
+
+        toast(`Добавлено: ${item.name}`);
+      }
+
+      function addSugar() {
+        sugarLayer.innerHTML = '';
+
+        for (let i = 0; i < 38; i++) {
+          const s = document.createElement('span');
+          s.className = 'sugar-dot';
+
+          const angle = rand(0, Math.PI * 2);
+          const radius = Math.sqrt(Math.random()) * 38;
+          const size = rand(2, 5.5);
+
+          s.style.left = (50 + Math.cos(angle) * radius) + '%';
+          s.style.top = (50 + Math.sin(angle) * radius) + '%';
+          s.style.width = size + 'px';
+          s.style.height = size + 'px';
+          s.style.setProperty('--o', rand(0.45, 0.95).toFixed(2));
+          s.style.animationDelay = (i * 12) + 'ms';
+
+          sugarLayer.appendChild(s);
+        }
+
+        toast('Сахарная пудра ✨');
+      }
+
+      function makeDraggable(el) {
+        let dragging = false;
+        let startX = 0;
+        let startY = 0;
+        let startLeft = 0;
+        let startTop = 0;
+
+        el.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+          dragging = true;
+          el.classList.add('dragging');
+
+          try {
+            el.setPointerCapture(e.pointerId);
+          } catch (err) {}
+
+          startX = e.clientX;
+          startY = e.clientY;
+          startLeft = el.offsetLeft;
+          startTop = el.offsetTop;
+        });
+
+        el.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+
+          const rect = toppingsLayer.getBoundingClientRect();
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          const margin = 26;
+
+          let newLeft = startLeft + dx;
+          let newTop = startTop + dy;
+
+          newLeft = Math.max(margin, Math.min(rect.width - margin, newLeft));
+          newTop = Math.max(margin, Math.min(rect.height - margin, newTop));
+
+          el.style.left = newLeft + 'px';
+          el.style.top = newTop + 'px';
+        });
+
+        const end = () => {
+          if (!dragging) return;
+          dragging = false;
+          el.classList.remove('dragging');
+        };
+
+        el.addEventListener('pointerup', end);
+        el.addEventListener('pointercancel', end);
+      }
+
+      function createPancakeOnPlate(score, batter) {
+        clearPlate(true);
+
+        currentBatter = batter;
+        hasPancake = true;
+
+        setPancakeAppearance(score, batter);
+        setFold('flat');
+        updateServeButtons();
+      }
+
+      function setPancakeAppearance(score, batter) {
+        const color = batter.color;
+        const dark = shade(color, -28);
+
+        const brightness = score >= 90 ? 1.03 : score >= 70 ? 0.95 : score >= 50 ? 0.84 : 0.62;
+        const saturate = score >= 90 ? 1.06 : score >= 70 ? 0.96 : 0.74;
+        const sepia = score < 45 ? 'sepia(.32)' : '';
+
+        plate.style.setProperty('--pancake-color', color);
+        plate.style.setProperty('--pancake-color-dark', dark);
+        plate.style.setProperty('--pancake-filter', `brightness(${brightness}) saturate(${saturate}) ${sepia}`);
+      }
+
+      function getMainFillingColor() {
+        if (fillingColors.length) return fillingColors[fillingColors.length - 1];
+        if (sauceColors.length) return sauceColors[sauceColors.length - 1];
+        return '#fff3da';
+      }
+
+      function setFoldedFilling() {
+        const color = getMainFillingColor();
+        const bg = `radial-gradient(circle at 30% 30%, rgba(255,255,255,.45), transparent 35%), ${color}`;
+
+        rollFilling.style.background = bg;
+        envFilling.style.background = bg;
+        triFilling.style.background = bg;
+      }
+
+      function setFold(mode) {
+        if (!hasPancake) {
+          toast('Сначала добавьте блин на тарелку.');
+          return;
+        }
+
+        if (mode !== 'flat' && foldMode === mode) {
+          mode = 'flat';
+        }
+
+        foldMode = mode;
+
+        flatPancake.classList.add('hidden');
+        rolledWrap.classList.add('hidden');
+        envelopeWrap.classList.add('hidden');
+        triangleWrap.classList.add('hidden');
+        emptyPlate.classList.add('hidden');
+
+        if (mode === 'flat') {
+          flatPancake.classList.remove('hidden');
+        } else if (mode === 'rolled') {
+          rolledWrap.classList.remove('hidden');
+        } else if (mode === 'envelope') {
+          envelopeWrap.classList.remove('hidden');
+        } else if (mode === 'triangle') {
+          triangleWrap.classList.remove('hidden');
+        }
+
+        setFoldedFilling();
+        updateServeButtons();
+      }
+
+      function updateServeButtons() {
+        const disabled = !hasPancake;
+
+        $('rollBtn').disabled = disabled;
+        $('envelopeBtn').disabled = disabled;
+        $('triangleBtn').disabled = disabled;
+        $('unfoldBtn').disabled = disabled || foldMode === 'flat';
+
+        $('rollBtn').classList.toggle('active', hasPancake && foldMode === 'rolled');
+        $('envelopeBtn').classList.toggle('active', hasPancake && foldMode === 'envelope');
+        $('triangleBtn').classList.toggle('active', hasPancake && foldMode === 'triangle');
+      }
+
+      function clearPlate(silent = false) {
+        hasPancake = false;
+        foldMode = 'flat';
+
+        fillingColors = [];
+        sauceColors = [];
+        zTopping = 100;
+
+        fillingsLayer.innerHTML = '';
+        saucesLayer.innerHTML = '';
+        toppingsLayer.innerHTML = '';
+        sugarLayer.innerHTML = '';
+
+        flatPancake.classList.add('hidden');
+        rolledWrap.classList.add('hidden');
+        envelopeWrap.classList.add('hidden');
+        triangleWrap.classList.add('hidden');
+        emptyPlate.classList.remove('hidden');
+
+        updateServeButtons();
+
+        if (!silent) toast('Тарелка чистая.');
+      }
+
+      $('rollBtn').addEventListener('click', () => setFold('rolled'));
+      $('envelopeBtn').addEventListener('click', () => setFold('envelope'));
+      $('triangleBtn').addEventListener('click', () => setFold('triangle'));
+      $('unfoldBtn').addEventListener('click', () => setFold('flat'));
+
+      $('newPancakeBtn').addEventListener('click', () => {
+        if (!batterReady) {
+          toast('Сначала приготовьте тесто.');
+          showStep('dough');
+          return;
+        }
+
+        createPancakeOnPlate(100, currentBatter);
+        showStep('serve');
+        toast('Добавлен быстрый блин.');
+      });
+
+      $('clearPlateBtn').addEventListener('click', () => clearPlate(false));
+
+      renderDoughIngredients();
+      updateDoughUI();
+      renderTabs();
+      renderItems();
+      setCookButtons();
+      updateServeButtons();
+    })();
+  </script>
+</body>
+</html>
