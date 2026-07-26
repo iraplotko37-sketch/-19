@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>матвей лох</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7DA1ED;
+            --accent: #FDE047;
+            --glass: rgba(255, 255, 255, 0.14);
+            --glass-border: rgba(255, 255, 255, 0.28);
+            --text: #2c2a4a;
+            --light-text: #fff8ec;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 30% 20%, #9bb7f0 0%, #7DA1ED 100%);
+            font-family: 'Manrope', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.4;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.15, 0.85, 0.3, 1.05), transform 0.7s cubic-bezier(0.15, 0.85, 0.3, 1.05);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 480px;
+            width: 100%;
+            padding: 24px 16px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            z-index: 2;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 44px;
+            padding: 28px 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            text-align: center;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: #fff8e7;
+            margin-bottom: 14px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: #fff8e7;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin-bottom: 6px;
+        }
+
+        .friend-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(255, 255, 240, 0.15);
+            display: inline-block;
+            padding: 6px 24px;
+            border-radius: 40px;
+            backdrop-filter: blur(8px);
+            margin: 10px 0 6px;
+        }
+
+        .sub-heading {
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 240, 0.85);
+            margin-top: 6px;
+        }
+
+        /* Колесо */
+        .wheel-box {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin: 10px 0 5px;
+        }
+        canvas {
+            width: min(260px, 65vw);
+            height: min(260px, 65vw);
+            border-radius: 50%;
+            border: 4px solid rgba(255, 245, 180, 0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25), 0 0 20px rgba(253,224,71,0.3);
+        }
+        .pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 26px;
+            background: #fbb034;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 5;
+            filter: drop-shadow(0 4px 5px rgba(0,0,0,0.4));
+        }
+        .spin-btn {
+            margin-top: 18px;
+            padding: 14px 32px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #2c2a4a;
+            background: #FDE047;
+            border: none;
+            border-radius: 36px;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(253,224,71,0.45);
+            transition: 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .spin-btn:active { transform: scale(0.95); }
+        .spin-btn:disabled { opacity: 0.5; filter: grayscale(0.15); }
+        #wheel-result {
+            margin-top: 14px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff3c9;
+            min-height: 32px;
+        }
+
+        /* Свечи */
+        .candles-row {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 24px;
+            margin: 20px 0 10px;
+            flex-wrap: wrap;
+        }
+        .candle-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .candle-body {
+            width: 18px;
+            height: 64px;
+            background: #fcd685;
+            border-radius: 8px 8px 2px 2px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+            position: relative;
+        }
+        .candle-body::after {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 8px;
+            background: #333;
+            border-radius: 1px;
+        }
+        .flame {
+            width: 18px;
+            height: 24px;
+            background: radial-gradient(circle, #FDE047, #FFB703);
+            border-radius: 50% 50% 20% 20%;
+            margin-bottom: -4px;
+            cursor: pointer;
+            box-shadow: 0 0 12px #ffae00;
+            animation: flicker 0.8s infinite alternate;
+            transition: opacity 0.2s;
+        }
+        .flame.blown {
+            opacity: 0;
+            pointer-events: none;
+            animation: none;
+        }
+        @keyframes flicker {
+            0% { transform: scale(1, 0.9); }
+            100% { transform: scale(0.9, 1.1); }
+        }
+        .candles-message {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #fff5d6;
+            min-height: 24px;
+            margin-top: 8px;
+        }
+
+        /* Открытка */
+        .greeting-card {
+            background: rgba(255, 250, 240, 0.12);
+            backdrop-filter: blur(16px);
+            border-radius: 28px;
+            padding: 20px;
+            margin: 10px 0;
+            border: 1px solid rgba(255,255,240,0.3);
+            cursor: pointer;
+            transition: background 0.2s;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .greeting-card:hover {
+            background: rgba(255, 255, 250, 0.2);
+        }
+        .greeting-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff7e0;
+            margin-bottom: 8px;
+        }
+        .greeting-message {
+            font-weight: 600;
+            color: #ffefc0;
+            font-size: 1rem;
+            transition: opacity 0.3s;
+        }
+
+        /* Шарики */
+        .balloons-area {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+            min-height: 120px;
+            align-items: center;
+        }
+        .balloon {
+            width: 52px;
+            height: 66px;
+            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.15s;
+            animation: floatBalloon 3s ease-in-out infinite;
+            box-shadow: inset -6px -6px 12px rgba(0,0,0,0.15), 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .balloon::after {
+            content: "";
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 14px;
+            background: rgba(255,255,255,0.5);
+        }
+        .balloon:hover { transform: scale(1.1); }
+        .balloon:active { transform: scale(0.9); }
+        .balloon.popped {
+            animation: popBalloon 0.3s forwards;
+        }
+        @keyframes floatBalloon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes popBalloon {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .balloons-score {
+            font-weight: 700;
+            color: #fff3c9;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* Звёзды-желания */
+        .stars-area {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            overflow: hidden;
+            border-radius: 20px;
+            background: rgba(0,0,20,0.2);
+        }
+        .wish-star {
+            position: absolute;
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            animation: twinkle 2s ease-in-out infinite;
+            user-select: none;
+        }
+        .wish-star:hover { transform: scale(1.3); }
+        .wish-star.used {
+            opacity: 0.3;
+            pointer-events: none;
+            animation: none;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.85); }
+        }
+        .wish-display {
+            font-weight: 600;
+            color: #fff5d6;
+            font-size: 1rem;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        /* Обнимашки */
+        .hug-counter {
+            font-size: 3rem;
+            margin: 10px 0;
+            transition: transform 0.1s;
+        }
+        .hug-counter.bump {
+            transform: scale(1.3);
+        }
+        .hug-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .hug-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,240,0.8);
+            margin-top: 4px;
+        }
+        .hug-btn {
+            margin-top: 14px;
+            padding: 16px 40px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #2c2a4a;
+            background: linear-gradient(135deg, #ff9f9f, #fbb034);
+            border: none;
+            border-radius: 36px;
+            cursor: pointer;
+            box-shadow: 0 10px 22px rgba(251,176,52,0.4);
+            transition: 0.15s;
+        }
+        .hug-btn:active { transform: scale(0.92); }
+
+        /* Комплименты */
+        .compliment-box {
+            background: rgba(255,250,240,0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 12px 0;
+            border: 1px dashed rgba(255,255,240,0.4);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .compliment-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #fff7e0;
+            font-style: italic;
+        }
+
+        /* Фейерверк по клику */
+        .firework-hint {
+            font-size: 0.85rem;
+            color: rgba(255,255,240,0.7);
+            margin-top: 8px;
+        }
+        .firework-particle {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: fireworkBurst 0.8s ease-out forwards;
+        }
+        @keyframes fireworkBurst {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        /* Мини-игра: поймай подарок */
+        .catch-area {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            border-radius: 20px;
+            background: rgba(0,0,20,0.15);
+            overflow: hidden;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        .gift-item {
+            position: absolute;
+            font-size: 32px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            user-select: none;
+            animation: giftFall linear forwards;
+        }
+        .gift-item:active { transform: scale(1.3); }
+        @keyframes giftFall {
+            0% { top: -40px; }
+            100% { top: 230px; }
+        }
+        .catch-score {
+            font-weight: 700;
+            color: #fff3c9;
+            font-size: 1.1rem;
+            margin-top: 8px;
+        }
+
+        /* Конфетти */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -20px;
+            z-index: 999;
+            pointer-events: none;
+            border-radius: 3px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Плавающие эмодзи */
+        .float-emoji {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 998;
+            animation: floatUp 2s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+        }
+
+        footer {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            color: #fff5e7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero -->
+        <div class="glass-card reveal">
+            <h1>С днём рождения</h1>
+            <div class="friend-name">матвей</div>
+            <div class="sub-heading">Пусть этот день сияет ✨</div>
+        </div>
+
+        <!-- Колесо -->
+        <div class="glass-card reveal">
+            <div class="card-title">🎡 Колесо удачи</div>
+            <div class="wheel-box">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="520" height="520"></canvas>
+            </div>
+            <div id="wheel-result"></div>
+            <button class="spin-btn" id="spinWheelBtn">Крутить колесо</button>
+        </div>
+
+        <!-- Свечи -->
+        <div class="glass-card reveal">
+            <div class="card-title">🎂 Загадай желание</div>
+            <div class="candles-row" id="candlesRow"></div>
+            <div class="candles-message" id="candlesMessage">Коснитесь пламени, чтобы задуть</div>
+        </div>
+
+        <!-- Шарики -->
+        <div class="glass-card reveal">
+            <div class="card-title">🎈 Лопни шарики</div>
+            <div class="balloons-area" id="balloonsArea"></div>
+            <div class="balloons-score" id="balloonsScore">Лопнуто: 0 / 8</div>
+            <button class="spin-btn" id="resetBalloons" style="margin-top:12px; font-size:0.85rem; padding:10px 24px;">Ещё шарики!</button>
+        </div>
+
+        <!-- Звёзды-желания -->
+        <div class="glass-card reveal">
+            <div class="card-title">⭐ Звёзды желаний</div>
+            <div class="stars-area" id="starsArea"></div>
+            <div class="wish-display" id="wishDisplay">Нажми на звезду ✨</div>
+        </div>
+
+        <!-- Обнимашки -->
+        <div class="glass-card reveal">
+            <div class="card-title">🤗 Обнимашки</div>
+            <div class="hug-counter" id="hugEmoji">🤗</div>
+            <div class="hug-number" id="hugNumber">0</div>
+            <div class="hug-label">виртуальных объятий отправлено</div>
+            <button class="hug-btn" id="hugBtn">Обнять! 🫂</button>
+        </div>
+
+        <!-- Комплименты -->
+        <div class="glass-card reveal">
+            <div class="card-title">💬 Генератор комплиментов</div>
+            <div class="compliment-box" id="complimentBox">
+                <div class="compliment-text" id="complimentText">Нажми кнопку ниже 👇</div>
+            </div>
+            <button class="spin-btn" id="complimentBtn" style="background:linear-gradient(135deg,#c77dff,#7DA1ED); color:#fff;">Комплимент!</button>
+        </div>
+
+        <!-- Поймай подарок -->
+        <div class="glass-card reveal">
+            <div class="card-title">🎁 Поймай подарок</div>
+            <div class="catch-area" id="catchArea"></div>
+            <div class="catch-score" id="catchScore">Поймано: 0</div>
+            <button class="spin-btn" id="startCatch" style="font-size:0.85rem; padding:10px 24px;">Начать игру</button>
+        </div>
+
+        <!-- Открытка -->
+        <div class="glass-card reveal">
+            <div class="card-title">💌 Открытка</div>
+            <div class="greeting-card" id="greetingCard">
+                <div class="greeting-text">Нажми, чтобы открыть</div>
+                <div class="greeting-message" id="greetingMessage">...</div>
+            </div>
+        </div>
+
+        <!-- Конфетти -->
+        <div class="glass-card reveal" style="padding: 20px;">
+            <button class="spin-btn" id="confettiButton" style="background:transparent; border:1px solid var(--glass-border); color:#fff3cd; box-shadow:none;">🎉 Много конфетти!</button>
+            <div class="firework-hint">А ещё — кликай по фону для фейерверка 🎆</div>
+        </div>
+
+        <footer class="reveal">создано с заботой 💛</footer>
+    </div>
+
+    <script>
+        (function() {
+            // ===== Reveal =====
+            const revealEls = document.querySelectorAll('.reveal');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+            }, {threshold:0.15});
+            revealEls.forEach(el => observer.observe(el));
+            setTimeout(()=> revealEls.forEach(el=>el.classList.add('visible')), 100);
+
+            // ===== Конфетти =====
+            function launchConfetti(count = 50) {
+                const colorsArr = ['#FDE047', '#ff9f9f', '#c77dff', '#ffffff', '#fbb034', '#b983ff', '#ffb677', '#7DA1ED'];
+                for (let i = 0; i < count; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti-piece';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colorsArr[Math.floor(Math.random() * colorsArr.length)];
+                    confetti.style.width = (6 + Math.random() * 10) + 'px';
+                    confetti.style.height = (6 + Math.random() * 10) + 'px';
+                    confetti.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3200);
+                }
+            }
+            document.getElementById('confettiButton').addEventListener('click', () => launchConfetti(100));
+
+            // ===== Фейерверк по клику на фон =====
+            document.body.addEventListener('click', function(e) {
+                if (e.target.closest('.glass-card') || e.target.closest('button') || e.target.closest('.balloon') || e.target.closest('.wish-star') || e.target.closest('.gift-item') || e.target.closest('.flame')) return;
+                createFirework(e.clientX, e.clientY);
+            });
+            function createFirework(x, y) {
+                const colors = ['#FDE047','#ff9f9f','#c77dff','#fff','#fbb034','#7DA1ED','#ff6b6b'];
+                for (let i = 0; i < 14; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'firework-particle';
+                    const angle = (Math.PI * 2 / 14) * i;
+                    const dist = 40 + Math.random() * 50;
+                    p.style.left = x + 'px';
+                    p.style.top = y + 'px';
+                    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+                    p.style.setProperty('--tx', Math.cos(angle)*dist + 'px');
+                    p.style.setProperty('--ty', Math.sin(angle)*dist + 'px');
+                    document.body.appendChild(p);
+                    setTimeout(() => p.remove(), 850);
+                }
+            }
+
+            // ===== Плавающие эмодзи =====
+            function floatEmoji(x, y, emoji) {
+                const el = document.createElement('div');
+                el.className = 'float-emoji';
+                el.textContent = emoji;
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                document.body.appendChild(el);
+                setTimeout(() => el.remove(), 2100);
+            }
+
+            // ===== Колесо =====
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            const spinBtn = document.getElementById('spinWheelBtn');
+            const wheelResult = document.getElementById('wheel-result');
+            const segments = ['Счастье','Успех','Радость','Богатство','Праздник','Здоровье','Приключения','Любовь'];
+            const colors = ['#b983ff','#f9d56e','#ff9f9f','#e6b3ff','#ffdb7c','#c792ea','#ffb677','#d4a5ff'];
+            let angle = 0, spinning = false;
+            function drawWheel() {
+                const size = canvas.width, center = size/2, radius = size/2-12;
+                const arc = (Math.PI*2)/segments.length;
+                ctx.clearRect(0,0,size,size);
+                segments.forEach((txt,i)=>{
+                    const start = angle + i*arc;
+                    ctx.beginPath();
+                    ctx.fillStyle = colors[i%colors.length];
+                    ctx.moveTo(center,center);
+                    ctx.arc(center,center,radius,start,start+arc);
+                    ctx.fill();
+                    ctx.strokeStyle='rgba(255,255,250,0.35)'; ctx.lineWidth=2; ctx.stroke();
+                    ctx.save(); ctx.translate(center,center); ctx.rotate(start+arc/2);
+                    ctx.textAlign='right'; ctx.fillStyle='#1f1a2e'; ctx.font="600 26px 'Manrope'";
+                    ctx.fillText(txt, radius-30, 10);
+                    ctx.restore();
+                });
+                // центр
+                ctx.beginPath(); ctx.arc(center,center,22,0,Math.PI*2);
+                ctx.fillStyle='#fff8e7'; ctx.fill();
+                ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.stroke();
+            }
+            function spinWheelAction() {
+                if(spinning) return;
+                spinning=true; spinBtn.disabled=true; wheelResult.textContent='🎡 Крутится...';
+                let vel=0.45+Math.random()*0.4;
+                const friction=0.955;
+                function anim(){
+                    angle+=vel; vel*=friction; drawWheel();
+                    if(vel>0.0022) requestAnimationFrame(anim);
+                    else {
+                        spinning=false; spinBtn.disabled=false;
+                        const norm=(angle%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+                        const idx = segments.length-1-Math.floor(((norm+Math.PI/2)%(Math.PI*2))/((Math.PI*2)/segments.length));
+                        const result = segments[(idx+segments.length)%segments.length];
+                        wheelResult.textContent = `🎉 ${result} для матвея!`;
+                        launchConfetti(35);
+                    }
+                }
+                anim();
+            }
+            spinBtn.addEventListener('click', spinWheelAction);
+            drawWheel();
+
+            // ===== Свечи =====
+            const candlesRow = document.getElementById('candlesRow');
+            const candlesMessage = document.getElementById('candlesMessage');
+            const totalCandles = 5;
+            let blownCount = 0;
+            for (let i = 0; i < totalCandles; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'candle-wrapper';
+                const flame = document.createElement('div');
+                flame.className = 'flame';
+                flame.style.animationDelay = (i*0.15)+'s';
+                flame.addEventListener('click', function(e) {
+                    if (this.classList.contains('blown')) return;
+                    this.classList.add('blown');
+                    blownCount++;
+                    floatEmoji(e.clientX, e.clientY, '💨');
+                    if (blownCount === totalCandles) {
+                        candlesMessage.textContent = '🎉 С днём рождения, матвей! Желание загадано!';
+                        launchConfetti(80);
+                    } else {
+                        candlesMessage.textContent = `Осталось задуть: ${totalCandles - blownCount}`;
+                    }
+                });
+                const body = document.createElement('div');
+                body.className = 'candle-body';
+                wrapper.appendChild(flame);
+                wrapper.appendChild(body);
+                candlesRow.appendChild(wrapper);
+            }
+
+            // ===== Шарики =====
+            const balloonsArea = document.getElementById('balloonsArea');
+            const balloonsScore = document.getElementById('balloonsScore');
+            const balloonColors = ['#ff6b6b','#fbb034','#c77dff','#7DA1ED','#ff9f9f','#4ecdc4','#f9d56e','#b983ff'];
+            let poppedCount = 0;
+            function createBalloons() {
+                balloonsArea.innerHTML = '';
+                poppedCount = 0;
+                balloonsScore.textContent = 'Лопнуто: 0 / 8';
+                for (let i = 0; i < 8; i++) {
+                    const b = document.createElement('div');
+                    b.className = 'balloon';
+                    b.style.background = `radial-gradient(circle at 35% 30%, rgba(255,255,255,0.4), ${balloonColors[i]})`;
+                    b.style.animationDelay = (i * 0.3) + 's';
+                    b.addEventListener('click', function(e) {
+                        if (this.classList.contains('popped')) return;
+                        this.classList.add('popped');
+                        poppedCount++;
+                        balloonsScore.textContent = `Лопнуто: ${poppedCount} / 8`;
+                        floatEmoji(e.clientX, e.clientY, '💥');
+                        if (poppedCount === 8) {
+                            balloonsScore.textContent = '🎉 Все шарики лопнуты! Матвей — чемпион!';
+                            launchConfetti(50);
+                        }
+                        setTimeout(() => this.remove(), 350);
+                    });
+                    balloonsArea.appendChild(b);
+                }
+            }
+            createBalloons();
+            document.getElementById('resetBalloons').addEventListener('click', createBalloons);
+
+            // ===== Звёзды-желания =====
+            const starsArea = document.getElementById('starsArea');
+            const wishDisplay = document.getElementById('wishDisplay');
+            const wishes = [
+                'Пусть сбудется самая смелая мечта! 🌟',
+                'Желаю путешествий и открытий! 🗺️',
+                'Пусть рядом будут верные друзья! 👫',
+                'Здоровья и энергии на всё! 💪',
+                'Пусть каждый день будет праздником! 🎊',
+                'Больших побед и маленьких радостей! 🏆',
+                'Пусть удача всегда будет рядом! 🍀',
+                'Любви и тепла в сердце! ❤️',
+                'Пусть всё задуманное получится! ✨',
+                'Счастья без границ! 🌈'
+            ];
+            let wishIdx = 0;
+            for (let i = 0; i < 7; i++) {
+                const star = document.createElement('div');
+                star.className = 'wish-star';
+                star.textContent = '⭐';
+                star.style.left = (10 + Math.random() * 75) + '%';
+                star.style.top = (10 + Math.random() * 70) + '%';
+                star.style.animationDelay = (Math.random() * 2) + 's';
+                star.addEventListener('click', function(e) {
+                    if (this.classList.contains('used')) return;
+                    this.classList.add('used');
+                    wishDisplay.textContent = wishes[wishIdx % wishes.length];
+                    wishIdx++;
+                    floatEmoji(e.clientX, e.clientY, '✨');
+                    createFirework(e.clientX, e.clientY);
+                });
+                starsArea.appendChild(star);
+            }
+
+            // ===== Обнимашки =====
+            const hugBtn = document.getElementById('hugBtn');
+            const hugNumber = document.getElementById('hugNumber');
+            const hugEmoji = document.getElementById('hugEmoji');
+            let hugs = 0;
+            const hugEmojis = ['🤗','🫂','💛','🥰','😍','🤩','💫'];
+            hugBtn.addEventListener('click', function(e) {
+                hugs++;
+                hugNumber.textContent = hugs;
+                hugEmoji.textContent = hugEmojis[hugs % hugEmojis.length];
+                hugEmoji.classList.add('bump');
+                setTimeout(() => hugEmoji.classList.remove('bump'), 150);
+                floatEmoji(e.clientX - 20, e.clientY - 30, hugEmojis[hugs % hugEmojis.length]);
+                if (hugs % 10 === 0) {
+                    launchConfetti(30);
+                }
+            });
+
+            // ===== Комплименты =====
+            const complimentBtn = document.getElementById('complimentBtn');
+            const complimentText = document.getElementById('complimentText');
+            const compliments = [
+                'Матвей, ты невероятно талантливый! 🌟',
+                'Твоя улыбка делает мир лучше! 😊',
+                'Ты — настоящий друг, и это бесценно! 💎',
+                'С тобой всегда интересно и весело! 🎉',
+                'Ты вдохновляешь окружающих! ✨',
+                'У тебя отличное чувство юмора! 😄',
+                'Ты заслуживаешь всего самого лучшего! 🏆',
+                'Твоя доброта не знает границ! 💛',
+                'Ты делаешь обычные дни особенными! 🌈',
+                'Мир стал лучше, когда ты в нём появился! 🌍',
+                'Ты — легенда, матвей! 👑',
+                'Рядом с тобой хочется быть лучше! 🚀'
+            ];
+            let compIdx = 0;
+            complimentBtn.addEventListener('click', function(e) {
+                complimentText.style.opacity = '0';
+                setTimeout(() => {
+                    complimentText.textContent = compliments[compIdx % compliments.length];
+                    compIdx++;
+                    complimentText.style.opacity = '1';
+                }, 200);
+                floatEmoji(e.clientX, e.clientY - 20, '💬');
+            });
+            complimentText.style.transition = 'opacity 0.3s';
+
+            // ===== Поймай подарок =====
+            const catchArea = document.getElementById('catchArea');
+            const catchScore = document.getElementById('catchScore');
+            const startCatchBtn = document.getElementById('startCatch');
+            let catchCount = 0;
+            let catchInterval = null;
+            let catchRunning = false;
+            const giftEmojis = ['🎁','🎀','🧸','🎈','🍬','🎂','🌟','💝'];
+
+            function spawnGift() {
+                const gift = document.createElement('div');
+                gift.className = 'gift-item';
+                gift.textContent = giftEmojis[Math.floor(Math.random()*giftEmojis.length)];
+                gift.style.left = (5 + Math.random() * 80) + '%';
+                gift.style.animationDuration = (2 + Math.random() * 2) + 's';
+                gift.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    catchCount++;
+                    catchScore.textContent = `Поймано: ${catchCount} 🎉`;
+                    floatEmoji(e.clientX, e.clientY, '🎉');
+                    this.remove();
+                    if (catchCount % 5 === 0) launchConfetti(20);
+                });
+                catchArea.appendChild(gift);
+                setTimeout(() => { if(gift.parentNode) gift.remove(); }, 4500);
+            }
+
+            startCatchBtn.addEventListener('click', function() {
+                if (catchRunning) return;
+                catchRunning = true;
+                catchCount = 0;
+                catchScore.textContent = 'Поймано: 0';
+                this.textContent = 'Игра идёт...';
+                this.disabled = true;
+                catchInterval = setInterval(spawnGift, 700);
+                setTimeout(() => {
+                    clearInterval(catchInterval);
+                    catchRunning = false;
+                    startCatchBtn.textContent = 'Играть снова';
+                    startCatchBtn.disabled = false;
+                    catchScore.textContent = `Итого поймано: ${catchCount} 🏆`;
+                    if (catchCount > 0) launchConfetti(40);
+                }, 12000);
+            });
+
+            // ===== Открытка =====
+            const greetingCard = document.getElementById('greetingCard');
+            const greetingMessage = document.getElementById('greetingMessage');
+            const messages = [
+                'Ты — невероятный человек, матвей. 🌟',
+                'Пусть каждый день приносит радость и вдохновение. ☀️',
+                'Спасибо, что ты есть в нашей жизни. 💛',
+                'Желаю тебе больших свершений и побед! 🏆',
+                'Оставайся таким же замечательным и настоящим. ✨',
+                'Пусть мечты сбываются одна за другой! 🌈',
+                'С днём рождения, дорогой матвей! 🎂🎉',
+                'Этот мир лучше, потому что в нём есть ты. 🌍💫'
+            ];
+            let msgIndex = 0;
+            greetingCard.addEventListener('click', (e) => {
+                greetingMessage.style.opacity = '0';
+                setTimeout(() => {
+                    greetingMessage.textContent = messages[msgIndex % messages.length];
+                    msgIndex++;
+                    greetingMessage.style.opacity = '1';
+                }, 200);
+                floatEmoji(e.clientX, e.clientY - 20, '💌');
+            });
+            greetingMessage.style.transition = 'opacity 0.3s';
+
+        })();
+    </script>
+</body>
+</html>
