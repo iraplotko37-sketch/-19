@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>BTV Glass IPTV</title>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;500;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 
 <style>
 :root {
@@ -645,33 +645,30 @@ function parseM3U(data){
 }
 
 function renderChannels(list){
-    const fragment = document.createDocumentFragment();
-    channelList.innerHTML = '';
-
+    let html = '';
     list.forEach((channel,index)=>{
-        const div = document.createElement('div');
-        div.className = 'channel';
-
-        const imgTag = `<img src="${channel.logo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">`;
-
-        div.innerHTML = `
-            ${imgTag}
-            <div class="channel-info">
-                <div class="channel-name">${channel.number}. ${channel.name}</div>
-                <div class="channel-group">${channel.group}</div>
+        const logo = channel.logo || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        html += `
+            <div class="channel" data-index="${index}">
+                <img src="${logo}" loading="lazy" decoding="async" onload="this.classList.add('loaded')">
+                <div class="channel-info">
+                    <div class="channel-name">${channel.number}. ${channel.name}</div>
+                    <div class="channel-group">${channel.group}</div>
+                </div>
             </div>
         `;
-
-        div.onclick = ()=>{
-            document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
-            div.classList.add('active');
-            playChannel(channel);
-        };
-
-        fragment.appendChild(div);
     });
+    channelList.innerHTML = html;
 
-    channelList.appendChild(fragment);
+    // Навешиваем обработчики после вставки
+    document.querySelectorAll('.channel').forEach(el => {
+        el.onclick = () => {
+            document.querySelectorAll('.channel').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            const idx = parseInt(el.dataset.index);
+            playChannel(channels[idx]);
+        };
+    });
 }
 
 function playChannel(channel){
@@ -713,7 +710,7 @@ function playChannel(channel){
                 hls.levels.forEach((level, index) => {
                     const res = level.height ? (level.height + 'p') : (level.width ? (level.width + 'w') : ('Q' + index));
                     const br = level.bitrate ? (Math.round(level.bitrate / 1000) + 'k') : '';
-                    qualitySelect.innerHTML += `<option value="\( {index}"> \){res} ${br}</option>`;
+                    qualitySelect.innerHTML += `<option value="${index}">${res} ${br}</option>`;
                 });
             }
             qualitySelect.value = '-1';
