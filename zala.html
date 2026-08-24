@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -39,14 +38,14 @@ body{
     display:flex;
     gap:20px;
     width:100%;
-    max-width: 1400px;   /* ограничиваем максимальную ширину на больших экранах */
-    height:90vh;         /* чуть меньше высоты вьюпорта для аккуратного вида */
+    max-width: 1400px;
+    height:90vh;
     padding:20px;
     margin: auto;
 }
 
 .sidebar{
-    width:300px;         /* немного уменьшил ширину для компьютеров */
+    width:300px;
     background:var(--glass);
     backdrop-filter:blur(24px);
     border:1px solid var(--glass-border);
@@ -56,7 +55,7 @@ body{
     display:flex;
     flex-direction:column;
     box-shadow:0 20px 60px rgba(0,0,0,.2);
-    flex-shrink: 0;      /* не даём сайдбару сжиматься */
+    flex-shrink: 0;
 }
 
 .logo{
@@ -104,7 +103,8 @@ body{
 }
 
 .channel{
-    background:rgba(255,255,255,.08);    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.08);
     padding:12px;
     border-radius:18px;
     cursor:pointer;
@@ -152,7 +152,8 @@ body{
 
 .channel-group{
     font-size:11px;
-    opacity:.7;    margin-top:2px;
+    opacity:.7;
+    margin-top:2px;
 }
 
 .player-area{
@@ -161,13 +162,13 @@ body{
     flex-direction:column;
     gap:20px;
     justify-content: center;
-    min-width: 0;  /* чтобы flex-элемент мог сжиматься */
+    min-width: 0;
 }
 
 .player-box{
     flex:none;
     height: 50vh;
-    max-height: 70vh;   /* чтобы не выходило за экран на ноутбуках */
+    max-height: 70vh;
     background:var(--glass);
     border:1px solid var(--glass-border);
     backdrop-filter:blur(24px);
@@ -175,7 +176,7 @@ body{
     overflow:hidden;
     position:relative;
     box-shadow:0 20px 60px rgba(0,0,0,.2);
-    aspect-ratio: 16/9; /* сохраняем пропорции на всех экранах */
+    aspect-ratio: 16/9;
     width: 100%;
 }
 
@@ -204,7 +205,8 @@ video{
 
 .current-group{
     font-size:13px;
-    opacity:.8;    margin-top:4px;
+    opacity:.8;
+    margin-top:4px;
 }
 
 .bottom-panel{
@@ -253,7 +255,8 @@ video{
 }
 
 @media(max-width:900px){
-    body{        overflow:auto;
+    body{
+        overflow:auto;
     }
 
     .container{
@@ -297,14 +300,18 @@ video{
                 <div class="current-group" id="currentGroup">IPTV Player</div>
             </div>
 
-            <video id="video" controls autoplay playsinline muted></video>
+            <video id="video" controls autoplay playsinline muted preload="auto"></video>
         </div>
 
         <div class="bottom-panel">
             <input class="url-input" id="playlistUrl" placeholder="Ссылка на .m3u playlist">
             <button class="btn" onclick="loadPlaylistFromUrl()">Загрузить</button>
             <button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
-            <div class="status" id="status">Готово к просмотру</div>        </div>
+            <select class="url-input" id="qualitySelect" style="flex:0 0 auto; min-width:140px;">
+                <option value="-1">Авто</option>
+            </select>
+            <div class="status" id="status">Готово к просмотру</div>
+        </div>
 
     </div>
 </div>
@@ -316,6 +323,7 @@ const currentTitle = document.getElementById('currentTitle');
 const currentGroup = document.getElementById('currentGroup');
 const searchInput = document.getElementById('searchInput');
 const statusEl = document.getElementById('status');
+const qualitySelect = document.getElementById('qualitySelect');
 
 let channels = [];
 let hls;
@@ -353,7 +361,8 @@ http://mfe.svc.ott.zala.by/hls/CH_PLUSTV_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="БелРос" tvg-logo="https://static.wikia.nocookie.net/televizionnofutbolnaya-viki/images/9/96/%D0%91%D0%B5%D0%BB%D0%A0%D0%BE%D1%81.png/revision/latest?path-prefix=ru" group-title="Общественные",БелРос
 http://mfe.svc.ott.zala.by/hls/CH_TRO_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Ретро" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3b/%D0%A7%D0%B5%D1%82%D0%B2%D0%B5%D1%80%D1%82%D1%8B%D0%B9_%D0%BB%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%A0%D0%B5%D1%82%D1%80%D0%BE_%28%D1%81_10_%D0%BD%D0%BE%D1%8F%D0%B1%D1%80%D1%8F_2025_%D0%B3%D0%BE%D0%B4%D0%B0_%D0%B4%D0%BE_%D0%BD%D0%B0%D1%81%D1%82%D0%BE%D1%8F%D1%89%D0%B5%D0%B5_%D0%B2%D1%80%D0%B5%D0%BC%D1%8F%29_%28%D0%98%D1%81%D0%BF%D0%BE%D0%BB%D1%8C%D0%B7%D1%83%D0%B5%D1%82%D1%81%D1%8F_%D0%B2_%D1%8D%D1%84%D0%B8%D1%80%D0%B5%29.png/revision/latest?path-prefix=ru" group-title="Общественные",Ретро
-http://mfe.svc.ott.zala.by/hls/CH_RETRO_HLS/variant.m3u8#EXTINF:-1 tvg-name="Первый информационный Брест" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Брест
+http://mfe.svc.ott.zala.by/hls/CH_RETRO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Первый информационный Брест" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Брест
 http://mfe.svc.ott.zala.by/hls/CH_1INFORMBREST_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Первый информационный Витебск" tvg-logo="https://s3-minsk.becloud.by/media-assets/news-by/30464cf9-4b4c-4021-ab39-d2bd9f872507/35ec01aa-8bb9-4309-94c1-b13ba69d8285.png" group-title="Региональные",Первый информационный Витебск
 http://mfe.svc.ott.zala.by/hls/CH_1INFORMVIT_HLS/variant.m3u8
@@ -402,7 +411,8 @@ http://mfe.svc.ott.zala.by/hls/Y9GP8UFTZO_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Анекдот ТВ" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/d/da/%D0%90%D0%BD%D0%B5%D0%BA%D0%B4%D0%BE%D1%82_%D0%A2%D0%92_%28%D1%81_2016%2C_%D1%8D%D1%84%D0%B8%D1%80%D0%BD%D1%8B%D0%B9%29.png/revision/latest?path-prefix=ru" group-title="Развлекательные",Анекдот ТВ
 http://mfe.svc.ott.zala.by/hls/CH_ANEKDOT_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Киномикс" tvg-logo="https://static.wikitide.net/telehistwiki/3/3e/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BC%D0%B8%D0%BA%D1%81_15.08.2016.png" group-title="Кино и сериалы",Киномикс
-http://mfe.svc.ott.zala.by/hls/VVG76MWUGX_HLS/variant.m3u8#EXTINF:-1 tvg-name="Любимое кино" tvg-logo="https://static.wikitide.net/telehistwiki/9/93/%D0%9D%D0%B0%D1%88%D0%B5%D0%9A%D0%B8%D0%BD%D0%BE_30.10.2017.png" group-title="Кино и сериалы",Любимое кино
+http://mfe.svc.ott.zala.by/hls/VVG76MWUGX_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Любимое кино" tvg-logo="https://static.wikitide.net/telehistwiki/9/93/%D0%9D%D0%B0%D1%88%D0%B5%D0%9A%D0%B8%D0%BD%D0%BE_30.10.2017.png" group-title="Кино и сериалы",Любимое кино
 http://mfe.svc.ott.zala.by/hls/CH_NASHEKINO_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="viju TV1000" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Viju_TV1000_logo.svg/3840px-Viju_TV1000_logo.svg.png" group-title="Кино и сериалы",viju TV1000
 http://mfe.svc.ott.zala.by/hls/6WMZMUEWGN_HLS/variant.m3u8
@@ -451,7 +461,8 @@ http://mfe.svc.ott.zala.by/hls/CH_MIRSERIALA_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Киноман" tvg-logo="https://static.wikia.nocookie.net/logopedia/images/5/5d/Kinoman_RU_2023.png/revision/latest" group-title="Кино и сериалы",Киноман
 http://mfe.svc.ott.zala.by/hls/CH_KINOMAN_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Родное кино" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/4/4f/Rodnoekino_logo.png" group-title="Кино и сериалы",Родное кино
-http://mfe.svc.ott.zala.by/hls/CH_NTVPLUSNASHEKINO_HLS/variant.m3u8#EXTINF:-1 tvg-name="Киносемья" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/fc/%D0%9A%D0%B8%D0%BD%D0%BE%D1%81%D0%B5%D0%BC%D1%8C%D1%8F_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Киносемья
+http://mfe.svc.ott.zala.by/hls/CH_NTVPLUSNASHEKINO_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Киносемья" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/fc/%D0%9A%D0%B8%D0%BD%D0%BE%D1%81%D0%B5%D0%BC%D1%8C%D1%8F_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Киносемья
 http://mfe.svc.ott.zala.by/hls/FEDXG8XPOR_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Кинопремьера" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/7/7a/%D0%9A%D0%B8%D0%BD%D0%BE%D0%BF%D1%80%D0%B5%D0%BC%D1%8C%D0%B5%D1%80%D0%B0_%282016%29.png/revision/latest?path-prefix=ru" group-title="Кино и сериалы",Кинопремьера
 http://mfe.svc.ott.zala.by/hls/CH_KINOPREMERA_HLS/variant.m3u8
@@ -500,7 +511,8 @@ http://mfe.svc.ott.zala.by/hls/CH_SOVSEKRET_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Zooпарк" tvg-logo="https://static.wikitide.net/telehistwiki/a/a1/Zoo%D0%BF%D0%B0%D1%80%D0%BA.png" group-title="Познавательные",Zooпарк
 http://mfe.svc.ott.zala.by/hls/CH_ZOOPARK_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Зал суда" tvg-logo="broadcastChannel1752218016388.jpg" group-title="Познавательные",Зал суда
-http://mfe.svc.ott.zala.by/hls/CH_ZALSUDA_HLS/variant.m3u8#EXTINF:-1 tvg-name="Nano HD" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3a/Nano_HD.png/revision/latest?path-prefix=ru" group-title="Познавательные",Nano HD
+http://mfe.svc.ott.zala.by/hls/CH_ZALSUDA_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Nano HD" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/3/3a/Nano_HD.png/revision/latest?path-prefix=ru" group-title="Познавательные",Nano HD
 http://mfe.svc.ott.zala.by/hls/CH_NANOHD_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Живая природа" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/f/fb/%D0%96%D0%B8%D0%B2%D0%B0%D1%8F_%D0%BF%D1%80%D0%B8%D1%80%D0%BE%D0%B4%D0%B0.png/revision/latest?path-prefix=ru" group-title="Познавательные",Живая природа
 http://mfe.svc.ott.zala.by/hls/CH_ZHIVPRIRODA_HLS/variant.m3u8
@@ -549,7 +561,8 @@ http://mfe.svc.ott.zala.by/hls/JRKVSUPCP8_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="KHL Prime" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/6c/%D0%9A%D0%A5%D0%9B_Prime_%282021%29.png/revision/latest?path-prefix=ru" group-title="Спорт",KHL Prime
 http://mfe.svc.ott.zala.by/hls/CH_KHLPRIME_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="MMA-TV.COM" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/62/M-1_Global_%282021%2C_%D1%81_%D0%BD%D0%B0%D0%B4%D0%BF%D0%B8%D1%81%D1%8C%D1%8E_MMA-TV%29.png/revision/latest?path-prefix=ru" group-title="Спорт",MMA-TV.COM
-http://mfe.svc.ott.zala.by/hls/CH_M1_HLS/variant.m3u8#EXTINF:-1 tvg-name="Russian Extreme" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/49/Russian_Extreme_%282019%2C_%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9_%D1%84%D0%BE%D0%BD%2C_SD%2BHD%29.png/revision/latest?path-prefix=ru" group-title="Спорт",Russian Extreme
+http://mfe.svc.ott.zala.by/hls/CH_M1_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Russian Extreme" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/4/49/Russian_Extreme_%282019%2C_%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9_%D1%84%D0%BE%D0%BD%2C_SD%2BHD%29.png/revision/latest?path-prefix=ru" group-title="Спорт",Russian Extreme
 http://mfe.svc.ott.zala.by/hls/CH_EXTREME_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Футбол" tvg-logo="https://static.wikitide.net/telehistwiki/8/8e/%D0%A4%D1%83%D1%82%D0%B1%D0%BE%D0%BB_2020.png" group-title="Спорт",Футбол
 http://mfe.svc.ott.zala.by/hls/CH_FOOTBALL_HLS/variant.m3u8
@@ -598,7 +611,8 @@ http://mfe.svc.ott.zala.by/hls/CH_SOYUZ_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="МузСоюз" tvg-logo="https://static.wikitide.net/telepediawiki/c/c7/%D0%9C%D1%83%D0%B7%D0%A1%D0%BE%D1%8E%D0%B7_%28%D0%BB%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF%2C_%D1%81_2015%29.png" group-title="Религиозные",МузСоюз
 http://mfe.svc.ott.zala.by/hls/CH_MUZSOYUZ_HLS/variant.m3u8
 #EXTINF:-1 tvg-name="Red Lips" tvg-logo="broadcastChannel1692357284918.jpg" group-title="18+",Red Lips
-http://mfe.svc.ott.zala.by/hls/CH_REDLIPS_HLS/variant.m3u8#EXTINF:-1 tvg-name="Русская ночь" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/67/20221013223011.png/revision/latest?path-prefix=ru" group-title="18+",Русская ночь
+http://mfe.svc.ott.zala.by/hls/CH_REDLIPS_HLS/variant.m3u8
+#EXTINF:-1 tvg-name="Русская ночь" tvg-logo="https://static.wikia.nocookie.net/tvpedia/images/6/67/20221013223011.png/revision/latest?path-prefix=ru" group-title="18+",Русская ночь
 http://mfe.svc.ott.zala.by/hls/CH_RUSSKAYANOCH_HLS/variant.m3u8`;
 
 function parseM3U(data){
@@ -645,7 +659,8 @@ function renderChannels(list){
             <div class="channel-info">
                 <div class="channel-name">${channel.number}. ${channel.name}</div>
                 <div class="channel-group">${channel.group}</div>
-            </div>        `;
+            </div>
+        `;
 
         div.onclick = ()=>{
             document.querySelectorAll('.channel').forEach(c=>c.classList.remove('active'));
@@ -655,7 +670,7 @@ function renderChannels(list){
 
         fragment.appendChild(div);
     });
-   
+
     channelList.appendChild(fragment);
 }
 
@@ -669,23 +684,39 @@ function playChannel(channel){
         hls.destroy();
     }
 
+    qualitySelect.innerHTML = '<option value="-1">Авто</option>';
+    qualitySelect.value = '-1';
+
     if(Hls.isSupported()){
-        // Оптимизированные настройки для быстрого старта
         hls = new Hls({
             enableWorker: true,
-            lowLatencyMode: false,     // выключаем, т.к. это увеличивает задержку на старте
-            liveSyncDurationCount: 2,  // минимальный буфер для live
-            maxBufferLength: 10,       // маленький буфер – быстрее старт
-            maxMaxBufferLength: 20,
-            startFragPrefetch: true,   // предзагрузка первого фрагмента
-            testBandwidth: false,      // не тратим время на тест скорости
+            lowLatencyMode: false,
+            liveSyncDurationCount: 1,
+            liveMaxLatencyDurationCount: 3,
+            maxBufferLength: 6,
+            maxMaxBufferLength: 12,
+            maxBufferSize: 8 * 1000 * 1000,
+            startFragPrefetch: true,
+            testBandwidth: false,
             progressive: true,
-            backBufferLength: 30
+            backBufferLength: 10,
+            startLevel: 0,
+            abrEwmaDefaultEstimate: 500000,
+            capLevelToPlayerSize: true
         });
         hls.loadSource(channel.url);
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED,function(){
+            qualitySelect.innerHTML = '<option value="-1">Авто</option>';
+            if (hls.levels && hls.levels.length) {
+                hls.levels.forEach((level, index) => {
+                    const res = level.height ? (level.height + 'p') : (level.width ? (level.width + 'w') : ('Q' + index));
+                    const br = level.bitrate ? (Math.round(level.bitrate / 1000) + 'k') : '';
+                    qualitySelect.innerHTML += `<option value="\( {index}"> \){res} ${br}</option>`;
+                });
+            }
+            qualitySelect.value = '-1';
             video.play().catch(e => console.log('autoplay prevented'));
             statusEl.textContent = 'В эфире';
         });
@@ -701,15 +732,25 @@ function playChannel(channel){
                     break;
                 default:
                     hls.destroy();
-                    break;                }
+                    break;
+                }
             }
         });
 
     } else if(video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = channel.url;
         video.play();
+        statusEl.textContent = 'В эфире';
     }
 }
+
+qualitySelect.addEventListener('change', () => {
+    if (hls) {
+        const val = parseInt(qualitySelect.value);
+        hls.currentLevel = val;
+        statusEl.textContent = val === -1 ? 'Авто качество' : 'Качество изменено';
+    }
+});
 
 async function loadPlaylistFromUrl(){
     const url = document.getElementById('playlistUrl').value.trim();
