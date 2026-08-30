@@ -72,7 +72,6 @@
             align-items: stretch;
         }
 
-        /* КАРТОЧКА — возвращена красота + оптимизация */
         .book-card {
             background: var(--glass);
             backdrop-filter: blur(14px);
@@ -90,10 +89,8 @@
             height: 100%;
             min-height: 360px;
             max-height: 400px;
-            /* GPU-изоляция для плавного скролла */
             transform: translateZ(0);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            /* Виртуализация вне экрана */
             content-visibility: auto;
             contain: layout paint style;
             contain-intrinsic-size: auto 380px;
@@ -233,9 +230,9 @@
             position: fixed;
             bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             color: #fff;
-            padding: 12px 24px;
+            padding: 14px 26px;
             border-radius: 30px;
             font-size: 14px;
             font-weight: 600;
@@ -245,11 +242,16 @@
             z-index: 100;
             max-width: 90%;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            line-height: 1.4;
         }
         .status-toast.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
+        }
+        .status-toast.small {
+            font-size: 12px;
+            padding: 10px 20px;
         }
 
         @media (max-width: 640px) {
@@ -332,22 +334,30 @@
             catch (_) {}
         };
 
-        // Toast-уведомления
+        // Определяем iOS для fallback-логики
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                             window.navigator.standalone === true;
+
+        // Toast
         const toast = document.getElementById('toast');
         let toastTimer;
-        function showToast(message, duration = 2500) {
+        function showToast(message, duration = 2800, small = false) {
             clearTimeout(toastTimer);
             toast.textContent = message;
+            toast.classList.toggle('small', small);
             toast.classList.add('show');
             toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
         }
 
-        // Кэш blob-файлов — повторный клик не качает заново
+        // Кэш
         const blobCache = new Map();
 
         /**
-         * СКАЧИВАНИЕ (не открытие в новой вкладке).
-         * fetch → Blob → скрытый <a download> → клик → файл сохраняется
+         * КЛЮЧЕВАЯ ФУНКЦИЯ — реально скачивает, а не открывает.
+         * На iOS Safari / в PWA использует специальный трюк с octet-stream.
          */
         async function downloadBook(book, btn) {
             if (!downloaded.has(book.id)) {
@@ -370,24 +380,47 @@
                     blobCache.set(book.id, blob);
                 }
 
-                const blobUrl = URL.createObjectURL(blob);
+                // 🔥 ГЛАВНОЕ: пересоздаём Blob с типом octet-stream.
+                // Это принуждает любой браузер (в т.ч. iOS Safari) к скачиванию,
+                // потому что MIME-тип "неопределённый бинарный" — открыть нельзя.
+                const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
+                const blobUrl = URL.createObjectURL(downloadBlob);
+
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = `${book.name}.pdf`;
+                a.rel = 'noopener';
                 a.style.display = 'none';
                 document.body.appendChild(a);
+
+                // Принудительный клик с небольшой задержкой (нужно для iOS)
+                await new Promise(r => setTimeout(r, 50));
                 a.click();
+
                 setTimeout(() => {
-                    document.body.removeChild(a);
+                    if (a.parentNode) a.parentNode.removeChild(a);
                     URL.revokeObjectURL(blobUrl);
-                }, 1000);
+                }, 2000);
 
                 showToast(`✓ «${book.name}» скачан`);
+
+                // Если iOS + PWA — иногда скачивание всё равно может открыться как просмотр.
+                // Показываем подсказку на всякий случай.
+                if (isIOS && isStandalone) {
+                    setTimeout(() => {
+                        showToast('Если открылось — долгое нажатие → «Загрузить файл»', 4500, true);
+                    }, 2900);
+                }
+
             } catch (err) {
-                console.warn('Fetch failed, fallback:', err);
-                // Фолбэк: если CORS блокирует fetch — открываем в новой вкладке
+                console.warn('Fetch failed:', err);
+                // Фолбэк — открываем в новой вкладке + инструкция
                 window.open(book.url, '_blank');
-                showToast('Открыто в новой вкладке');
+                if (isIOS || isSafari) {
+                    showToast('Долгое нажатие на документ → «Загрузить файл»', 4500, true);
+                } else {
+                    showToast('Открыто в новой вкладке');
+                }
             } finally {
                 if (btn) {
                     btn.removeAttribute('disabled');
@@ -404,7 +437,6 @@
                 const card = document.createElement('div');
                 card.className = 'book-card';
 
-                // Обложка
                 const cover = document.createElement('div');
                 cover.className = 'cover ' + book.coverClass;
                 cover.innerHTML =
@@ -413,7 +445,6 @@
                     '<div class="badge-pdf">PDF</div>';
                 cover.querySelector('.title-on-cover').textContent = book.name;
 
-                // Кнопка скачать
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-download';
