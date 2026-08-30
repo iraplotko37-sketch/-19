@@ -15,16 +15,15 @@
         :root {
             --primary: #7DA1ED;
             --accent: #FDE047;
-            --glass: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.22);
-            --shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.25);
-            --radius: 24px;
+            --glass: rgba(255, 255, 255, 0.10);
+            --glass-border: rgba(255, 255, 255, 0.20);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --shadow-hover: 0 30px 60px -16px rgba(0, 0, 0, 0.35);
+            --radius: 28px;
             --radius-sm: 16px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html { scroll-behavior: smooth; }
 
         body {
             background: var(--primary);
@@ -42,51 +41,70 @@
 
         .header {
             text-align: center;
-            margin-bottom: 32px;
-            padding: 12px 0;
+            margin-bottom: 40px;
+            padding: 20px 0 10px;
         }
         .header h1 {
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 900;
             letter-spacing: -0.02em;
-            background: var(--glass);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 32px;
+            gap: 14px;
+            padding: 12px 36px;
             border-radius: 60px;
             border: 1px solid var(--glass-border);
             box-shadow: var(--shadow);
         }
         .header h1 svg {
-            width: 32px; height: 32px; fill: #fff;
+            width: 36px; height: 36px; fill: #fff;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
             flex-shrink: 0;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
+            gap: 24px;
+            align-items: stretch;
         }
 
+        /* КАРТОЧКА — возвращена красота + оптимизация */
         .book-card {
             background: var(--glass);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius);
-            padding: 16px 14px 18px;
+            padding: 18px 16px 20px;
             box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center;
             position: relative;
+            overflow: hidden;
             height: 100%;
-            min-height: 340px;
-            max-height: 380px;
-            /* КЛЮЧЕВАЯ ОПТИМИЗАЦИЯ */
+            min-height: 360px;
+            max-height: 400px;
+            /* GPU-изоляция для плавного скролла */
+            transform: translateZ(0);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            /* Виртуализация вне экрана */
             content-visibility: auto;
             contain: layout paint style;
-            contain-intrinsic-size: auto 360px;
-            transform: translateZ(0);
+            contain-intrinsic-size: auto 380px;
+        }
+        .book-card:hover {
+            transform: translateY(-4px) translateZ(0);
+            box-shadow: var(--shadow-hover);
+        }
+        .book-card:active {
+            transform: scale(0.97) translateZ(0);
+            transition-duration: 0.05s;
         }
 
         .cover {
@@ -98,10 +116,12 @@
             align-items: center;
             justify-content: center;
             padding: 12px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+                        0 6px 18px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.05);
             cursor: pointer;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
@@ -109,35 +129,36 @@
         }
         .cover:active { transform: scale(0.97); }
 
-        .cover-algebra   { background: linear-gradient(145deg, #2b3b8f, #1a265a); }
-        .cover-bel-lit   { background: linear-gradient(145deg, #1f7a5c, #0f4a37); }
-        .cover-bel-yaz   { background: linear-gradient(145deg, #1a8a7a, #0d5a4e); }
-        .cover-eng       { background: linear-gradient(145deg, #b13e3e, #7a2626); }
-        .cover-world-hist{ background: linear-gradient(145deg, #a67c3e, #6b4f24); }
-        .cover-bio       { background: linear-gradient(145deg, #2d7d3a, #1a4f24); }
-        .cover-geo       { background: linear-gradient(145deg, #2b7a9e, #164a64); }
-        .cover-info      { background: linear-gradient(145deg, #5b3d8f, #37245a); }
-        .cover-art       { background: linear-gradient(145deg, #b14a7a, #7a2a50); }
-        .cover-hist-bel  { background: linear-gradient(145deg, #8f2b2b, #5a1a1a); }
-        .cover-rus-lit   { background: linear-gradient(145deg, #1f3a7a, #12204a); }
-        .cover-rus-lit2  { background: linear-gradient(145deg, #2a4a6a, #162a3e); }
-        .cover-phys      { background: linear-gradient(145deg, #3a3a8a, #22225a); }
-        .cover-chem      { background: linear-gradient(145deg, #b17a2a, #6b4a16); }
-        .cover-geom      { background: linear-gradient(145deg, #1a7a7a, #0d4a4a); }
-        .cover-rus-yaz   { background: linear-gradient(145deg, #8f2b4a, #5a1a2e); }
+        .cover-algebra    { background: linear-gradient(145deg, #2b3b8f, #1a265a); }
+        .cover-bel-lit    { background: linear-gradient(145deg, #1f7a5c, #0f4a37); }
+        .cover-bel-yaz    { background: linear-gradient(145deg, #1a8a7a, #0d5a4e); }
+        .cover-eng        { background: linear-gradient(145deg, #b13e3e, #7a2626); }
+        .cover-world-hist { background: linear-gradient(145deg, #a67c3e, #6b4f24); }
+        .cover-bio        { background: linear-gradient(145deg, #2d7d3a, #1a4f24); }
+        .cover-geo        { background: linear-gradient(145deg, #2b7a9e, #164a64); }
+        .cover-info       { background: linear-gradient(145deg, #5b3d8f, #37245a); }
+        .cover-art        { background: linear-gradient(145deg, #b14a7a, #7a2a50); }
+        .cover-hist-bel   { background: linear-gradient(145deg, #8f2b2b, #5a1a1a); }
+        .cover-rus-lit    { background: linear-gradient(145deg, #1f3a7a, #12204a); }
+        .cover-rus-lit2   { background: linear-gradient(145deg, #2a4a6a, #162a3e); }
+        .cover-phys       { background: linear-gradient(145deg, #3a3a8a, #22225a); }
+        .cover-chem       { background: linear-gradient(145deg, #b17a2a, #6b4a16); }
+        .cover-geom       { background: linear-gradient(145deg, #1a7a7a, #0d4a4a); }
+        .cover-rus-yaz    { background: linear-gradient(145deg, #8f2b4a, #5a1a2e); }
 
         .cover svg {
-            width: 60px; height: 60px;
+            width: 64px; height: 64px;
             fill: rgba(255, 255, 255, 0.95);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
             margin-bottom: 6px;
             flex-shrink: 0;
         }
 
         .cover .title-on-cover {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 800;
             line-height: 1.2;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
             letter-spacing: 0.02em;
             word-break: break-word;
             max-width: 100%;
@@ -151,15 +172,18 @@
 
         .cover .badge-pdf {
             position: absolute;
-            bottom: 8px; right: 8px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 3px 10px;
-            border-radius: 20px;
+            bottom: 10px; right: 10px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 30px;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn-download {
@@ -168,7 +192,7 @@
             color: #3a3a1a;
             font-weight: 800;
             font-size: 14px;
-            padding: 11px 8px;
+            padding: 12px 8px;
             border-radius: 40px;
             border: none;
             cursor: pointer;
@@ -178,17 +202,32 @@
             gap: 8px;
             letter-spacing: 0.03em;
             text-transform: uppercase;
-            box-shadow: 0 4px 12px rgba(253, 224, 71, 0.3);
+            box-shadow: 0 4px 16px rgba(253, 224, 71, 0.25);
             text-decoration: none;
             margin-top: auto;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
-            transition: transform 0.1s ease, opacity 0.2s ease;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
             user-select: none;
         }
-        .btn-download:active { transform: scale(0.95); }
-        .btn-download[disabled] { opacity: 0.6; cursor: wait; pointer-events: none; }
-        .btn-download svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+        .btn-download:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 28px rgba(253, 224, 71, 0.35);
+        }
+        .btn-download:active {
+            transform: scale(0.94);
+            transition-duration: 0.05s;
+        }
+        .btn-download[disabled] {
+            opacity: 0.65;
+            cursor: wait;
+            pointer-events: none;
+        }
+        .btn-download svg {
+            width: 18px; height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
 
         .status-toast {
             position: fixed;
@@ -206,6 +245,7 @@
             z-index: 100;
             max-width: 90%;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
         .status-toast.show {
             transform: translateX(-50%) translateY(0);
@@ -213,21 +253,21 @@
         }
 
         @media (max-width: 640px) {
-            .header h1 { font-size: 24px; padding: 8px 22px; gap: 10px; }
-            .header h1 svg { width: 26px; height: 26px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
-            .book-card { padding: 12px 10px 14px; border-radius: 20px; min-height: 290px; max-height: 330px; }
-            .cover svg { width: 46px; height: 46px; }
-            .cover .title-on-cover { font-size: 14px; }
-            .btn-download { font-size: 12px; padding: 9px 6px; }
+            .header h1 { font-size: 26px; padding: 10px 24px; gap: 10px; }
+            .header h1 svg { width: 28px; height: 28px; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+            .book-card { padding: 14px 12px 16px; border-radius: 22px; min-height: 300px; max-height: 340px; }
+            .cover svg { width: 48px; height: 48px; }
+            .cover .title-on-cover { font-size: 15px; }
+            .btn-download { font-size: 12px; padding: 10px 6px; }
         }
         @media (max-width: 400px) {
-            .grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .book-card { min-height: 250px; max-height: 290px; padding: 10px 8px 12px; }
+            .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .book-card { min-height: 260px; max-height: 300px; padding: 10px 8px 14px; }
             .cover svg { width: 36px; height: 36px; }
             .cover .title-on-cover { font-size: 13px; }
             .btn-download { font-size: 10px; padding: 8px 4px; }
-            .btn-download svg { width: 13px; height: 13px; }
+            .btn-download svg { width: 14px; height: 14px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -258,40 +298,38 @@
         'use strict';
 
         const BOOKS = [
-            { id: 'algebra', name: 'Алгебра', coverClass: 'cover-algebra', url: 'https://files.catbox.moe/rel6qh.pdf' },
-            { id: 'bel-lit', name: 'Белорусская литература', coverClass: 'cover-bel-lit', url: 'https://files.catbox.moe/6ejsw0.pdf' },
-            { id: 'bel-yaz', name: 'Белорусский язык', coverClass: 'cover-bel-yaz', url: 'https://files.catbox.moe/qfmn4n.pdf' },
-            { id: 'eng', name: 'Английский язык', coverClass: 'cover-eng', url: 'https://files.catbox.moe/1wupe4.pdf' },
-            { id: 'world-hist', name: 'Всемирная история', coverClass: 'cover-world-hist', url: 'https://files.catbox.moe/48hf34.pdf' },
-            { id: 'bio', name: 'Биология', coverClass: 'cover-bio', url: 'https://files.catbox.moe/a2webl.pdf' },
-            { id: 'geo', name: 'География', coverClass: 'cover-geo', url: 'https://files.catbox.moe/oun1pw.pdf' },
-            { id: 'info', name: 'Информатика', coverClass: 'cover-info', url: 'https://files.catbox.moe/afeiv5.pdf' },
-            { id: 'art', name: 'Искусство', coverClass: 'cover-art', url: 'https://files.catbox.moe/a0hvbm.pdf' },
-            { id: 'hist-bel', name: 'История Беларуси', coverClass: 'cover-hist-bel', url: 'https://files.catbox.moe/b293yj.pdf' },
-            { id: 'rus-lit', name: 'Русская литература', coverClass: 'cover-rus-lit', url: 'https://files.catbox.moe/hglgkq.pdf' },
-            { id: 'rus-lit2', name: 'Русская литература 2', coverClass: 'cover-rus-lit2', url: 'https://files.catbox.moe/n3ladm.pdf' },
-            { id: 'phys', name: 'Физика', coverClass: 'cover-phys', url: 'https://files.catbox.moe/h7esv9.pdf' },
-            { id: 'chem', name: 'Химия', coverClass: 'cover-chem', url: 'https://files.catbox.moe/a91pjk.pdf' },
-            { id: 'geom', name: 'Геометрия', coverClass: 'cover-geom', url: 'https://files.catbox.moe/xxym0c.pdf' },
-            { id: 'rus-yaz', name: 'Русский язык', coverClass: 'cover-rus-yaz', url: 'https://files.catbox.moe/0kpusv.pdf' }
+            { id: 'algebra',    name: 'Алгебра',                coverClass: 'cover-algebra',    url: 'https://files.catbox.moe/rel6qh.pdf' },
+            { id: 'bel-lit',    name: 'Белорусская литература', coverClass: 'cover-bel-lit',    url: 'https://files.catbox.moe/6ejsw0.pdf' },
+            { id: 'bel-yaz',    name: 'Белорусский язык',       coverClass: 'cover-bel-yaz',    url: 'https://files.catbox.moe/qfmn4n.pdf' },
+            { id: 'eng',        name: 'Английский язык',        coverClass: 'cover-eng',        url: 'https://files.catbox.moe/1wupe4.pdf' },
+            { id: 'world-hist', name: 'Всемирная история',      coverClass: 'cover-world-hist', url: 'https://files.catbox.moe/48hf34.pdf' },
+            { id: 'bio',        name: 'Биология',               coverClass: 'cover-bio',        url: 'https://files.catbox.moe/a2webl.pdf' },
+            { id: 'geo',        name: 'География',              coverClass: 'cover-geo',        url: 'https://files.catbox.moe/oun1pw.pdf' },
+            { id: 'info',       name: 'Информатика',            coverClass: 'cover-info',       url: 'https://files.catbox.moe/afeiv5.pdf' },
+            { id: 'art',        name: 'Искусство',              coverClass: 'cover-art',        url: 'https://files.catbox.moe/a0hvbm.pdf' },
+            { id: 'hist-bel',   name: 'История Беларуси',       coverClass: 'cover-hist-bel',   url: 'https://files.catbox.moe/b293yj.pdf' },
+            { id: 'rus-lit',    name: 'Русская литература',     coverClass: 'cover-rus-lit',    url: 'https://files.catbox.moe/hglgkq.pdf' },
+            { id: 'rus-lit2',   name: 'Русская литература 2',   coverClass: 'cover-rus-lit2',   url: 'https://files.catbox.moe/n3ladm.pdf' },
+            { id: 'phys',       name: 'Физика',                 coverClass: 'cover-phys',       url: 'https://files.catbox.moe/h7esv9.pdf' },
+            { id: 'chem',       name: 'Химия',                  coverClass: 'cover-chem',       url: 'https://files.catbox.moe/a91pjk.pdf' },
+            { id: 'geom',       name: 'Геометрия',              coverClass: 'cover-geom',       url: 'https://files.catbox.moe/xxym0c.pdf' },
+            { id: 'rus-yaz',    name: 'Русский язык',           coverClass: 'cover-rus-yaz',    url: 'https://files.catbox.moe/0kpusv.pdf' }
         ];
 
-        const BOOK_ICON_SVG = '<svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>';
+        const BOOK_ICON_SVG     = '<svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>';
         const DOWNLOAD_ICON_SVG = '<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
 
         const STORAGE_KEY = 'textbook_downloads';
-        const downloaded = new Set();
+        const downloaded  = new Set();
 
-        // Загрузка сохранённых скачиваний
         try {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
             if (Array.isArray(saved)) saved.forEach(id => downloaded.add(id));
         } catch (_) {}
 
         const saveDownloads = () => {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify([...downloaded]));
-            } catch (_) {}
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify([...downloaded])); }
+            catch (_) {}
         };
 
         // Toast-уведомления
@@ -304,16 +342,12 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
         }
 
-        // Кэш blob-файлов для повторных скачиваний без повторного запроса
+        // Кэш blob-файлов — повторный клик не качает заново
         const blobCache = new Map();
 
         /**
-         * СКАЧИВАНИЕ ФАЙЛА (а не открытие в новой вкладке).
-         * 1. Fetch по URL
-         * 2. Преобразование в Blob
-         * 3. Создание objectURL
-         * 4. Программный клик по невидимому <a download>
-         * 5. Очистка URL через 60с
+         * СКАЧИВАНИЕ (не открытие в новой вкладке).
+         * fetch → Blob → скрытый <a download> → клик → файл сохраняется
          */
         async function downloadBook(book, btn) {
             if (!downloaded.has(book.id)) {
@@ -321,6 +355,7 @@
                 saveDownloads();
             }
 
+            const originalHTML = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.setAttribute('disabled', '');
                 btn.innerHTML = DOWNLOAD_ICON_SVG + ' Загрузка...';
@@ -347,16 +382,16 @@
                     URL.revokeObjectURL(blobUrl);
                 }, 1000);
 
-                showToast(`✓ "${book.name}" скачан`);
+                showToast(`✓ «${book.name}» скачан`);
             } catch (err) {
                 console.warn('Fetch failed, fallback:', err);
-                // Фолбэк: всё-таки открыть в новой вкладке, если fetch заблокирован CORS
+                // Фолбэк: если CORS блокирует fetch — открываем в новой вкладке
                 window.open(book.url, '_blank');
                 showToast('Открыто в новой вкладке');
             } finally {
                 if (btn) {
                     btn.removeAttribute('disabled');
-                    btn.innerHTML = DOWNLOAD_ICON_SVG + ' Скачать';
+                    btn.innerHTML = originalHTML;
                 }
             }
         }
@@ -377,14 +412,15 @@
                     '<div class="title-on-cover"></div>' +
                     '<div class="badge-pdf">PDF</div>';
                 cover.querySelector('.title-on-cover').textContent = book.name;
-                cover.addEventListener('click', () => downloadBook(book, card.querySelector('.btn-download')));
 
-                // Кнопка
+                // Кнопка скачать
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-download';
                 btn.innerHTML = DOWNLOAD_ICON_SVG + ' Скачать';
-                btn.addEventListener('click', () => downloadBook(book, btn));
+
+                cover.addEventListener('click', () => downloadBook(book, btn));
+                btn.addEventListener('click',  () => downloadBook(book, btn));
 
                 card.appendChild(cover);
                 card.appendChild(btn);
