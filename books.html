@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Учебники</title>
+
+    <meta name="theme-color" content="#7DA1ED" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Учебники","short_name":"Учебники","start_url":".","display":"standalone","background_color":"#7DA1ED","theme_color":"#7DA1ED","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3652/3652191.png","sizes":"512x512","type":"image/png"}]}' />
+
+    <style>
+        :root {
+            --primary: #7DA1ED;
+            --accent: #FDE047;
+            --glass: rgba(255, 255, 255, 0.10);
+            --glass-border: rgba(255, 255, 255, 0.20);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            --radius: 28px;
+            --radius-sm: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--primary);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            padding: 24px 20px 60px;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0 10px;
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 36px;
+            border-radius: 60px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+        .header h1 svg {
+            width: 36px;
+            height: 36px;
+            fill: #fff;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
+            flex-shrink: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .book-card {
+            background: var(--glass);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 18px 16px 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            min-height: 360px;
+            max-height: 400px;
+        }
+        .book-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 30px 60px -16px rgba(0, 0, 0, 0.35);
+        }
+        .book-card:active {
+            transform: scale(0.97);
+        }
+
+        .cover {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+                0 6px 18px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .cover-algebra { background: linear-gradient(145deg, #2b3b8f, #1a265a); }
+        .cover-bel-lit { background: linear-gradient(145deg, #1f7a5c, #0f4a37); }
+        .cover-bel-yaz { background: linear-gradient(145deg, #1a8a7a, #0d5a4e); }
+        .cover-eng { background: linear-gradient(145deg, #b13e3e, #7a2626); }
+        .cover-world-hist { background: linear-gradient(145deg, #a67c3e, #6b4f24); }
+        .cover-bio { background: linear-gradient(145deg, #2d7d3a, #1a4f24); }
+        .cover-geo { background: linear-gradient(145deg, #2b7a9e, #164a64); }
+        .cover-info { background: linear-gradient(145deg, #5b3d8f, #37245a); }
+        .cover-art { background: linear-gradient(145deg, #b14a7a, #7a2a50); }
+        .cover-hist-bel { background: linear-gradient(145deg, #8f2b2b, #5a1a1a); }
+        .cover-rus-lit { background: linear-gradient(145deg, #1f3a7a, #12204a); }
+        .cover-rus-lit2 { background: linear-gradient(145deg, #2a4a6a, #162a3e); }
+        .cover-phys { background: linear-gradient(145deg, #3a3a8a, #22225a); }
+        .cover-chem { background: linear-gradient(145deg, #b17a2a, #6b4a16); }
+        .cover-geom { background: linear-gradient(145deg, #1a7a7a, #0d4a4a); }
+        .cover-rus-yaz { background: linear-gradient(145deg, #8f2b4a, #5a1a2e); }
+
+        .cover svg {
+            width: 64px;
+            height: 64px;
+            fill: rgba(255, 255, 255, 0.95);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            margin-bottom: 6px;
+            flex-shrink: 0;
+        }
+
+        .cover .title-on-cover {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.2;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.02em;
+            word-break: break-word;
+            max-width: 100%;
+            color: #fff;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .cover .badge-pdf {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-download {
+            width: 100%;
+            background: var(--accent);
+            color: #3a3a1a;
+            font-weight: 800;
+            font-size: 14px;
+            padding: 12px 8px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 16px rgba(253, 224, 71, 0.25);
+            text-decoration: none;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+        .btn-download:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 28px rgba(253, 224, 71, 0.35);
+        }
+        .btn-download:active {
+            transform: scale(0.94);
+        }
+        .btn-download svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .download-all-wrap {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .btn-download-all {
+            background: var(--accent);
+            color: #3a3a1a;
+            font-weight: 800;
+            font-size: 20px;
+            padding: 16px 48px;
+            border-radius: 60px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 32px rgba(253, 224, 71, 0.3);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .btn-download-all:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(253, 224, 71, 0.45);
+        }
+        .btn-download-all:active {
+            transform: scale(0.95);
+        }
+        .btn-download-all svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        @media (max-width: 640px) {
+            .header h1 { font-size: 26px; padding: 10px 24px; gap: 10px; }
+            .header h1 svg { width: 28px; height: 28px; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+            .book-card { padding: 14px 12px 16px; border-radius: 22px; min-height: 300px; max-height: 340px; }
+            .cover svg { width: 48px; height: 48px; }
+            .cover .title-on-cover { font-size: 15px; }
+            .btn-download { font-size: 12px; padding: 10px 6px; }
+            .btn-download-all { font-size: 16px; padding: 14px 32px; }
+        }
+        @media (max-width: 400px) {
+            .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .book-card { min-height: 260px; max-height: 300px; padding: 10px 8px 14px; }
+            .cover svg { width: 36px; height: 36px; }
+            .cover .title-on-cover { font-size: 13px; }
+            .btn-download { font-size: 10px; padding: 8px 4px; }
+            .btn-download svg { width: 14px; height: 14px; }
+            .btn-download-all { font-size: 13px; padding: 12px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <header class="header">
+            <h1>
+                <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                Учебники
+            </h1>
+        </header>
+
+        <div class="grid" id="bookGrid"></div>
+
+        <div class="download-all-wrap">
+            <button class="btn-download-all" id="downloadAllBtn">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                Скачать все
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const BOOKS = [
+            { id: 'algebra', name: 'Алгебра', coverClass: 'cover-algebra', url: 'https://files.catbox.moe/rel6qh.pdf' },
+            { id: 'bel-lit', name: 'Белорусская литература', coverClass: 'cover-bel-lit', url: 'https://files.catbox.moe/6ejsw0.pdf' },
+            { id: 'bel-yaz', name: 'Белорусский язык', coverClass: 'cover-bel-yaz', url: 'https://files.catbox.moe/qfmn4n.pdf' },
+            { id: 'eng', name: 'Английский язык', coverClass: 'cover-eng', url: 'https://files.catbox.moe/1wupe4.pdf' },
+            { id: 'world-hist', name: 'Всемирная история', coverClass: 'cover-world-hist', url: 'https://files.catbox.moe/48hf34.pdf' },
+            { id: 'bio', name: 'Биология', coverClass: 'cover-bio', url: 'https://files.catbox.moe/a2webl.pdf' },
+            { id: 'geo', name: 'География', coverClass: 'cover-geo', url: 'https://files.catbox.moe/oun1pw.pdf' },
+            { id: 'info', name: 'Информатика', coverClass: 'cover-info', url: 'https://files.catbox.moe/afeiv5.pdf' },
+            { id: 'art', name: 'Искусство', coverClass: 'cover-art', url: 'https://files.catbox.moe/a0hvbm.pdf' },
+            { id: 'hist-bel', name: 'История Беларуси', coverClass: 'cover-hist-bel', url: 'https://files.catbox.moe/b293yj.pdf' },
+            { id: 'rus-lit', name: 'Русская литература', coverClass: 'cover-rus-lit', url: 'https://files.catbox.moe/hglgkq.pdf' },
+            { id: 'rus-lit2', name: 'Русская литература 2', coverClass: 'cover-rus-lit2', url: 'https://files.catbox.moe/n3ladm.pdf' },
+            { id: 'phys', name: 'Физика', coverClass: 'cover-phys', url: 'https://files.catbox.moe/h7esv9.pdf' },
+            { id: 'chem', name: 'Химия', coverClass: 'cover-chem', url: 'https://files.catbox.moe/a91pjk.pdf' },
+            { id: 'geom', name: 'Геометрия', coverClass: 'cover-geom', url: 'https://files.catbox.moe/xxym0c.pdf' },
+            { id: 'rus-yaz', name: 'Русский язык', coverClass: 'cover-rus-yaz', url: 'https://files.catbox.moe/0kpusv.pdf' }
+        ];
+
+        const BOOK_ICON_SVG = `<svg viewBox="0 0 24 24" fill="white"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>`;
+
+        const STORAGE_KEY = 'textbook_downloads';
+        let downloaded = new Set();
+        try {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (Array.isArray(saved)) saved.forEach(id => downloaded.add(id));
+        } catch (_) {}
+
+        function render() {
+            const grid = document.getElementById('bookGrid');
+            grid.innerHTML = '';
+
+            BOOKS.forEach(book => {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+
+                const cover = document.createElement('div');
+                cover.className = `cover ${book.coverClass}`;
+                cover.style.cursor = 'pointer';
+                cover.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    downloadBook(book);
+                });
+
+                cover.insertAdjacentHTML('beforeend', BOOK_ICON_SVG);
+
+                const title = document.createElement('div');
+                title.className = 'title-on-cover';
+                title.textContent = book.name;
+                cover.appendChild(title);
+
+                const badge = document.createElement('div');
+                badge.className = 'badge-pdf';
+                badge.textContent = 'PDF';
+                cover.appendChild(badge);
+
+                const btn = document.createElement('a');
+                btn.className = 'btn-download';
+                btn.href = book.url;
+                btn.download = `${book.name}.pdf`;
+                btn.target = '_blank';
+                btn.innerHTML = `
+                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Скачать
+                `;
+                btn.addEventListener('click', (e) => {
+                    if (!downloaded.has(book.id)) {
+                        downloaded.add(book.id);
+                        saveDownloads();
+                    }
+                });
+
+                card.appendChild(cover);
+                card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        }
+
+        function downloadBook(book) {
+            if (!downloaded.has(book.id)) {
+                downloaded.add(book.id);
+                saveDownloads();
+            }
+            window.open(book.url, '_blank');
+        }
+
+        function downloadAll() {
+            BOOKS.forEach((book, index) => {
+                setTimeout(() => {
+                    const link = document.createElement('a');
+                    link.href = book.url;
+                    link.download = `${book.name}.pdf`;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    if (!downloaded.has(book.id)) {
+                        downloaded.add(book.id);
+                        saveDownloads();
+                    }
+                }, index * 400);
+            });
+        }
+
+        function saveDownloads() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([...downloaded]));
+        }
+
+        render();
+        document.getElementById('downloadAllBtn').addEventListener('click', downloadAll);
+    </script>
+</body>
+</html>
