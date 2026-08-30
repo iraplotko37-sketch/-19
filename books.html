@@ -5,81 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Учебники</title>
 
-    <meta name="theme-color" content="#7DA1ED" />
+    <meta name="theme-color" content="#4A6FD4" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Учебники","short_name":"Учебники","start_url":".","display":"standalone","background_color":"#7DA1ED","theme_color":"#7DA1ED","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3652/3652191.png","sizes":"512x512","type":"image/png"}]}' />
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Учебники","short_name":"Учебники","start_url":".","display":"standalone","background_color":"#4A6FD4","theme_color":"#4A6FD4","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/3652/3652191.png","sizes":"512x512","type":"image/png"}]}' />
 
     <style>
         :root {
-            --primary: #7DA1ED;
+            --bg-top: #5B7FE8;
+            --bg-bottom: #3A55B8;
+            --card-bg: rgba(255, 255, 255, 0.10);
+            --card-bg-hover: rgba(255, 255, 255, 0.16);
+            --card-border: rgba(255, 255, 255, 0.18);
             --accent: #FDE047;
-            --glass: rgba(255, 255, 255, 0.10);
-            --glass-border: rgba(255, 255, 255, 0.20);
-            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            --shadow-hover: 0 30px 60px -16px rgba(0, 0, 0, 0.35);
-            --radius: 28px;
+            --accent-dark: #EAB308;
+            --shadow: 0 18px 35px -12px rgba(15, 23, 60, 0.45);
+            --shadow-hover: 0 24px 45px -12px rgba(15, 23, 60, 0.55);
+            --radius: 26px;
             --radius-sm: 16px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: var(--primary);
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            padding: 24px 20px 40px;
+            padding: 24px 20px 48px;
             color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             -webkit-font-smoothing: antialiased;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            /* Глубокий градиент вместо жидкого стекла */
+            background:
+                radial-gradient(1200px 600px at 15% -10%, rgba(255,255,255,0.22), transparent 60%),
+                radial-gradient(900px 500px at 85% 110%, rgba(255,255,255,0.14), transparent 60%),
+                radial-gradient(700px 400px at 50% 40%, rgba(255, 253, 180, 0.08), transparent 70%),
+                linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            background-attachment: fixed;
         }
 
         .container { max-width: 1200px; width: 100%; }
 
+        /* Заголовок без размытия */
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 20px 0 10px;
+            margin-bottom: 36px;
+            padding: 18px 0 8px;
         }
         .header h1 {
-            font-size: 36px;
+            font-size: 34px;
             font-weight: 900;
             letter-spacing: -0.02em;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: linear-gradient(145deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08));
             display: inline-flex;
             align-items: center;
             gap: 14px;
             padding: 12px 36px;
             border-radius: 60px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.25);
         }
         .header h1 svg {
-            width: 36px; height: 36px; fill: #fff;
-            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
+            width: 34px; height: 34px;
+            fill: #fff;
             flex-shrink: 0;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 24px;
+            gap: 22px;
             align-items: stretch;
         }
 
+        /* КАРТОЧКА: без размытия, градиентный полупрозрачный слой */
         .book-card {
-            background: var(--glass);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--glass-border);
+            background: linear-gradient(155deg, var(--card-bg), rgba(255,255,255,0.04));
+            border: 1px solid var(--card-border);
             border-radius: var(--radius);
             padding: 18px 16px 20px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.18);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -89,18 +96,18 @@
             height: 100%;
             min-height: 360px;
             max-height: 400px;
-            transform: translateZ(0);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
             content-visibility: auto;
             contain: layout paint style;
             contain-intrinsic-size: auto 380px;
         }
         .book-card:hover {
-            transform: translateY(-4px) translateZ(0);
-            box-shadow: var(--shadow-hover);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover), inset 0 1px 0 rgba(255,255,255,0.25);
+            background: linear-gradient(155deg, var(--card-bg-hover), rgba(255,255,255,0.06));
         }
         .book-card:active {
-            transform: scale(0.97) translateZ(0);
+            transform: scale(0.97);
             transition-duration: 0.05s;
         }
 
@@ -116,13 +123,13 @@
             margin-bottom: 14px;
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15),
-                        0 6px 18px rgba(0, 0, 0, 0.15);
-            background: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15),
+                        inset 0 2px 0 rgba(255,255,255,0.12),
+                        0 6px 14px rgba(15, 23, 60, 0.25);
             cursor: pointer;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
-            transition: transform 0.15s ease;
+            transition: transform 0.12s ease;
         }
         .cover:active { transform: scale(0.97); }
 
@@ -144,18 +151,17 @@
         .cover-rus-yaz    { background: linear-gradient(145deg, #8f2b4a, #5a1a2e); }
 
         .cover svg {
-            width: 64px; height: 64px;
+            width: 62px; height: 62px;
             fill: rgba(255, 255, 255, 0.95);
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
             margin-bottom: 6px;
             flex-shrink: 0;
         }
 
         .cover .title-on-cover {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 800;
             line-height: 1.2;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
             letter-spacing: 0.02em;
             word-break: break-word;
             max-width: 100%;
@@ -170,22 +176,20 @@
         .cover .badge-pdf {
             position: absolute;
             bottom: 10px; right: 10px;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.4);
             padding: 4px 12px;
             border-radius: 30px;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            color: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.85);
         }
 
+        /* Кнопка с прогресс-баром */
         .btn-download {
             width: 100%;
-            background: var(--accent);
+            background: linear-gradient(145deg, var(--accent), var(--accent-dark));
             color: #3a3a1a;
             font-weight: 800;
             font-size: 14px;
@@ -199,77 +203,90 @@
             gap: 8px;
             letter-spacing: 0.03em;
             text-transform: uppercase;
-            box-shadow: 0 4px 16px rgba(253, 224, 71, 0.25);
+            box-shadow: 0 6px 18px rgba(253, 224, 71, 0.35), inset 0 1px 0 rgba(255,255,255,0.4);
             text-decoration: none;
             margin-top: auto;
             flex-shrink: 0;
             -webkit-tap-highlight-color: transparent;
-            transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
             user-select: none;
+            position: relative;
+            overflow: hidden;
         }
         .btn-download:hover {
             transform: scale(1.02);
-            box-shadow: 0 8px 28px rgba(253, 224, 71, 0.35);
+            box-shadow: 0 10px 26px rgba(253, 224, 71, 0.45), inset 0 1px 0 rgba(255,255,255,0.4);
         }
         .btn-download:active {
             transform: scale(0.94);
             transition-duration: 0.05s;
         }
         .btn-download[disabled] {
-            opacity: 0.65;
             cursor: wait;
             pointer-events: none;
         }
         .btn-download svg {
-            width: 18px; height: 18px;
+            width: 17px; height: 17px;
             fill: currentColor;
             flex-shrink: 0;
+        }
+        .btn-download .progress-fill {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 0%;
+            background: rgba(58, 58, 26, 0.18);
+            transition: width 0.15s ease;
+            pointer-events: none;
+        }
+        .btn-download .btn-label {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .status-toast {
             position: fixed;
             bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(100px);
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(15, 23, 60, 0.95);
             color: #fff;
-            padding: 14px 26px;
+            padding: 13px 26px;
             border-radius: 30px;
             font-size: 14px;
             font-weight: 600;
             pointer-events: none;
             opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.28s ease, opacity 0.28s ease;
             z-index: 100;
             max-width: 90%;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             line-height: 1.4;
+            border: 1px solid rgba(255,255,255,0.12);
         }
         .status-toast.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
-        .status-toast.small {
-            font-size: 12px;
-            padding: 10px 20px;
-        }
 
         @media (max-width: 640px) {
-            .header h1 { font-size: 26px; padding: 10px 24px; gap: 10px; }
-            .header h1 svg { width: 28px; height: 28px; }
-            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+            .header h1 { font-size: 25px; padding: 10px 24px; gap: 10px; }
+            .header h1 svg { width: 27px; height: 27px; }
+            .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
             .book-card { padding: 14px 12px 16px; border-radius: 22px; min-height: 300px; max-height: 340px; }
             .cover svg { width: 48px; height: 48px; }
-            .cover .title-on-cover { font-size: 15px; }
+            .cover .title-on-cover { font-size: 14px; }
             .btn-download { font-size: 12px; padding: 10px 6px; }
         }
         @media (max-width: 400px) {
-            .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .grid { grid-template-columns: 1fr 1fr; gap: 11px; }
             .book-card { min-height: 260px; max-height: 300px; padding: 10px 8px 14px; }
             .cover svg { width: 36px; height: 36px; }
             .cover .title-on-cover { font-size: 13px; }
             .btn-download { font-size: 10px; padding: 8px 4px; }
-            .btn-download svg { width: 14px; height: 14px; }
+            .btn-download svg { width: 13px; height: 13px; }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -334,24 +351,27 @@
             catch (_) {}
         };
 
-        const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
         const toast = document.getElementById('toast');
         let toastTimer;
-        function showToast(message, duration = 2800, small = false) {
+        function showToast(message, duration = 2600) {
             clearTimeout(toastTimer);
             toast.textContent = message;
-            toast.classList.toggle('small', small);
             toast.classList.add('show');
             toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
         }
 
         const blobCache = new Map();
 
+        /** Обновление прогресса на кнопке */
+        function updateProgress(btn, percent, text) {
+            const fill = btn.querySelector('.progress-fill');
+            const label = btn.querySelector('.btn-label');
+            if (fill) fill.style.width = percent + '%';
+            if (label) label.innerHTML = DOWNLOAD_ICON_SVG + ' ' + text;
+        }
+
         /**
-         * УЛУЧШЕННОЕ СКАЧИВАНИЕ — обходит просмотрщик Firefox
+         * МГНОВЕННАЯ ЗАГРУЗКА с прогрессом
          */
         async function downloadBook(book, btn) {
             if (!downloaded.has(book.id)) {
@@ -359,92 +379,76 @@
                 saveDownloads();
             }
 
-            const originalHTML = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.setAttribute('disabled', '');
-                btn.innerHTML = DOWNLOAD_ICON_SVG + ' Загрузка...';
-            }
+            btn.setAttribute('disabled', '');
+            updateProgress(btn, 5, 'Подключение...');
 
             try {
                 let blob = blobCache.get(book.id);
+
                 if (!blob) {
                     const response = await fetch(book.url, { mode: 'cors' });
                     if (!response.ok) throw new Error('HTTP ' + response.status);
-                    blob = await response.blob();
+
+                    const contentLength = +response.headers.get('Content-Length') || 0;
+
+                    // Если есть размер — читаем с прогрессом
+                    if (contentLength && response.body) {
+                        const reader = response.body.getReader();
+                        const chunks = [];
+                        let received = 0;
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            chunks.push(value);
+                            received += value.length;
+
+                            const percent = Math.min(99, Math.round(received / contentLength * 100));
+                            updateProgress(btn, percent, `${percent}%`);
+                        }
+
+                        blob = new Blob(chunks, { type: 'application/pdf' });
+                    } else {
+                        blob = await response.blob();
+                    }
+
                     blobCache.set(book.id, blob);
                 }
 
-                // КРИТИЧНО: тип "бинарный файл", а не PDF
+                updateProgress(btn, 100, 'Сохранение...');
+
+                // Принудительное скачивание как бинарный файл
                 const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
                 const fileName = `${book.name.replace(/[^\wа-яА-ЯёЁ\s\-]/g, '')}.pdf`;
-
-                // Метод 1: современный диалог сохранения (если поддерживается)
-                if (window.showSaveFilePicker) {
-                    try {
-                        const handle = await window.showSaveFilePicker({
-                            suggestedName: fileName,
-                            types: [{
-                                description: 'PDF документ',
-                                accept: { 'application/pdf': ['.pdf'] }
-                            }]
-                        });
-                        const writable = await handle.createWritable();
-                        await writable.write(blob);
-                        await writable.close();
-                        showToast(`✓ «${book.name}» сохранён`);
-                        return;
-                    } catch (e) {
-                        if (e.name === 'AbortError') return; // пользователь отменил
-                        // если не сработало — падаем в стандартный метод
-                    }
-                }
-
-                // Метод 2: классический <a download> (работает в 95% браузеров)
                 const blobUrl = URL.createObjectURL(downloadBlob);
+
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = fileName;
                 a.rel = 'noopener';
-                a.referrerPolicy = 'no-referrer';
                 a.style.display = 'none';
-                a.target = '_self'; // важно для Firefox
                 document.body.appendChild(a);
-
-                await new Promise(r => setTimeout(r, 100));
                 a.click();
 
                 setTimeout(() => {
                     if (a.parentNode) a.parentNode.removeChild(a);
                     URL.revokeObjectURL(blobUrl);
-                }, 3000);
+                }, 1500);
 
-                showToast(`✓ «${book.name}» скачан`);
+                updateProgress(btn, 100, 'Скачано ✓');
+                showToast(`✓ «${book.name}» сохранён`);
 
-                // Для Firefox показываем подсказку
-                if (isFirefox) {
-                    setTimeout(() => {
-                        showToast('Если открылось: Настройки → Приложения → PDF → Сохранить файл', 6000, true);
-                    }, 2900);
-                }
+                setTimeout(() => {
+                    btn.removeAttribute('disabled');
+                    updateProgress(btn, 0, 'Скачать');
+                }, 1200);
 
             } catch (err) {
-                console.warn('Ошибка скачивания:', err);
-
-                // Фолбэк — открываем напрямую
+                console.warn('Ошибка загрузки:', err);
+                btn.removeAttribute('disabled');
+                updateProgress(btn, 0, 'Скачать');
                 window.open(book.url, '_blank');
-
-                if (isFirefox) {
-                    showToast('Настройки → Приложения → PDF → Сохранить файл', 5000, true);
-                } else if (isIOS) {
-                    showToast('Долгое нажатие → «Загрузить файл»', 4500, true);
-                } else {
-                    showToast('Открыто в новой вкладке');
-                }
-            } finally {
-                if (btn) {
-                    btn.removeAttribute('disabled');
-                    btn.innerHTML = originalHTML;
-                }
+                showToast('Открыто в новой вкладке');
             }
         }
 
@@ -467,10 +471,13 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className = 'btn-download';
-                btn.innerHTML = DOWNLOAD_ICON_SVG + ' Скачать';
+                btn.innerHTML =
+                    '<span class="progress-fill"></span>' +
+                    '<span class="btn-label">' + DOWNLOAD_ICON_SVG + ' Скачать</span>';
 
-                cover.addEventListener('click', () => downloadBook(book, btn));
-                btn.addEventListener('click',  () => downloadBook(book, btn));
+                const start = () => downloadBook(book, btn);
+                cover.addEventListener('click', start);
+                btn.addEventListener('click', start);
 
                 card.appendChild(cover);
                 card.appendChild(btn);
