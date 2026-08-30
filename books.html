@@ -334,14 +334,10 @@
             catch (_) {}
         };
 
-        // Определяем iOS для fallback-логики
+        const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                             window.navigator.standalone === true;
 
-        // Toast
         const toast = document.getElementById('toast');
         let toastTimer;
         function showToast(message, duration = 2800, small = false) {
@@ -352,12 +348,10 @@
             toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
         }
 
-        // Кэш
         const blobCache = new Map();
 
         /**
-         * КЛЮЧЕВАЯ ФУНКЦИЯ — реально скачивает, а не открывает.
-         * На iOS Safari / в PWA использует специальный трюк с octet-stream.
+         * УЛУЧШЕННОЕ СКАЧИВАНИЕ — обходит просмотрщик Firefox
          */
         async function downloadBook(book, btn) {
             if (!downloaded.has(book.id)) {
@@ -380,44 +374,69 @@
                     blobCache.set(book.id, blob);
                 }
 
-                // 🔥 ГЛАВНОЕ: пересоздаём Blob с типом octet-stream.
-                // Это принуждает любой браузер (в т.ч. iOS Safari) к скачиванию,
-                // потому что MIME-тип "неопределённый бинарный" — открыть нельзя.
+                // КРИТИЧНО: тип "бинарный файл", а не PDF
                 const downloadBlob = new Blob([blob], { type: 'application/octet-stream' });
-                const blobUrl = URL.createObjectURL(downloadBlob);
+                const fileName = `${book.name.replace(/[^\wа-яА-ЯёЁ\s\-]/g, '')}.pdf`;
 
+                // Метод 1: современный диалог сохранения (если поддерживается)
+                if (window.showSaveFilePicker) {
+                    try {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: fileName,
+                            types: [{
+                                description: 'PDF документ',
+                                accept: { 'application/pdf': ['.pdf'] }
+                            }]
+                        });
+                        const writable = await handle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        showToast(`✓ «${book.name}» сохранён`);
+                        return;
+                    } catch (e) {
+                        if (e.name === 'AbortError') return; // пользователь отменил
+                        // если не сработало — падаем в стандартный метод
+                    }
+                }
+
+                // Метод 2: классический <a download> (работает в 95% браузеров)
+                const blobUrl = URL.createObjectURL(downloadBlob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
-                a.download = `${book.name}.pdf`;
+                a.download = fileName;
                 a.rel = 'noopener';
+                a.referrerPolicy = 'no-referrer';
                 a.style.display = 'none';
+                a.target = '_self'; // важно для Firefox
                 document.body.appendChild(a);
 
-                // Принудительный клик с небольшой задержкой (нужно для iOS)
-                await new Promise(r => setTimeout(r, 50));
+                await new Promise(r => setTimeout(r, 100));
                 a.click();
 
                 setTimeout(() => {
                     if (a.parentNode) a.parentNode.removeChild(a);
                     URL.revokeObjectURL(blobUrl);
-                }, 2000);
+                }, 3000);
 
                 showToast(`✓ «${book.name}» скачан`);
 
-                // Если iOS + PWA — иногда скачивание всё равно может открыться как просмотр.
-                // Показываем подсказку на всякий случай.
-                if (isIOS && isStandalone) {
+                // Для Firefox показываем подсказку
+                if (isFirefox) {
                     setTimeout(() => {
-                        showToast('Если открылось — долгое нажатие → «Загрузить файл»', 4500, true);
+                        showToast('Если открылось: Настройки → Приложения → PDF → Сохранить файл', 6000, true);
                     }, 2900);
                 }
 
             } catch (err) {
-                console.warn('Fetch failed:', err);
-                // Фолбэк — открываем в новой вкладке + инструкция
+                console.warn('Ошибка скачивания:', err);
+
+                // Фолбэк — открываем напрямую
                 window.open(book.url, '_blank');
-                if (isIOS || isSafari) {
-                    showToast('Долгое нажатие на документ → «Загрузить файл»', 4500, true);
+
+                if (isFirefox) {
+                    showToast('Настройки → Приложения → PDF → Сохранить файл', 5000, true);
+                } else if (isIOS) {
+                    showToast('Долгое нажатие → «Загрузить файл»', 4500, true);
                 } else {
                     showToast('Открыто в новой вкладке');
                 }
