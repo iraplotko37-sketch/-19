@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Конвертер видео в аудио</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      color: #fff;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      padding: 30px;
+      border-radius: 18px;
+      background: #1e293b;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .description {
+      color: #cbd5e1;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .file-label {
+      display: block;
+      margin: 25px 0 15px;
+      padding: 18px;
+      border: 2px dashed #64748b;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .file-label:hover {
+      border-color: #38bdf8;
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    select,
+    button {
+      width: 100%;
+      margin-top: 12px;
+      padding: 13px;
+      border: 0;
+      border-radius: 9px;
+      font-size: 16px;
+    }
+
+    select {
+      background: #334155;
+      color: #fff;
+    }
+
+    button {
+      background: #0ea5e9;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0284c7;
+    }
+
+    button:disabled {
+      background: #64748b;
+      cursor: not-allowed;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 20px;
+      color: #bae6fd;
+      text-align: center;
+    }
+
+    .progress-wrapper {
+      display: none;
+      margin-top: 15px;
+    }
+
+    progress {
+      width: 100%;
+      height: 16px;
+    }
+
+    .download {
+      display: none;
+      margin-top: 20px;
+      padding: 13px;
+      border-radius: 9px;
+      background: #22c55e;
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .download:hover {
+      background: #16a34a;
+    }
+
+    .filename {
+      margin-top: 10px;
+      color: #cbd5e1;
+      text-align: center;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="container">
+    <h1>Видео в аудио</h1>
+
+    <p class="description">
+      Выберите видеофайл, укажите формат и скачайте аудиодорожку.
+    </p>
+
+    <label class="file-label" for="videoInput">
+      Нажмите, чтобы выбрать видео
+    </label>
+
+    <input
+      id="videoInput"
+      type="file"
+      accept="video/*"
+    />
+
+    <div id="filename" class="filename"></div>
+
+    <select id="format">
+      <option value="mp3">MP3</option>
+      <option value="wav">WAV</option>
+      <option value="m4a">M4A</option>
+    </select>
+
+    <button id="convertButton" disabled>
+      Конвертировать
+    </button>
+
+    <div class="progress-wrapper" id="progressWrapper">
+      <progress id="progress" value="0" max="100"></progress>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <a id="downloadLink" class="download">
+      Скачать аудио
+    </a>
+  </main>
+
+  <script type="module">
+    import { FFmpeg } from "https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js";
+    import { fetchFile, toBlobURL } from "https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.2/dist/esm/index.js";
+
+    const videoInput = document.getElementById("videoInput");
+    const formatSelect = document.getElementById("format");
+    const convertButton = document.getElementById("convertButton");
+    const status = document.getElementById("status");
+    const filenameElement = document.getElementById("filename");
+    const downloadLink = document.getElementById("downloadLink");
+    const progress = document.getElementById("progress");
+    const progressWrapper = document.getElementById("progressWrapper");
+
+    const ffmpeg = new FFmpeg();
+
+    let ffmpegLoaded = false;
+    let selectedFile = null;
+    let downloadUrl = null;
+
+    ffmpeg.on("progress", ({ progress: currentProgress }) => {
+      const percent = Math.round(currentProgress * 100);
+      progress.value = percent;
+      status.textContent = `Конвертация: ${percent}%`;
+    });
+
+    async function loadFFmpeg() {
+      if (ffmpegLoaded) return;
+
+      status.textContent = "Загрузка FFmpeg...";
+
+      const baseURL =
+        "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm";
+
+      await ffmpeg.load({
+        coreURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.js`,
+          "text/javascript"
+        ),
+        wasmURL: await toBlobURL(
+          `${baseURL}/ffmpeg-core.wasm`,
+          "application/wasm"
+        )
+      });
+
+      ffmpegLoaded = true;
+    }
+
+    videoInput.addEventListener("change", () => {
+      selectedFile = videoInput.files[0];
+
+      if (!selectedFile) {
+        convertButton.disabled = true;
+        filenameElement.textContent = "";
+        return;
+      }
+
+      filenameElement.textContent =
+        `Выбран файл: ${selectedFile.name}`;
+
+      convertButton.disabled = false;
+      downloadLink.style.display = "none";
+      status.textContent = "";
+    });
+
+    convertButton.addEventListener("click", async () => {
+      if (!selectedFile) return;
+
+      convertButton.disabled = true;
+      downloadLink.style.display = "none";
+      progressWrapper.style.display = "block";
+      progress.value = 0;
+
+      try {
+        await loadFFmpeg();
+
+        const inputName = "input_video";
+        const format = formatSelect.value;
+        const outputName = `audio.${format}`;
+
+        status.textContent = "Подготовка файла...";
+
+        await ffmpeg.writeFile(
+          inputName,
+          await fetchFile(selectedFile)
+        );
+
+        let command;
+
+        if (format === "mp3") {
+          command = [
+            "-i",
+            inputName,
+            "-vn",
+            "-acodec",
+            "libmp3lame",
+            "-b:a",
+            "192k",
+            outputName
+          ];
+        }
+
+        if (format === "wav") {
+          command = [
+            "-i",
+            inputName,
+            "-vn",
+            "-acodec",
+            "pcm_s16le",
+            outputName
+          ];
+        }
+
+        if (format === "m4a") {
+          command = [
+            "-i",
+            inputName,
+            "-vn",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            outputName
+          ];
+        }
+
+        await ffmpeg.exec(command);
+
+        const audioData = await ffmpeg.readFile(outputName);
+
+        const mimeTypes = {
+          mp3: "audio/mpeg",
+          wav: "audio/wav",
+          m4a: "audio/mp4"
+        };
+
+        const audioBlob = new Blob(
+          [audioData.buffer],
+          { type: mimeTypes[format] }
+        );
+
+        if (downloadUrl) {
+          URL.revokeObjectURL(downloadUrl);
+        }
+
+        downloadUrl = URL.createObjectURL(audioBlob);
+
+        downloadLink.href = downloadUrl;
+        downloadLink.download =
+          `${selectedFile.name.replace(/\.[^/.]+$/, "")}.${format}`;
+
+        downloadLink.textContent = "Скачать аудио";
+        downloadLink.style.display = "block";
+
+        status.textContent = "Готово!";
+      } catch (error) {
+        console.error(error);
+        status.textContent =
+          "Произошла ошибка. Попробуйте другой видеофайл.";
+      } finally {
+        convertButton.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
