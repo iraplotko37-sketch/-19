@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вечнозелёные жестколистные леса</title>
+<meta name="description" content="Школьный реферат о вечнозелёных жестколистных лесах и кустарниках.">
+<style>
+  :root{
+    --green:#2f6b4f;
+    --green-dark:#204b38;
+    --green-soft:#eaf4ee;
+    --cream:#f7f6f0;
+    --text:#21302a;
+    --muted:#64736c;
+    --white:#ffffff;
+    --line:#dce6df;
+    --shadow:0 14px 40px rgba(29,62,46,.10);
+    --radius:24px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:Inter, Arial, Helvetica, sans-serif;
+    color:var(--text);
+    background:linear-gradient(180deg,#edf6f0 0,#f8faf8 340px,#f7f6f0 100%);
+    line-height:1.7;
+  }
+
+  .container{width:min(1120px,calc(100% - 32px));margin:auto}
+
+  header{
+    min-height:520px;
+    display:flex;
+    align-items:flex-end;
+    position:relative;
+    overflow:hidden;
+    color:white;
+    background:
+      linear-gradient(180deg,rgba(21,48,36,.08),rgba(19,43,33,.78)),
+      url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Maquis_and_garrigue_in_Corsica4.jpg/960px-Maquis_and_garrigue_in_Corsica4.jpg') center/cover;
+  }
+
+  .hero{padding:64px 0 56px;position:relative;z-index:1}
+  .eyebrow{
+    display:inline-block;
+    padding:7px 13px;
+    border:1px solid rgba(255,255,255,.35);
+    border-radius:999px;
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(8px);
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  h1{font-size:clamp(38px,6vw,72px);line-height:1.03;margin:18px 0 18px;max-width:900px}
+  .subtitle{font-size:clamp(17px,2.3vw,23px);max-width:780px;color:rgba(255,255,255,.9);margin:0}
+
+  main{padding:48px 0 70px}
+  section{margin:0 0 28px}
+  .card{
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(47,107,79,.10);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:32px;
+  }
+  h2{font-size:30px;line-height:1.2;margin:0 0 16px;color:var(--green-dark)}
+  h3{font-size:20px;margin:26px 0 10px;color:var(--green-dark)}
+  p{margin:0 0 15px}
+  ul{margin:10px 0 0;padding-left:23px}
+  li{margin:6px 0}
+
+  .lead{
+    font-size:19px;
+    padding-left:18px;
+    border-left:4px solid var(--green);
+  }
+
+  .facts{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-top:22px;
+  }
+  .fact{padding:19px;background:var(--green-soft);border-radius:18px}
+  .fact b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:5px}
+
+  .gallery{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+    margin-top:20px;
+  }
+  figure{margin:0;background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 28px rgba(20,50,36,.07)}
+  figure img{display:block;width:100%;height:310px;object-fit:cover;background:#eef3ef}
+  figcaption{padding:13px 15px 16px;font-size:14px;color:var(--muted)}
+  figcaption strong{color:var(--text)}
+
+  .map-wrap{margin-top:18px;background:var(--green-soft);border-radius:20px;padding:12px}
+  .map-wrap img{width:100%;display:block;border-radius:14px;max-height:500px;object-fit:contain;background:#fff}
+
+  .table-wrap{overflow:auto;margin-top:20px;border:1px solid var(--line);border-radius:18px}
+  table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}
+  th,td{padding:16px 15px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+  th{background:var(--green);color:#fff;font-size:14px}
+  tr:last-child td{border-bottom:0}
+
+  .conclusion{background:linear-gradient(135deg,#234e3a,#397a58);color:#fff}
+  .conclusion h2{color:#fff}
+  .conclusion p{color:rgba(255,255,255,.94)}
+
+  footer{padding:28px 0 44px;color:var(--muted);font-size:13px}
+  footer a{color:var(--green);text-decoration:none}
+
+  @media (max-width:800px){
+    .facts{grid-template-columns:repeat(2,1fr)}
+    .gallery{grid-template-columns:1fr}
+    figure img{height:280px}
+    .card{padding:24px}
+    header{min-height:470px}
+  }
+  @media (max-width:520px){
+    .facts{grid-template-columns:1fr}
+    h2{font-size:26px}
+    .container{width:min(100% - 20px,1120px)}
+  }
+
+  @media print{
+    body{background:#fff}
+    header{min-height:360px;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+    .card{box-shadow:none}
+    .gallery{grid-template-columns:1fr 1fr}
+    a{color:inherit}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container hero">
+    <div class="eyebrow">Реферат по географии</div>
+    <h1>Вечнозелёные жестколистные леса</h1>
+    <p class="subtitle">Особенности природы, растительный и животный мир, географическое положение и почвы.</p>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="card">
+      <h2>Введение</h2>
+      <p class="lead">Вечнозелёные жестколистные леса и кустарники — природная зона субтропического пояса. Особенно хорошо она выражена в районе Средиземного моря.</p>
+      <p>Для этой природной зоны характерны жаркое сухое лето и мягкая, более влажная зима. Растения приспособлены к недостатку влаги: многие из них имеют небольшие, плотные и жёсткие листья, покрытые защитным слоем, который уменьшает испарение воды.</p>
+
+      <div class="facts">
+        <div class="fact"><b>Климат</b>Жаркое сухое лето, мягкая влажная зима</div>
+        <div class="fact"><b>Главная область</b>Средиземноморье</div>
+        <div class="fact"><b>Растения</b>Дуб, олива, лавр, мирт</div>
+        <div class="fact"><b>Почвы</b>Коричневые и красно-коричневые</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Географическое положение</h2>
+      <p>Основные территории распространения находятся вокруг Средиземного моря. Кроме того, природные комплексы со сходным климатом встречаются в Калифорнии, центральном Чили, на юго-западе Австралии и на юге Африки.</p>
+      <p>Эти области расположены преимущественно на западных окраинах материков примерно в субтропических широтах. Их объединяет средиземноморский тип климата.</p>
+
+      <div class="map-wrap">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Cs_climate.png" alt="Карта распространения средиземноморского климата">
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Растительный мир</h2>
+      <p>Растения вечнозелёных жестколистных лесов особенно хорошо приспособлены к летней засухе. Их листья обычно плотные и жёсткие, а корневая система позволяет использовать влагу из почвы.</p>
+      <p>Характерными растениями являются каменный (вечнозелёный) дуб, пробковый дуб, олива, лавр, мирт, можжевельник, земляничное дерево и некоторые виды сосен. В Австралии важную роль играют эвкалипты.</p>
+
+      <div class="gallery">
+        <figure>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Quercus_ilex.jpg" alt="Каменный дуб Quercus ilex">
+          <figcaption><strong>Каменный дуб (Quercus ilex).</strong> Вечнозелёное дерево с плотной кроной и жёсткими листьями.</figcaption>
+        </figure>
+        <figure>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Maquis_and_garrigue_in_Corsica4.jpg/960px-Maquis_and_garrigue_in_Corsica4.jpg" alt="Маквис на Корсике">
+          <figcaption><strong>Маквис.</strong> Густая средиземноморская растительность из вечнозелёных кустарников и небольших деревьев.</figcaption>
+        </figure>
+        <figure>
+          <img src="https://naturdata.com/images/species/10000/Quercus-suber-10466-131982144350197.jpg" alt="Пробковый дуб">
+          <figcaption><strong>Пробковый дуб (Quercus suber).</strong> Один из характерных видов средиземноморских лесов.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Животный мир</h2>
+      <p>Животный мир достаточно разнообразен. Здесь встречаются лисы, шакалы, рыси, муфлоны, дикие козы, зайцы и различные птицы. Много пресмыкающихся: ящериц, змей, черепах и гекконов.</p>
+      <p>Животные также приспособлены к жаркому климату. Многие из них наиболее активны утром и вечером, когда температура ниже. В некоторых средиземноморских районах большую роль играют насекомые и мелкие пресмыкающиеся.</p>
+
+      <div class="gallery">
+        <figure>
+          <img src="https://static.zpe.gov.pl/portal/f/res-minimized/RP7cRSPvUDfGC/1/Vm7sQSRIwcJUHd7mxPzlHVtVDbdZ2jhP.jpg" alt="Муфлон в Средиземноморье">
+          <figcaption><strong>Муфлон.</strong> Типичный представитель фауны средиземноморских горных районов.</figcaption>
+        </figure>
+        <figure>
+          <img src="https://www.balearia.com/documents/20142/cac70c6e-a428-76e2-17c5-98cc71bdc042" alt="Средиземноморская ящерица">
+          <figcaption><strong>Ящерица.</strong> Пресмыкающиеся хорошо приспособлены к солнечному и сухому климату.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Почвы</h2>
+      <p>Для вечнозелёных жестколистных лесов характерны <strong>коричневые и красно-коричневые почвы</strong>. В некоторых районах встречаются красные средиземноморские почвы — <em>terra rossa</em>.</p>
+      <p>Плодородие почв и тёплый климат позволяют выращивать здесь виноград, оливки, цитрусовые и другие сельскохозяйственные культуры. Однако в естественных экосистемах растительность сильно зависит от доступности воды летом.</p>
+    </section>
+
+    <section class="card">
+      <h2>Особенности природы</h2>
+      <ul>
+        <li>Леса остаются зелёными в течение всего года.</li>
+        <li>Листья большинства растений плотные, жёсткие и небольшие.</li>
+        <li>Растения хорошо переносят летнюю засуху.</li>
+        <li>Большую роль играют кустарниковые сообщества, например маквис.</li>
+        <li>На территориях природной зоны широко развито сельское хозяйство.</li>
+        <li>Естественные леса во многих районах изменены или заменены сельскохозяйственными угодьями.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Природная зона в таблице</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Растительный мир</th>
+              <th>Животный мир</th>
+              <th>Примеры расположения</th>
+              <th>Почвы</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Дуб, пробковый дуб, олива, лавр, мирт, можжевельник, сосны, земляничное дерево.</td>
+              <td>Муфлон, рысь, шакал, лиса, заяц, суслик, ящерицы, змеи, черепахи, птицы.</td>
+              <td>Средиземноморье, Калифорния, Чили, юг Африки, юго-запад Австралии.</td>
+              <td>Коричневые, красно-коричневые, красные средиземноморские (terra rossa).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card conclusion">
+      <h2>Заключение</h2>
+      <p>Вечнозелёные жестколистные леса — уникальная природная зона субтропиков. Они распространены преимущественно в районах с жарким сухим летом и мягкой влажной зимой. Здесь растут дубы, оливы, лавр, мирт и другие вечнозелёные растения.</p>
+      <p>Животный мир представлен млекопитающими, птицами, пресмыкающимися и насекомыми. Характерные почвы — коричневые, красно-коричневые и красные средиземноморские. Благодаря тёплому климату здесь развито садоводство и выращивание винограда и оливок.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <p><strong>Изображения:</strong> Wikimedia Commons, ZPE, Naturdata, Balearia. Карта климата и фотографии используются как иллюстрации к учебному материалу.</p>
+    <p>Страница подготовлена в формате одного HTML-файла. Для просмотра фотографий нужен доступ к интернету.</p>
+  </div>
+</footer>
+
+      </body>
+</html>
