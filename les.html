@@ -8,15 +8,17 @@
 <style>
   :root{
     --green:#2f6b4f;
-    --green-dark:#204b38;
+    --green-dark:#183b2b;
     --green-soft:#eaf4ee;
     --cream:#f7f6f0;
     --text:#21302a;
     --muted:#64736c;
     --white:#ffffff;
-    --line:#dce6df;
-    --shadow:0 14px 40px rgba(29,62,46,.10);
-    --radius:24px;
+    --line:rgba(255,255,255,.45);
+    --glass:rgba(255,255,255,.56);
+    --glass-strong:rgba(255,255,255,.72);
+    --shadow:0 18px 60px rgba(20,65,45,.13);
+    --radius:28px;
   }
 
   *{box-sizing:border-box}
@@ -25,9 +27,15 @@
     margin:0;
     font-family:Inter, Arial, Helvetica, sans-serif;
     color:var(--text);
-    background:linear-gradient(180deg,#edf6f0 0,#f8faf8 340px,#f7f6f0 100%);
+    background:
+      radial-gradient(circle at 8% 12%,rgba(130,205,166,.34),transparent 28%),
+      radial-gradient(circle at 92% 22%,rgba(115,175,240,.22),transparent 25%),
+      radial-gradient(circle at 50% 70%,rgba(255,255,255,.72),transparent 30%),
+      linear-gradient(180deg,#dcefe5 0,#f5faf7 380px,#eef6f1 100%);
     line-height:1.7;
+    min-height:100vh;
   }
+  body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.18),transparent 35%,rgba(255,255,255,.10));z-index:-1;}
 
   .container{width:min(1120px,calc(100% - 32px));margin:auto}
 
@@ -40,7 +48,7 @@
     color:white;
     background:
       linear-gradient(180deg,rgba(21,48,36,.08),rgba(19,43,33,.78)),
-      url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Maquis_and_garrigue_in_Corsica4.jpg/960px-Maquis_and_garrigue_in_Corsica4.jpg') center/cover;
+      url('https://images.weserv.nl/?url=upload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F8%2F83%2FMaquis_and_garrigue_in_Corsica4.jpg%2F960px-Maquis_and_garrigue_in_Corsica4.jpg&w=1400&q=78&output=webp') center/cover;
   }
 
   .hero{padding:64px 0 56px;position:relative;z-index:1}
@@ -61,12 +69,18 @@
   main{padding:48px 0 70px}
   section{margin:0 0 28px}
   .card{
-    background:rgba(255,255,255,.92);
-    border:1px solid rgba(47,107,79,.10);
+    background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.42));
+    border:1px solid var(--line);
     border-radius:var(--radius);
-    box-shadow:var(--shadow);
+    box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.75);
+    backdrop-filter:blur(22px) saturate(135%);
+    -webkit-backdrop-filter:blur(22px) saturate(135%);
     padding:32px;
+    position:relative;
+    overflow:hidden;
   }
+  .card:before{content:"";position:absolute;left:-15%;top:-45%;width:55%;height:90%;background:radial-gradient(circle,rgba(255,255,255,.48),transparent 68%);pointer-events:none}
+  .card>*{position:relative;z-index:1}
   h2{font-size:30px;line-height:1.2;margin:0 0 16px;color:var(--green-dark)}
   h3{font-size:20px;margin:26px 0 10px;color:var(--green-dark)}
   p{margin:0 0 15px}
@@ -85,7 +99,7 @@
     gap:14px;
     margin-top:22px;
   }
-  .fact{padding:19px;background:var(--green-soft);border-radius:18px}
+  .fact{padding:19px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.58);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 8px 22px rgba(34,85,58,.06);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
   .fact b{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:5px}
 
   .gallery{
@@ -94,13 +108,16 @@
     gap:18px;
     margin-top:20px;
   }
-  figure{margin:0;background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--line);box-shadow:0 8px 28px rgba(20,50,36,.07)}
-  figure img{display:block;width:100%;height:310px;object-fit:cover;background:#eef3ef}
+  figure{margin:0;background:rgba(255,255,255,.46);border-radius:22px;overflow:hidden;border:1px solid rgba(255,255,255,.65);box-shadow:0 12px 34px rgba(20,50,36,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:zoom-in;transition:transform .22s ease,box-shadow .22s ease}
+  figure:hover{transform:translateY(-4px);box-shadow:0 18px 42px rgba(20,50,36,.14)}
+  figure img{display:block;width:100%;height:310px;object-fit:cover;background:linear-gradient(135deg,#e5f0e9,#f7fbf8);opacity:0;transition:opacity .35s ease}
+  figure img.loaded{opacity:1}
   figcaption{padding:13px 15px 16px;font-size:14px;color:var(--muted)}
   figcaption strong{color:var(--text)}
 
-  .map-wrap{margin-top:18px;background:var(--green-soft);border-radius:20px;padding:12px}
-  .map-wrap img{width:100%;display:block;border-radius:14px;max-height:500px;object-fit:contain;background:#fff}
+  .map-wrap{margin-top:18px;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.62);border-radius:22px;padding:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);cursor:zoom-in}
+  .map-wrap img{width:100%;display:block;border-radius:16px;max-height:500px;object-fit:contain;background:#fff;opacity:0;transition:opacity .35s ease}
+  .map-wrap img.loaded{opacity:1}
 
   .table-wrap{overflow:auto;margin-top:20px;border:1px solid var(--line);border-radius:18px}
   table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}
@@ -135,6 +152,15 @@
     .gallery{grid-template-columns:1fr 1fr}
     a{color:inherit}
   }
+
+  /* Полноэкранный просмотр изображений */
+  .lightbox{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(10,28,20,.56);backdrop-filter:blur(24px) saturate(120%);-webkit-backdrop-filter:blur(24px)}
+  .lightbox.open{display:flex}
+  .lightbox-inner{position:relative;max-width:min(96vw,1500px);max-height:92vh;padding:10px;border:1px solid rgba(255,255,255,.55);border-radius:28px;background:rgba(255,255,255,.14);box-shadow:0 30px 100px rgba(0,0,0,.35);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+  .lightbox img{display:block;max-width:calc(96vw - 40px);max-height:calc(92vh - 40px);width:auto;height:auto;object-fit:contain;border-radius:20px;background:#fff}
+  .lightbox-close{position:absolute;right:-12px;top:-12px;width:44px;height:44px;border:1px solid rgba(255,255,255,.6);border-radius:50%;background:rgba(255,255,255,.78);color:#183b2b;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .zoom-hint{font-size:12px;color:var(--muted);margin:10px 0 0;text-align:center}
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -146,6 +172,13 @@
     <p class="subtitle">Особенности природы, растительный и животный мир, географическое положение и почвы.</p>
   </div>
 </header>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" type="button" aria-label="Закрыть">×</button>
+    <img id="lightbox-img" alt="">
+  </div>
+</div>
 
 <main>
   <div class="container">
@@ -169,7 +202,7 @@
       <p>Эти области расположены преимущественно на западных окраинах материков примерно в субтропических широтах. Их объединяет средиземноморский тип климата.</p>
 
       <div class="map-wrap">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/8/8e/Cs_climate.png" alt="Карта распространения средиземноморского климата">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E" data-src="https://images.weserv.nl/?url=upload.wikimedia.org%2Fwikipedia%2Fcommons%2F8%2F8e%2FCs_climate.png&w=1100&q=78&output=webp" data-full="https://upload.wikimedia.org/wikipedia/commons/8/8e/Cs_climate.png" loading="lazy" decoding="async" alt="Карта распространения средиземноморского климата">
       </div>
     </section>
 
@@ -180,15 +213,15 @@
 
       <div class="gallery">
         <figure>
-          <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Quercus_ilex.jpg" alt="Каменный дуб Quercus ilex">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E" data-src="https://images.weserv.nl/?url=upload.wikimedia.org%2Fwikipedia%2Fcommons%2F1%2F11%2FQuercus_ilex.jpg&w=900&q=76&output=webp" data-full="https://upload.wikimedia.org/wikipedia/commons/1/11/Quercus_ilex.jpg" loading="lazy" decoding="async" alt="Каменный дуб Quercus ilex">
           <figcaption><strong>Каменный дуб (Quercus ilex).</strong> Вечнозелёное дерево с плотной кроной и жёсткими листьями.</figcaption>
         </figure>
         <figure>
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Maquis_and_garrigue_in_Corsica4.jpg/960px-Maquis_and_garrigue_in_Corsica4.jpg" alt="Маквис на Корсике">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E" data-src="https://images.weserv.nl/?url=upload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F8%2F83%2FMaquis_and_garrigue_in_Corsica4.jpg%2F960px-Maquis_and_garrigue_in_Corsica4.jpg&w=900&q=76&output=webp" data-full="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Maquis_and_garrigue_in_Corsica4.jpg/960px-Maquis_and_garrigue_in_Corsica4.jpg" loading="lazy" decoding="async" alt="Маквис на Корсике">
           <figcaption><strong>Маквис.</strong> Густая средиземноморская растительность из вечнозелёных кустарников и небольших деревьев.</figcaption>
         </figure>
         <figure>
-          <img src="https://naturdata.com/images/species/10000/Quercus-suber-10466-131982144350197.jpg" alt="Пробковый дуб">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E" data-src="https://images.weserv.nl/?url=naturdata.com%2Fimages%2Fspecies%2F10000%2FQuercus-suber-10466-131982144350197.jpg&w=900&q=76&output=webp" data-full="https://naturdata.com/images/species/10000/Quercus-suber-10466-131982144350197.jpg" loading="lazy" decoding="async" alt="Пробковый дуб">
           <figcaption><strong>Пробковый дуб (Quercus suber).</strong> Один из характерных видов средиземноморских лесов.</figcaption>
         </figure>
       </div>
@@ -201,11 +234,11 @@
 
       <div class="gallery">
         <figure>
-          <img src="https://static.zpe.gov.pl/portal/f/res-minimized/RP7cRSPvUDfGC/1/Vm7sQSRIwcJUHd7mxPzlHVtVDbdZ2jhP.jpg" alt="Муфлон в Средиземноморье">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E" data-src="https://images.weserv.nl/?url=static.zpe.gov.pl%2Fportal%2Ff%2Fres-minimized%2FRP7cRSPvUDfGC%2F1%2FVm7sQSRIwcJUHd7mxPzlHVtVDbdZ2jhP.jpg&w=900&q=76&output=webp" data-full="https://static.zpe.gov.pl/portal/f/res-minimized/RP7cRSPvUDfGC/1/Vm7sQSRIwcJUHd7mxPzlHVtVDbdZ2jhP.jpg" loading="lazy" decoding="async" alt="Муфлон в Средиземноморье">
           <figcaption><strong>Муфлон.</strong> Типичный представитель фауны средиземноморских горных районов.</figcaption>
         </figure>
         <figure>
-          <img src="https://www.balearia.com/documents/20142/cac70c6e-a428-76e2-17c5-98cc71bdc042" alt="Средиземноморская ящерица">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E" data-src="https://images.weserv.nl/?url=www.balearia.com%2Fdocuments%2F20142%2Fcac70c6e-a428-76e2-17c5-98cc71bdc042&w=900&q=76&output=webp" data-full="https://www.balearia.com/documents/20142/cac70c6e-a428-76e2-17c5-98cc71bdc042" loading="lazy" decoding="async" alt="Средиземноморская ящерица">
           <figcaption><strong>Ящерица.</strong> Пресмыкающиеся хорошо приспособлены к солнечному и сухому климату.</figcaption>
         </figure>
       </div>
@@ -269,5 +302,47 @@
   </div>
 </footer>
 
-      </body>
+
+<script>
+(() => {
+  const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Crect width='20' height='20' fill='%23e5f0e9'/%3E%3C/svg%3E";
+  const images = [...document.querySelectorAll('img[data-src]')];
+  const loadImage = img => {
+    if (img.dataset.loaded) return;
+    const src = img.dataset.src;
+    if (!src) return;
+    img.onload = () => { img.classList.add('loaded'); img.dataset.loaded = '1'; };
+    img.onerror = () => { img.classList.add('loaded'); };
+    img.src = src;
+  };
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) { loadImage(entry.target); io.unobserve(entry.target); }
+      });
+    }, {rootMargin:'350px 0px'});
+    images.forEach(img => io.observe(img));
+  } else images.forEach(loadImage);
+
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const close = () => { lightbox.classList.remove('open'); lightbox.setAttribute('aria-hidden','true'); document.body.style.overflow=''; lightboxImg.removeAttribute('src'); };
+  document.querySelectorAll('figure, .map-wrap').forEach(box => {
+    box.addEventListener('click', () => {
+      const img = box.querySelector('img');
+      if (!img) return;
+      const full = img.dataset.full || img.dataset.src || img.src;
+      lightboxImg.src = full;
+      lightboxImg.alt = img.alt || '';
+      lightbox.classList.add('open');
+      lightbox.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+    });
+  });
+  lightbox.addEventListener('click', e => { if (e.target === lightbox || e.target.classList.contains('lightbox-close')) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+})();
+</script>
+</body>
 </html>
