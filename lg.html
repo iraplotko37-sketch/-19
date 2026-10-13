@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liquid Glass Switch</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glass-sdk/liquid-glass@0.0.2/dist/styles.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f0f12;
+      color: #fff;
+    }
+
+    #root {
+      width: min(420px, 92vw);
+    }
+
+    .hint {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div id="root"></div>
+    <p class="hint">
+      Нужен Chrome/Edge с WebGPU.<br />
+      Открывай через localhost или HTTPS (не file://).
+    </p>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@19.1.0",
+      "react-dom": "https://esm.sh/react-dom@19.1.0",
+      "react-dom/client": "https://esm.sh/react-dom@19.1.0/client",
+      "react/jsx-runtime": "https://esm.sh/react@19.1.0/jsx-runtime",
+      "@base-ui/react": "https://esm.sh/@base-ui/react@1.8.0?deps=react@19.1.0,react-dom@19.1.0",
+      "@glass-sdk/liquid-glass": "https://esm.sh/@glass-sdk/liquid-glass@0.0.2?deps=react@19.1.0,react-dom@19.1.0,@base-ui/react@1.8.0"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import React, { useState } from "react";
+    import { createRoot } from "react-dom/client";
+    import {
+      GlassScene,
+      GlassContent,
+      GlassSwitch,
+    } from "@glass-sdk/liquid-glass";
+
+    function App() {
+      const [enabled, setEnabled] = useState(false);
+
+      return React.createElement(
+        GlassScene,
+        {
+          material: "regular",
+          appearance: "dark",
+          style: {
+            height: 220,
+            width: "100%",
+            borderRadius: 28,
+            overflow: "hidden",
+          },
+        },
+        // Фон, который преломляется
+        React.createElement(
+          GlassContent,
+          null,
+          React.createElement("div", {
+            style: {
+              width: "100%",
+              height: "100%",
+              background:
+                "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+            },
+          })
+        ),
+        // Переключатель поверх стекла
+        React.createElement(
+          "div",
+          {
+            style: {
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 14,
+            },
+          },
+          React.createElement(
+            "label",
+            {
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                cursor: "pointer",
+                color: "#fff",
+                fontSize: 17,
+                fontWeight: 500,
+                userSelect: "none",
+              },
+            },
+            "Уведомления",
+            React.createElement(GlassSwitch, {
+              checked: enabled,
+              onCheckedChange: setEnabled,
+              name: "notifications",
+              "aria-label": "Включить уведомления",
+              tint: "#34C759",
+            })
+          )
+        )
+      );
+    }
+
+    createRoot(document.getElementById("root")).render(
+      React.createElement(App)
+    );
+  </script>
+</body>
+</html>
