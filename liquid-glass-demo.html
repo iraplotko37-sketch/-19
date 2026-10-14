@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Liquid Glass — Demo</title>
+
+<!-- Стили библиотеки -->
+<link rel="stylesheet" href="https://esm.sh/@glass-sdk/liquid-glass@0.0.2/styles.css" />
+
+<!-- ES Module Shims для importmap -->
+<script async src="https://ga.jspm.io/npm:es-module-shims@1.8.2/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.0.0?external=react",
+    "react-dom": "https://esm.sh/react-dom@19.0.0?external=react",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client?external=react",
+    "@glass-sdk/liquid-glass": "https://esm.sh/@glass-sdk/liquid-glass@0.0.2?external=react,react-dom"
+  }
+}
+</script>
+
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family: ui-sans-system, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif; background:#0a0a0f; overflow:hidden}
+  #root{height:100vh}
+  .scene-wrap{position:relative;width:100%;height:100vh;overflow:hidden}
+  /* Фон для fallback если WebGPU нет */
+  .fallback-banner{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    z-index:10;background:#ff3b30;color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:600;
+    box-shadow:0 4px 16px rgba(0,0,0,.3)
+  }
+  .hint{
+    position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+    color:rgba(255,255,255,.7);font-size:12px;letter-spacing:.04em;
+    background:rgba(0,0,0,.35);backdrop-filter:blur(12px);padding:6px 12px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.15)
+  }
+  /* Кастом контент внутри стекол */
+  .card-title{font-size:15px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .card-sub{font-size:12.5px;opacity:.7;margin:4px 0 0}
+  .row{display:flex;gap:10px;align-items:center}
+  .dot{width:8px;height:8px;border-radius:50%;background:#34c759;box-shadow:0 0 8px #34c759}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="module">
+import React, { useState, useEffect } from "react";
+import { createRoot } from "react-dom/client";
+import { GlassScene, GlassContent, GlassSurface, GlassButton, GlassToolbar } from "@glass-sdk/liquid-glass";
+
+const h = React.createElement;
+
+function App(){
+  const [hasGPU, setHasGPU] = useState(true);
+  const [material, setMaterial] = useState("regular"); // "clear" | "regular"
+  const [appearance, setAppearance] = useState("light"); // "light" | "dark"
+  const [playing, setPlaying] = useState(true);
+
+  useEffect(()=>{
+    if(!navigator.gpu){
+      setHasGPU(false);
+    } else {
+      navigator.gpu.requestAdapter().then(a=>{ if(!a) setHasGPU(false); });
+    }
+  },[]);
+
+  const bgUrl = "https://picsum.photos/seed/liquidglass/1920/1080";
+  // второй фон для параллакса
+  const bgUrl2 = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1920&q=80&auto=format&fit=crop";
+
+  return h("div", {className:"scene-wrap"},
+    !hasGPU && h("div", {className:"fallback-banner"}, "⚠️ WebGPU не найден — включи Chrome 113+ и открой через HTTPS / localhost. Показан CSS fallback."),
+    
+    h(GlassScene, {
+      style:{position:"absolute", inset:0, height:"100vh", width:"100vw"},
+      material: material,
+      appearance: appearance
+    },
+      // Фон который преломляется стеклом
+      h(GlassContent, null,
+        h("img", {src:bgUrl2, alt:"bg", style:{width:"100%", height:"100%", objectFit:"cover"}}),
+        h("div", {style:{position:"absolute", inset:0, background:"radial-gradient(800px 400px at 30% 20%, rgba(255,255,255,.25), transparent 60%), linear-gradient(to bottom, rgba(0,0,0,.1), rgba(0,0,0,.45))"}})
+      ),
+
+      // ===== Верхний тулбар =====
+      h(GlassToolbar, {
+        material: material,
+        appearance: appearance,
+        style:{position:"absolute", top:22, left:"50%", transform:"translateX(-50%)", padding:"6px 8px", borderRadius:24, display:"flex", gap:6, alignItems:"center"}
+      },
+        h(GlassButton, {material, appearance, size:"sm", onClick:()=>setMaterial(material==="regular"?"clear":"regular")}, material==="regular" ? "Regular" : "Clear"),
+        h(GlassButton, {material, appearance, size:"sm", onClick:()=>setAppearance(appearance==="light"?"dark":"light")}, appearance==="light"?"☀️ Light":"🌙 Dark"),
+        h("div", {style:{width:1, height:20, background:"rgba(0,0,0,.1)", margin:"0 2px"}}),
+        h(GlassButton, {material, appearance, size:"sm", onClick:()=>alert("Liquid Glass работает! Это настоящая библиотека Glass HQ + WebGPU.")}, "О библиотеке")
+      ),
+
+      // ===== Левая большая карта =====
+      h(GlassSurface, {
+        material: material,
+        appearance: appearance,
+        style:{
+          position:"absolute", left:"6%", top:"18%", width:340, padding:22, borderRadius:32,
+          display:"flex", flexDirection:"column", gap:14
+        }
+      },
+        h("div", {className:"row"},
+          h("img", {src:"https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/e8/43/5f/e8435ffa-b6b9-b171-40ab-4ff3959ab661/886443919266.jpg/200x200bb.jpg", style:{width:54,height:54,borderRadius:12,objectFit:"cover"}}),
+          h("div", null,
+            h("div", {className:"row"}, h("span", {className:"dot"}), h("span", {style:{fontSize:11,letterSpacing:".08em",opacity:.6,fontWeight:700}}, "NOW PLAYING")),
+            h("p", {className:"card-title", style:{marginTop:4}}, "Instant Crush"),
+            h("p", {className:"card-sub"}, "Daft Punk • Random Access Memories")
+          )
+        ),
+        h("div", {style:{display:"flex", gap:8, marginTop:2}},
+          h(GlassButton, {material, appearance, onClick:()=>setPlaying(!playing), style:{flex:1}}, playing ? "⏸ Пауза" : "▶︎ Плей"),
+          h(GlassButton, {material, appearance, variant:"secondary", onClick:()=>alert("Трек переключен")}, "⏭")
+        ),
+        h("div", {style:{height:4, background:"rgba(0,0,0,.08)", borderRadius:999, overflow:"hidden", marginTop:4}},
+          h("div", {style:{width: playing ? "62%" : "62%", height:"100%", background: appearance==="light" ? "rgba(0,0,0,.7)" : "rgba(255,255,255,.8)", borderRadius:999}})
+        ),
+        h("div", {style:{display:"flex", justifyContent:"space-between", fontSize:11, opacity:.6}},
+          h("span", null, "1:51"), h("span", null, "5:37")
+        )
+      ),
+
+      // ===== Правая карта =====
+      h(GlassSurface, {
+        material: material,
+        appearance: appearance,
+        style:{
+          position:"absolute", right:"6%", top:"22%", width:300, padding:22, borderRadius:28
+        }
+      },
+        h("p", {className:"card-title"}, "Жидкое стекло"),
+        h("p", {className:"card-sub", style:{lineHeight:1.5}}, "Настоящая библиотека ", h("b", null, "@glass-sdk/liquid-glass"), " с преломлением, блюром и физикой. Требует WebGPU и HTTPS."),
+        h("div", {style:{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginTop:14}},
+          h(GlassButton, {material, appearance, onClick:()=>window.open("https://github.com/Glass-HQ/liquid-glass","_blank")}, "GitHub"),
+          h(GlassButton, {material:"clear", appearance, onClick:()=>alert("Скопировано: npm install @glass-sdk/liquid-glass@~0.0.2")}, "Копировать npm")
+        )
+      ),
+
+      // ===== Нижняя центральная панель (док) =====
+      h(GlassSurface, {
+        material: material,
+        appearance: appearance,
+        style:{
+          position:"absolute", bottom:52, left:"50%", transform:"translateX(-50%)",
+          display:"flex", gap:12, padding:"10px 14px", borderRadius:28, alignItems:"center"
+        }
+      },
+        ...["◯","⬢","⬣","⬔","⬕"].map((icon,i)=>
+          h(GlassButton, {key:i, material, appearance, size:"icon", shape:"circle", onClick:()=>alert(`Кнопка ${i+1}`)}, h("span", {style:{fontSize:18}}, icon))
+        ),
+        h("div", {style:{width:1,height:28, background:"rgba(0,0,0,.1)", margin:"0 4px"}}),
+        h(GlassButton, {material, appearance, size:"sm", style:{borderRadius:999, padding:"0 16px"}}, "Get started")
+      ),
+
+      // ===== Маленький бейдж =====
+      h(GlassSurface, {
+        material:"clear",
+        appearance: appearance,
+        style:{position:"absolute", left:"6%", bottom:54, padding:"10px 14px", borderRadius:999, display:"flex", gap:8, alignItems:"center"}
+      },
+        h("span", {style:{fontSize:12, opacity:.8}}, "Перетаскивай окна — стекло преломляет фон в реальном времени ✨")
+      )
+    ),
+    h("div", {className:"hint"}, "Открой файл через localhost / HTTPS в Chrome 113+ • Safari пока с артефактами")
+  );
+}
+
+const root = createRoot(document.getElementById("root"));
+root.render(h(App));
+</script>
+</body>
+</html>
