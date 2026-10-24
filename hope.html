@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Стекло в руках</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://esm.sh/@glass-sdk/liquid-glass@0.0.2/styles.css">
+<script type="importmap">
+{"imports":{
+"react":"https://esm.sh/react@19.1.0",
+"react/jsx-runtime":"https://esm.sh/react@19.1.0/jsx-runtime",
+"react-dom":"https://esm.sh/react-dom@19.1.0",
+"react-dom/client":"https://esm.sh/react-dom@19.1.0/client",
+"htm":"https://esm.sh/htm@3.1.1",
+"@glass-sdk/liquid-glass":"https://esm.sh/@glass-sdk/liquid-glass@0.0.2?deps=react@19.1.0,react-dom@19.1.0&external=react,react-dom"
+}}
+</script>
+<style>
+:root{--bg:#f2f5fb;--ink:#0b1b3a;--muted:#33425f;--blue:#1d4ed8;--line:rgba(11,27,58,.14)}
+*{box-sizing:border-box;margin:0}
+body{font:400 1rem/1.5 Manrope,system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:16px;overscroll-behavior:none}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+h1{font-size:clamp(1.5rem,5vw,2.25rem);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.st{color:var(--muted);margin:4px 0 12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.chip{min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font:inherit;font-size:.9rem;font-weight:500;cursor:pointer;display:inline-flex;align-items:center}
+.seg button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+
+.scene{position:relative;height:calc(100svh - 190px);min-height:520px;contain:layout style}
+.stage{position:relative;width:100%;height:100%;overflow:hidden;border-radius:28px;background:#fff;contain:strict}
+.stage>*{position:absolute;inset:0;display:none}
+.stage[data-bg=black]{background:#0b0b0f}
+.stage[data-bg=stripes] .bg,.stage[data-bg=check] .bg,.stage[data-bg=dots] .bg,.stage[data-bg=grid] .bg,.stage[data-bg=image] .bg{display:block}
+.stage[data-bg=stripes] .bg{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='24' height='48' fill='%231d4ed8'/%3E%3Crect x='24' width='24' height='48' fill='%23facc15'/%3E%3C/svg%3E")}
+.stage[data-bg=check] .bg{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Crect width='32' height='32' fill='%230b1b3a'/%3E%3Crect x='32' y='32' width='32' height='32' fill='%230b1b3a'/%3E%3C/svg%3E")}
+.stage[data-bg=dots] .bg{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23fff'/%3E%3Ccircle cx='20' cy='20' r='8' fill='%231d4ed8'/%3E%3C/svg%3E")}
+.stage[data-bg=grid] .bg{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23fff'/%3E%3Cpath d='M48 0H0V48' fill='none' stroke='%230b1b3a' stroke-width='2'/%3E%3C/svg%3E")}
+.stage[data-bg=image] .bg{background-size:cover;background-position:center}
+.blocks{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr)}
+.stage[data-bg=blocks] .blocks{display:grid}
+.blocks i:nth-child(1){background:#1d4ed8}.blocks i:nth-child(2){background:#facc15}.blocks i:nth-child(3){background:#0b1b3a}
+.blocks i:nth-child(4){background:#ef4444}.blocks i:nth-child(5){background:#22c55e}.blocks i:nth-child(6){background:#f2f5fb}
+.txt{padding:24px;font-weight:800;font-size:clamp(4rem,19vw,11rem);line-height:.9;letter-spacing:-.05em;color:var(--blue)}
+.stage[data-bg=text] .txt{display:block}
+
+.shape{position:absolute;display:grid;place-items:center;font-weight:700;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;will-change:transform;contain:layout style paint}
+.shape:active{cursor:grabbing}
+.card{position:absolute;left:12px;bottom:12px;width:min(400px,calc(100% - 24px));padding:14px;display:grid;gap:10px;contain:layout style}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:500}
+.sl{flex:1;min-width:0;display:flex;align-items:center}
+output{min-width:3ch;text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { createRoot } from 'react-dom/client';
+import htm from 'htm';
+import {
+  GlassScene, GlassContent, GlassSurface, GlassButton, GlassTabs, GlassSwitch, GlassSlider,
+  GlassToolbar, GlassToolbarButton, GlassToolbarSpacer, GlassMenu, GlassMenuTrigger, GlassMenuContent, GlassMenuItem,
+} from '@glass-sdk/liquid-glass';
+
+const html = htm.bind(React.createElement);
+const BG = [['white','Белый'],['black','Чёрный'],['stripes','Полосы'],['check','Шахматка'],['dots','Точки'],['grid','Сетка'],['blocks','Блоки'],['text','Текст']];
+const TABS = [{ value: 'a', label: 'Формы' }, { value: 'b', label: 'Кнопки' }, { value: 'c', label: 'Меню' }];
+const SHAPES = [
+  { n: 'Круг', w: 96, h: 96, r: 'circle', x: '6%', y: 12 },
+  { n: 'Капсула', w: 176, h: 60, r: 'capsule', x: '40%', y: 10, m: 'clear' },
+  { n: 'Скругление', w: 150, h: 104, r: 28, x: '8%', y: 128 },
+  { n: 'Карточка', w: 156, h: 116, r: 44, x: '50%', y: 96 },
+  { n: 'Квадрат', w: 72, h: 72, r: 6, x: '36%', y: 236, m: 'clear' },
+];
+
+const isFirefox = typeof navigator !== 'undefined' && /firefox/i.test(navigator.userAgent);
+
+const Seg = memo(({ v, set, items }) => html`<div class="seg">${items.map(([k, l]) =>
+  html`<button key=${k} type="button" aria-pressed=${v === k} onClick=${() => set(k)}>${l}</button>`)}</div>`);
+
+const Shape = memo(function Shape({ s, tint, refraction, interactive }) {
+  const el = useRef(null);
+  const raf = useRef(0);
+  const pos = useRef({ x: 0, y: 0 });
+
+  const down = useCallback((e) => {
+    const n = el.current;
+    if (!n) return;
+    const p = n.offsetParent;
+    if (!p) return;
+    n.setPointerCapture(e.pointerId);
+    const sx = e.clientX, sy = e.clientY;
+    const startX = pos.current.x;
+    const startY = pos.current.y;
+    // Если ещё не двигали — берём текущий offset
+    if (startX === 0 && startY === 0 && n.style.transform === '') {
+      pos.current = { x: n.offsetLeft, y: n.offsetTop };
+    }
+    const ox = pos.current.x, oy = pos.current.y;
+    const maxX = p.clientWidth - n.offsetWidth;
+    const maxY = p.clientHeight - n.offsetHeight;
+
+    const move = (m) => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+      raf.current = requestAnimationFrame(() => {
+        const nx = Math.min(Math.max(ox + m.clientX - sx, 0), maxX);
+        const ny = Math.min(Math.max(oy + m.clientY - sy, 0), maxY);
+        pos.current = { x: nx, y: ny };
+        n.style.left = '0';
+        n.style.top = '0';
+        n.style.transform = `translate(${nx}px, ${ny}px)`;
+      });
+    };
+    const up = () => {
+      if (raf.current) cancelAnimationFrame(raf.current);
+      n.removeEventListener('pointermove', move);
+      n.removeEventListener('pointerup', up);
+      n.removeEventListener('pointercancel', up);
+    };
+    n.addEventListener('pointermove', move, { passive: true });
+    n.addEventListener('pointerup', up);
+    n.addEventListener('pointercancel', up);
+  }, []);
+
+  // Начальная позиция через left/top, дальше — transform
+  const style = { left: s.x, top: s.y, width: s.w, height: s.h };
+
+  return html`<${GlassSurface}
+    ref=${el}
+    className="shape"
+    radius=${s.r}
+    material=${s.m}
+    refraction=${refraction}
+    tint=${tint ? '#007aff' : undefined}
+    interactive=${interactive}
+    onPointerDown=${down}
+    style=${style}
+  >${s.n}<//>`;
+});
+
+function App() {
+  const [bg, setBg] = useState('stripes');
+  const [app, setApp] = useState('light');
+  const [mat, setMat] = useState('regular');
+  const [tint, setTint] = useState(false);
+  const [inter, setInter] = useState(true);
+  // В Firefox SVG-фильтры тяжелее — стартуем с меньшим преломлением
+  const [refr, setRefr] = useState(isFirefox ? 28 : 40);
+  const [rk, setRk] = useState(0);
+  const [img, setImg] = useState('');
+  const [gpu, setGpu] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setGpu(!!(isSecureContext && navigator.gpu && await navigator.gpu.requestAdapter()));
+      } catch {
+        setGpu(false);
+      }
+    })();
+  }, []);
+
+  const file = useCallback((e) => {
+    const f = e.target.files?.[0];
+    if (f) {
+      setImg(URL.createObjectURL(f));
+      setBg('image');
+    }
+  }, []);
+
+  const random = useCallback(() => {
+    setBg(BG[Math.floor(Math.random() * BG.length)][0]);
+  }, []);
+
+  const status = gpu === false
+    ? (isFirefox
+        ? 'Firefox: WebGPU пока ограничен. Стекло работает через SVG-фильтры — может быть медленнее. Лучше Chrome или Edge.'
+        : 'WebGPU недоступен: стекло может выглядеть плоским. Откройте страницу в Chrome по HTTPS.')
+    : isFirefox
+      ? 'Firefox: эффект работает, но тяжелее. Двигайте формы, крутите ползунки.'
+      : 'Двигайте формы, нажимайте переключатели, тяните ползунки.';
+
+  return html`<div>
+    <h1>Стекло в руках</h1>
+    <p class="st">${status}</p>
+    <div class="bar">
+      <${Seg} v=${bg} set=${setBg} items=${BG} />
+      <label class="chip">Свой фон<input type="file" accept="image/*" hidden onChange=${file} /></label>
+      <${Seg} v=${app} set=${setApp} items=${[['light', 'Светлая'], ['dark', 'Тёмная']]} />
+      <${Seg} v=${mat} set=${setMat} items=${[['clear', 'Clear'], ['regular', 'Regular']]} />
+    </div>
+    <${GlassScene}
+      appearance=${app}
+      material=${mat}
+      motion=${isFirefox ? 'reduced' : 'full'}
+      className="scene"
+    >
+      <${GlassContent}>
+        <div class="stage" data-bg=${bg}>
+          <div class="bg" style=${img && bg === 'image' ? { backgroundImage: `url(${img})` } : null}></div>
+          <div class="blocks">${[1, 2, 3, 4, 5, 6].map((i) => html`<i key=${i}></i>`)}</div>
+          <div class="txt">Liquid<br />Glass</div>
+        </div>
+      <//>
+      <${GlassSurface} radius=${28} className="card" refraction=${Math.min(refr, 36)}>
+        <${GlassTabs} aria-label="Раздел" defaultValue="a" items=${TABS} />
+        <label class="row">Оттенок<${GlassSwitch} aria-label="Оттенок" checked=${tint} onCheckedChange=${setTint} /></label>
+        <label class="row">Реакция на касание<${GlassSwitch} tint="#34c759" aria-label="Реакция на касание" checked=${inter} onCheckedChange=${setInter} /></label>
+        <div class="row">Преломление<span class="sl"><${GlassSlider} aria-label="Преломление" min=${0} max=${80} step=${1} value=${refr} onValueChange=${setRefr} /></span><output>${refr}</output></div>
+        <div class="row">Ступени<span class="sl"><${GlassSlider} ticks aria-label="Ступени" min=${0} max=${100} step=${25} defaultValue=${50} /></span></div>
+        <div class="row">
+          <${GlassButton} onClick=${() => setRk((k) => k + 1)}>Сбросить позиции<//>
+          <${GlassButton} tint="#007aff" onClick=${random}>Другой фон<//>
+        </div>
+        <${GlassToolbar} aria-label="Панель">
+          <${GlassToolbarButton} size="default">Назад<//>
+          <${GlassToolbarButton} size="default">Пауза<//>
+          <${GlassToolbarSpacer} />
+          <${GlassMenu}>
+            <${GlassToolbarButton} size="default" aria-label="Ещё" render=${html`<${GlassMenuTrigger} />`}>Ещё<//>
+            <${GlassMenuContent} side="top">
+              <${GlassMenuItem} onClick=${() => setApp('light')}>Светлая тема<//>
+              <${GlassMenuItem} onClick=${() => setApp('dark')}>Тёмная тема<//>
+              <${GlassMenuItem} onClick=${() => window.open('https://github.com/Glass-HQ/liquid-glass', '_blank')}>Библиотека на GitHub<//>
+            <//>
+          <//>
+        <//>
+      <//>
+      ${SHAPES.map((s) => html`<${Shape} key=${rk + s.n} s=${s} tint=${tint} refraction=${refr} interactive=${inter} />`)}
+    <//>
+  </div>`;
+}
+
+createRoot(document.getElementById('root')).render(html`<${App} />`);
+</script>
+</body>
+</html>
